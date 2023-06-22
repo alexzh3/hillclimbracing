@@ -34,12 +34,6 @@ TIME_STEP = 1.0 / FPS  # time step for physics simulation
 
 
 class HillRace(gym.Env):
-
-    metadata = {
-        "render_modes": ["human", "rgb_array"],
-        "render_fps": FPS,
-    }
-
     def __init__(self,
         render_mode: Optional[str] = "human",
         gravity: float = -10.0,
@@ -65,6 +59,7 @@ class HillRace(gym.Env):
         else:
             # Drive is drive, brake is reverse/stopping the car.
             self.action_space = spaces.Discrete(2)
+    def ground(self):
 
     def _destroy(self):
         if not self.hill:
@@ -78,29 +73,6 @@ class HillRace(gym.Env):
         super().reset(seed=seed)
         self._destroy()
         self.game_over = False
-
-        W = SCREEN_WIDTH / PPM
-        H = SCREEN_HEIGHT / PPM
-        # terrain
-        CHUNKS = 20
-        height = self.np_random.uniform(0, H / 2, size=(CHUNKS + 1,))
-        chunk_x = [W / (CHUNKS - 1) * i for i in range(CHUNKS)]
-        smooth_y = [
-            0.33 * (height[i - 1] + height[i + 0] + height[i + 1])
-            for i in range(CHUNKS)
-        ]
-        self.hill = self.world.CreateStaticBody(
-            shapes=edgeShape(vertices=[(0, 0), (W, 0)])
-        )
-        self.sky_polys = []
-        for i in range(CHUNKS - 1):
-            p1 = (chunk_x[i], smooth_y[i])
-            p2 = (chunk_x[i + 1], smooth_y[i + 1])
-            self.hill.CreateEdgeFixture(vertices=[p1, p2], density=0, friction=0.1)
-            self.sky_polys.append([p1, p2, (p2[0], H), (p1[0], H)])
-
-        self.hill.color1 = BLUE
-        self.hill.color2 = BLUE
 
     def render(self):
         ...
