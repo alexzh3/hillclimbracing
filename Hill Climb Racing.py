@@ -60,6 +60,7 @@ class HillRace(gym.Env):
             # Drive is drive, brake is reverse/stopping the car.
             self.action_space = spaces.Discrete(2)
     def ground(self):
+        ...
 
     def _destroy(self):
         if not self.hill:
