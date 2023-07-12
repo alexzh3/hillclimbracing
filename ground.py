@@ -1,10 +1,17 @@
 import Box2D
 import numpy
 import numpy as np
+import pygame
+import main
 import world
 from world import World
 import random
 import noise
+
+# Define constants
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+SCALE = 30  # Pixels per meter / Scale
 
 
 class Ground(World):
@@ -74,3 +81,19 @@ class Ground(World):
         while len(returnList) < numberOfPositions:
             returnList.append(returnList[-1])  # append last element to list again
         return returnList
+
+    def cloneFrom(self, otherGround):
+        for v in otherGround.vectors:
+            self.ground_vectors .append(pygame.Vector2(v.x, v.y))
+
+    def setBodies(self, worldToAddTo):
+        self.world = worldToAddTo
+        self.makeBody()
+        for i in range(1, len(self.ground_vectors)):
+            self.addEdge(self.ground_vectors[i - 1], self.ground_vectors[i], DIRT_MASK, DIRT_CATEGORY, False)
+
+        for i in range(1, len(self.ground_vectors)):
+            self.addEdge(
+                Box2D.b2Vec2(self.ground_vectors[i - 1].x, self.ground_vectors[i - 1].y - self.grassThickness / SCALE),
+                Box2D.b2Vec2(self.ground_vectors[i].x,
+                             self.ground_vectors[i].y - self.grassThickness / SCALE), GRASS_MASK, GRASS_CATEGORY, True)

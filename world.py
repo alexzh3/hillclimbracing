@@ -24,7 +24,6 @@ class World:
                  height: int = 600,
                  difficulty: int = 50
                  ):
-
         self.gravity = gravity
         self.width = width
         self.height = height

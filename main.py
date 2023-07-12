@@ -22,7 +22,7 @@ except ImportError:
 # Define constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-PPM = 30  # Pixels per meter / Scale
+SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 
 # Initialize Pygame

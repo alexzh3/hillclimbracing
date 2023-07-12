@@ -28,7 +28,7 @@ BLUE = (0, 0, 255)
 # Define constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-PPM = 30  # Pixels per meter / Scale
+SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS  # time step for physics simulation
 
