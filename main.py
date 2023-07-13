@@ -19,11 +19,27 @@ try:
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
 
+# collisionCategories i.e what it is
+WHEEL_CATEGORY = 0x0001
+CHASSIS_CATEGORY = 0x0002
+GRASS_CATEGORY = 0x0004
+DIRT_CATEGORY = 0x0008
+PERSON_CATEGORY = 0x0010
+
+# collisionMasks i.e what it collides with
+WHEEL_MASK = GRASS_CATEGORY
+CHASSIS_MASK = DIRT_CATEGORY
+GRASS_MASK = WHEEL_CATEGORY | PERSON_CATEGORY
+DIRT_MASK = CHASSIS_CATEGORY
+PERSON_MASK = GRASS_CATEGORY
+
 # Define constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
+DIFFICULTY = 50 # Difficulty of terrain
+
 
 # Initialize Pygame
 pygame.init()

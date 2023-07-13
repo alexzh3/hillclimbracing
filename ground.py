@@ -1,32 +1,26 @@
 import Box2D
-import numpy
+from Box2D import *
 import numpy as np
 import pygame
 import main
-import world
-from world import World
 import random
 import noise
 
-# Define constants
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-SCALE = 30  # Pixels per meter / Scale
 
-
-class Ground(World):
-    def __init__(self):
-        super().__init__()
-        self.world = World
+class Ground:
+    def __init__(self, world):
+        self.world = world
         self.ground_vectors = []
-        self.distance = 15 * self.width
+        self.dirtBody = None
+        self.grassBody = None
+        self.distance = 15 * main.SCREEN_WIDTH
         self.x = 0
         self.y = 0
         self.smoothness = 15
         self.grass_thickness = 5
         self.steepness = 250
         self.grass_positions = []
-        self.steepness_Level = 50 + self.difficulty
+        self.steepness_Level = 50 + main.DIFFICULTY
         self.estimated_difficulty = 0
 
     def randomizeGround(self):
@@ -53,10 +47,18 @@ class Ground(World):
 
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
             self.ground_vectors.append(
-                Box2D.b2Vec2(i, self.height - np.interp(noisedY, [0, 1], [minHeight, maxHeight]) + heightAddition))
+                b2Vec2(i, main.SCREEN_HEIGHT - np.interp(noisedY, [0, 1], [minHeight, maxHeight]) + heightAddition))
             # Calculate the absolute difference between the previous and current y-values and add it to the total difference
             if i > 0:
                 totalDifference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
+
+        self.ground_vectors.append(b2Vec2(self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2))
+        self.ground_vectors.append(b2Vec2(0, main.SCREEN_HEIGHT + self.grass_thickness * 2))
+        spawningY = self.ground_vectors[10].y - 100
+
+        for vect in self.ground_vectors:
+            vect.x /= main.SCALE
+            vect.y /= main.SCALE
 
     # Function to see if ground is too steep
     def groundTooSteep(self):
@@ -84,16 +86,45 @@ class Ground(World):
 
     def cloneFrom(self, otherGround):
         for v in otherGround.vectors:
-            self.ground_vectors .append(pygame.Vector2(v.x, v.y))
+            self.ground_vectors.append(pygame.Vector2(v.x, v.y))
 
     def setBodies(self, worldToAddTo):
         self.world = worldToAddTo
         self.makeBody()
         for i in range(1, len(self.ground_vectors)):
-            self.addEdge(self.ground_vectors[i - 1], self.ground_vectors[i], DIRT_MASK, DIRT_CATEGORY, False)
+            self.addEdge(self.ground_vectors[i - 1], self.ground_vectors[i], main.DIRT_MASK, main.DIRT_CATEGORY, False)
 
         for i in range(1, len(self.ground_vectors)):
             self.addEdge(
-                Box2D.b2Vec2(self.ground_vectors[i - 1].x, self.ground_vectors[i - 1].y - self.grassThickness / SCALE),
-                Box2D.b2Vec2(self.ground_vectors[i].x,
-                             self.ground_vectors[i].y - self.grassThickness / SCALE), GRASS_MASK, GRASS_CATEGORY, True)
+                b2Vec2(self.ground_vectors[i - 1].x, self.ground_vectors[i - 1].y - self.grass_thickness / main.SCALE),
+                b2Vec2(self.ground_vectors[i].x, self.ground_vectors[i].y - self.grass_thickness / main.SCALE),
+                main.GRASS_MASK, main.GRASS_CATEGORY, True)
+
+    def makeBody(self):
+        bodyDef = b2BodyDef()
+        bodyDef.type = b2_staticBody
+        bodyDef.position.x = 0  # canvas.width / 2 / SCALE
+        bodyDef.position.y = 0  # (canvas.height - 20) / SCALE
+        self.dirtBody = self.world.CreateBody(bodyDef)
+        self.grassBody = self.world.CreateBody(bodyDef)
+        self.dirtBody.userData = self
+        self.grassBody.userData = self
+
+    def addEdge(self, vec1, vec2, mask, category, isGrass):
+        fixDef = b2FixtureDef()
+        fixDef.friction = 0.99  # 0.95
+        fixDef.restitution = 0.1
+        fixDef.shape = b2PolygonShape()
+
+        # Use SetAsBox instead of SetAsEdge
+        fixDef.shape.SetAsBox(0.5 * (vec2 - vec1).length, 0.01, 0.5 * (vec1 + vec2), (vec2 - vec1).angle)
+
+        # Use filter instead of filterData
+        fixDef.filter.categoryBits = category
+        fixDef.filter.maskBits = mask
+
+        if isGrass:
+            self.grassBody.CreateFixture(fixDef)
+        else:
+            self.dirtBody.CreateFixture(fixDef)
+

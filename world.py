@@ -4,7 +4,7 @@ from gym import error, spaces
 from gym.error import DependencyNotInstalled
 
 try:
-    import Box2D
+    from Box2D import *
     from Box2D.b2 import (
         circleShape,
         contactListener,
@@ -19,7 +19,7 @@ except ImportError:
 
 class World:
     def __init__(self,
-                 gravity: float = -10.0,
+                 gravity: float = 10.0,
                  width: int = 800,
                  height: int = 600,
                  difficulty: int = 50
@@ -28,4 +28,4 @@ class World:
         self.width = width
         self.height = height
         self.difficulty = difficulty
-        self.world = Box2D.b2World(gravity=(0, gravity), doSleep=True)
+        self.world = b2World(b2Vec2(0, gravity), True)
