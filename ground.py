@@ -114,10 +114,10 @@ class Ground:
         fixDef = b2FixtureDef()
         fixDef.friction = 0.99  # 0.95
         fixDef.restitution = 0.1
-        fixDef.shape = b2PolygonShape()
+        fixDef.shape = b2EdgeShape()
 
-        # Use SetAsBox instead of SetAsEdge
-        fixDef.shape.SetAsBox(0.5 * (vec2 - vec1).length, 0.01, 0.5 * (vec1 + vec2), (vec2 - vec1).angle)
+        # Use vertices instead of SetAsEdge
+        fixDef.shape.vertices = [vec1, vec2]
 
         # Use filter instead of filterData
         fixDef.filter.categoryBits = category
@@ -127,4 +127,3 @@ class Ground:
             self.grassBody.CreateFixture(fixDef)
         else:
             self.dirtBody.CreateFixture(fixDef)
-
