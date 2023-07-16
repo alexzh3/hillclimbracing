@@ -110,6 +110,34 @@ class Ground:
         self.dirtBody.userData = self
         self.grassBody.userData = self
 
+    def showGround(self, screen):
+        # Light brown
+        # ground_color = (102, 50, 20);
+        # Brown
+        ground_color = (88, 35, 0)
+
+        # Scale the vectors by `main.SCALE` and convert them to tuples
+        scaled_vectors = [(v.x * main.SCALE, v.y * main.SCALE) for v in self.ground_vectors]
+        # Draw the polygon on the screen
+        pygame.draw.polygon(screen, ground_color, scaled_vectors)
+
+        for i in range(len(self.ground_vectors) - 3):
+            pygame.draw.line(screen, (66, 60, 0), (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE + 9),
+                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE + 9), 3)
+
+        for i in range(len(self.ground_vectors) - 3):
+            pygame.draw.line(screen, (44, 90, 0), (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE + 6),
+                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE + 6), 3)
+
+        for i in range(len(self.ground_vectors) - 3):
+            pygame.draw.line(screen, (0, 140, 0), (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE - 5),
+                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE - 5), 3)
+
+        for i in range(len(self.ground_vectors) - 3):
+            pygame.draw.line(screen, (0, 130, 0), (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE - 3),
+                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE - 3), 3)
+
+
     def addEdge(self, vec1, vec2, mask, category, isGrass):
         fixDef = b2FixtureDef()
         fixDef.friction = 0.99  # 0.95
