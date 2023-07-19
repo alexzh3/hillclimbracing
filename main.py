@@ -39,7 +39,7 @@ SCREEN_HEIGHT = 600
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 DIFFICULTY = 50 # Difficulty of terrain
-
+panY = 0
 
 # Initialize Pygame
 pygame.init()
