@@ -1,5 +1,9 @@
-import Box2D
-from Box2D import *
+from gym.error import DependencyNotInstalled
+
+try:
+    from Box2D import *
+except ImportError:
+    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
 import numpy as np
 import pygame
 import main
@@ -8,7 +12,7 @@ import noise
 
 
 class Ground:
-    def __init__(self, world):
+    def __init__(self, world=None):
         self.world = world
         self.ground_vectors = []
         self.dirtBody = None
@@ -54,6 +58,8 @@ class Ground:
             if i > 0:
                 totalDifference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
 
+        print(totalDifference)
+
         self.ground_vectors.append(b2Vec2(self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2))
         self.ground_vectors.append(b2Vec2(0, main.SCREEN_HEIGHT + self.grass_thickness * 2))
         spawningY = self.ground_vectors[10].y - 100
@@ -70,6 +76,7 @@ class Ground:
             for i in range(1, len(oi)):
                 totalDifference += max(0, oi[i - 1] - oi[i])
             if totalDifference > 5:
+                print("Too Steep, shit ground!")
                 return True
         return False
 
@@ -141,6 +148,7 @@ class Ground:
         vertices = []
         for i in range(0, len(self.ground_vectors) - 2):  # Scale the ground vectors back
             vertices.append((self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE))
+        print(vertices)
         pygame.draw.polygon(screen, grass_color, vertices, width=self.grass_thickness)  # Draw the grass
         # Append beginning and end vertices of screen
         vertices.append([(self.distance, main.SCREEN_HEIGHT + self.grass_thickness + main.panY),
