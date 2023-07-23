@@ -40,7 +40,7 @@ class Ground:
             # Calculate the steepness level using linear interpolation between 130 and 250
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
-            noisedY = noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level), octaves=4)
+            noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level)))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level
             maxHeight = 300 + np.interp(self.steepness_Level, [0, 200], [0, 350])
             minHeight = 30
@@ -149,10 +149,10 @@ class Ground:
         for i in range(0, len(self.ground_vectors) - 2):  # Scale the ground vectors back
             vertices.append((self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE))
         print(vertices)
-        pygame.draw.polygon(screen, grass_color, vertices, width=self.grass_thickness)  # Draw the grass
+        pygame.draw.polygon(screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the grass
         # Append beginning and end vertices of screen
-        vertices.append([(self.distance, main.SCREEN_HEIGHT + self.grass_thickness + main.panY),
-                         (0, main.SCREEN_HEIGHT + self.grass_thickness + main.panY)])
+        vertices.append([(self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY),
+                         (0, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY)])
         pygame.draw.polygon(screen, ground_color, vertices)  # Draw the ground
 
         # Draw the transition colours from ground to grass (down to up)
