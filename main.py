@@ -27,7 +27,7 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 50  # Difficulty of terrain
+DIFFICULTY = 100  # Difficulty of terrain, max 100
 panY = 0
 GRAVITY = 10
 

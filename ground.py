@@ -22,13 +22,12 @@ class Ground:
         self.y = 0
         self.smoothness = 15
         self.grass_thickness = 5
-        self.steepness = 250
         self.grass_positions = []
-        self.steepness_Level = 50 + main.DIFFICULTY
+        self.steepness_Level = 0
         self.estimated_difficulty = 0
 
     def randomizeGround(self):
-        startingPoint = random.randint(0, 100000)
+        startingPoint = random.uniform(0, 100000)
         totalDifference = 0
 
         # Iterate over a range from 0 to self.distance with a step size of self.smoothness
@@ -40,14 +39,16 @@ class Ground:
             # Calculate the steepness level using linear interpolation between 130 and 250
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
-            noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level)))
+            noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
+            noisedY = noisedY + random.uniform(0.04, 0.1) if noisedY < 0.9 else noisedY
             # Determine the maximum and minimum heights for the ground vector based on the steepness level
-            maxHeight = 300 + np.interp(self.steepness_Level, [0, 200], [0, 350])
+            maxHeight = np.interp(self.steepness_Level, [0, 200], [0, 270]) + main.DIFFICULTY
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition
             if i < flatLength:
                 noisedY = noise.pnoise1(startingPoint, octaves=4)
+                noisedY = noisedY + random.uniform(0.04, 0.1) if noisedY < 0.9 else noisedY
                 heightAddition = (flatLength - i) / 7
 
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
@@ -76,6 +77,7 @@ class Ground:
             for i in range(1, len(oi)):
                 totalDifference += max(0, oi[i - 1] - oi[i])
             if totalDifference > 5:
+                print(totalDifference)
                 print("Too Steep, shit ground!")
                 return True
         return False
