@@ -36,20 +36,18 @@ class Ground:
             flatLength = 500
             # Initialize a variable to store the additional height to be added for the flat section of the ground vector
             heightAddition = 0
-            # Calculate the steepness level using linear interpolation between 130 and 250
+            # Calculate the steepness level using linear interpolation between 140 and 250
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
             noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
-            noisedY = noisedY + random.uniform(0.04, 0.1) if noisedY < 0.9 else noisedY
             # Determine the maximum and minimum heights for the ground vector based on the steepness level
-            maxHeight = np.interp(self.steepness_Level, [0, 200], [0, 270]) + main.DIFFICULTY
+            maxHeight = main.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition
             if i < flatLength:
-                noisedY = noise.pnoise1(startingPoint, octaves=4)
-                noisedY = noisedY + random.uniform(0.04, 0.1) if noisedY < 0.9 else noisedY
-                heightAddition = (flatLength - i) / 7
+                noisedY = abs(noise.pnoise1(startingPoint, octaves=4))
+                heightAddition = (flatLength - i) / 25
 
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
             self.ground_vectors.append(
@@ -59,10 +57,8 @@ class Ground:
             if i > 0:
                 totalDifference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
 
-        print(totalDifference)
-
-        self.ground_vectors.append(b2Vec2(self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2))
-        self.ground_vectors.append(b2Vec2(0, main.SCREEN_HEIGHT + self.grass_thickness * 2))
+        self.ground_vectors.append(b2Vec2(self.distance, main.SCREEN_HEIGHT))
+        self.ground_vectors.append(b2Vec2(0, main.SCREEN_HEIGHT))
         spawningY = self.ground_vectors[10].y - 100
 
         for vect in self.ground_vectors:
@@ -96,7 +92,7 @@ class Ground:
         return returnList
 
     def cloneFrom(self, otherGround):
-        for v in otherGround.vectors:
+        for v in otherGround.ground_vectors:
             self.ground_vectors.append(pygame.Vector2(v.x, v.y))
 
     def setBodies(self, worldToAddTo):
@@ -139,23 +135,26 @@ class Ground:
         else:
             self.dirtBody.CreateFixture(fixDef)
 
-    def showGround(self, screen):
+    def drawGround(self, screen):
         # Light brown
         # ground_color = (102, 50, 20);
         # Brown
         ground_color = (88, 35, 0)
         grass_color = (0, 120, 0)
-
-        # Draw ground and grass hills
         vertices = []
+
+        # Beginning vertice
+        vertices.append((0, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY))
         for i in range(0, len(self.ground_vectors) - 2):  # Scale the ground vectors back
             vertices.append((self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE))
-        print(vertices)
-        pygame.draw.polygon(screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the grass
-        # Append beginning and end vertices of screen
-        vertices.append([(self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY),
-                         (0, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY)])
-        pygame.draw.polygon(screen, ground_color, vertices)  # Draw the ground
+        # Append end vertices of screen
+        vertices.append((self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY))
+        print(f"vertices: {vertices}")
+
+        # Draw the hills
+        # Fill the base ground until the first layer of ground
+        pygame.draw.polygon(screen, ground_color, vertices)
+        pygame.draw.polygon(screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the base grass
 
         # Draw the transition colours from ground to grass (down to up)
         for i in range(len(self.ground_vectors) - 3):

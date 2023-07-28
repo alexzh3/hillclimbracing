@@ -27,7 +27,7 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 100  # Difficulty of terrain, max 100
+DIFFICULTY = 50  # Difficulty of terrain, max 100
 panY = 0
 GRAVITY = 10
 
@@ -61,7 +61,6 @@ def initWorld():
         tempGround.setBodies(tempWorld)
         grounds.append(tempGround)
         worlds.append(tempWorld)
-        print(f"{i}, grounds_vec: {grounds}")
 
     otherWorld = b2World(b2Vec2(0, GRAVITY), True)
     tempGround = ground.Ground(otherWorld)
@@ -74,9 +73,10 @@ def draw():
     # Clear the screen
     screen.fill((255, 255, 255))
     # Fill screen with sky colour
-    screen.fill((53, 81, 92))
+    screen.fill((135, 206, 235))
     # Draw the ground to screen
-    grounds[0].showGround()
+    print(len(grounds))
+    grounds[0].drawGround(screen)
     # Update the screen
     pygame.display.flip()
 
