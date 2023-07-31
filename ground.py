@@ -74,7 +74,7 @@ class Ground:
                 totalDifference += max(0, oi[i - 1] - oi[i])
             if totalDifference > 5:
                 print(totalDifference)
-                print("Too Steep, shit ground!")
+                print("Too Steep, bad ground!")
                 return True
         return False
 
@@ -149,7 +149,6 @@ class Ground:
             vertices.append((self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE))
         # Append end vertices of screen
         vertices.append((self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY))
-        print(f"vertices: {vertices}")
 
         # Draw the hills
         # Fill the base ground until the first layer of ground
