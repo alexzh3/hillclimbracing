@@ -29,7 +29,32 @@ class Ground:
         self.max_distance = 0
         self.motor_state = 0
 
-        # Create body, fixture and shape for car
+        # vertices for car chassis
+        vertices = []
+        vertices.append(b2Vec2(-self.chassis_width / 2, 0 - self.chassis_height / 2))
+        vertices.append(b2Vec2(self.chassis_width / 4 + 5, 0 - self.chassis_height / 2))
+        vertices.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 + 5))
+        vertices.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
+        vertices.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
 
+        # Scale vertices
+        for vertex in vertices:
+            vertex.x /= main.SCALE
+            vertex.y /= main.SCALE
 
+        # Create body and fixture for car
+        car_body = b2BodyDef()
+        car_body.type = b2_dynamicBody
+        car_body.position.x = x / main.SCALE
+        car_body.position.y = y / main.SCALE
+        car_body.angle = 0
+        car_fixture = b2FixtureDef()
+        car_fixture.density = self.car_density
+        car_fixture.friction = 0.5
+        car_fixture.restitution = self.car_restitution
+        car_fixture.shape = b2PolygonShape()
+        # b2PolygonShape(vertices=[(0, 0), (1, 0), (0, 1)])
 
+        # Connect shape and body with fixture and vertex
+        car_fixture.shape.set_vertex(vertices)
+        self.shapes.append(vertices)
