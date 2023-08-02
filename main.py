@@ -7,14 +7,14 @@ except ImportError:
 import ground
 import pygame
 
-# collisionCategories i.e what it is
+# collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
 CHASSIS_CATEGORY = 0x0002
 GRASS_CATEGORY = 0x0004
 DIRT_CATEGORY = 0x0008
 PERSON_CATEGORY = 0x0010
 
-# collisionMasks i.e what it collides with
+# collisionMasks, which category it collides with
 WHEEL_MASK = GRASS_CATEGORY
 CHASSIS_MASK = DIRT_CATEGORY
 GRASS_MASK = WHEEL_CATEGORY | PERSON_CATEGORY

@@ -108,27 +108,26 @@ class Ground:
                 main.GRASS_MASK, main.GRASS_CATEGORY, True)
 
     def makeBody(self):
-        bodyDef = b2BodyDef()
-        bodyDef.type = b2_staticBody
-        bodyDef.position.x = 0  # canvas.width / 2 / SCALE
-        bodyDef.position.y = 0  # (canvas.height - 20) / SCALE
+        bodyDef = b2BodyDef(
+            type=b2_staticBody,
+            position=(0, 0)
+        )
         self.dirtBody = self.world.CreateBody(bodyDef)
         self.grassBody = self.world.CreateBody(bodyDef)
         self.dirtBody.userData = self
         self.grassBody.userData = self
 
     def addEdge(self, vec1, vec2, mask, category, isGrass):
-        fixDef = b2FixtureDef()
-        fixDef.friction = 0.99  # 0.95
-        fixDef.restitution = 0.1
-        fixDef.shape = b2EdgeShape()
+        fixDef = b2FixtureDef(
+            categoryBits=category,
+            maskBits=mask,
+            friction=0.99,
+            restitution=0.1,
+            shape=b2EdgeShape()
+        )
 
         # Use vertices instead of SetAsEdge
         fixDef.shape.vertices = [vec1, vec2]
-
-        # Use filter instead of filterData
-        fixDef.filter.categoryBits = category
-        fixDef.filter.maskBits = mask
 
         if isGrass:
             self.grassBody.CreateFixture(fixDef)

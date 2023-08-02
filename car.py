@@ -30,31 +30,78 @@ class Ground:
         self.motor_state = 0
 
         # vertices for car chassis
-        vertices = []
-        vertices.append(b2Vec2(-self.chassis_width / 2, 0 - self.chassis_height / 2))
-        vertices.append(b2Vec2(self.chassis_width / 4 + 5, 0 - self.chassis_height / 2))
-        vertices.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 + 5))
-        vertices.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
-        vertices.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
+        vectors = []
+        vectors.append(b2Vec2(-self.chassis_width / 2, 0 - self.chassis_height / 2))
+        vectors.append(b2Vec2(self.chassis_width / 4 + 5, 0 - self.chassis_height / 2))
+        vectors.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 + 5))
+        vectors.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
+        vectors.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
+        self.shapes.append(vectors)
 
         # Scale vertices
-        for vertex in vertices:
-            vertex.x /= main.SCALE
-            vertex.y /= main.SCALE
+        for vector in vectors:
+            vector.x /= main.SCALE
+            vector.y /= main.SCALE
 
-        # Create body and fixture for car
-        car_body = b2BodyDef()
-        car_body.type = b2_dynamicBody
-        car_body.position.x = x / main.SCALE
-        car_body.position.y = y / main.SCALE
-        car_body.angle = 0
-        car_fixture = b2FixtureDef()
-        car_fixture.density = self.car_density
-        car_fixture.friction = 0.5
-        car_fixture.restitution = self.car_restitution
-        car_fixture.shape = b2PolygonShape()
-        # b2PolygonShape(vertices=[(0, 0), (1, 0), (0, 1)])
+        # Create main body and fixture for car
+        car_body = b2BodyDef(
+            type=b2_dynamicBody,
+            position=(x / main.SCALE / y / main.SCALE),
+            angle=0
+        )
+        car_fixture = b2FixtureDef(
+            categoryBits=main.CHASSIS_CATEGORY,
+            maskBits=main.CHASSIS_MASK,
+            density=self.car_density,
+            friction=0.5,
+            restitution=self.car_restitution,
+            shape=b2PolygonShape(vertices=vectors)
+        )
 
-        # Connect shape and body with fixture and vertex
-        car_fixture.shape.set_vertex(vertices)
-        self.shapes.append(vertices)
+        # Create body in world and connect fixture to it
+        self.chassis_body = self.world.CreateBody(car_body)
+        self.chassis_body.CreateFixture(car_fixture)
+
+        # Create front part car
+        vectors2 = []
+        vectors2.append(b2Vec2(self.chassis_width / 4, 0 - self.chassis_height / 2))
+        vectors2.append(b2Vec2(self.chassis_width / 4 - 15, 0 - self.chassis_height / 2 - 20))
+        vectors2.append(b2Vec2(self.chassis_width / 4 - 5, 0 - self.chassis_height / 2 - 20))
+        vectors2.append(b2Vec2(self.chassis_width / 4 + 10, 0 - self.chassis_height / 2))
+        self.shapes.append(vectors2)
+
+        for vector in vectors2:
+            vector.x /= main.SCALE
+            vector.y /= main.SCALE
+
+        car_fixture2 = b2FixtureDef(
+            categoryBits=main.CHASSIS_CATEGORY,
+            maskBits=main.CHASSIS_MASK,
+            density=self.car_density,
+            friction=0.5,
+            restitution=self.car_restitution,
+            shape=b2PolygonShape(vertices=vectors2)
+        )
+        self.chassis_body.CreateFixture(car_fixture2)
+
+        # Create back part
+        vectors3 = []
+        vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 +5))
+        vectors3.append(b2Vec2(self.chassis_width / 2 + 5, 0 - self.chassis_height / 2 + 8))
+        vectors3.append(b2Vec2(self.chassis_width / 2 + 5, 0 - self.chassis_height / 2 - 5))
+        vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2))
+        self.shapes.append(vectors3)
+
+        for vector in vectors3:
+            vector.x /= main.SCALE
+            vector.y /= main.SCALE
+
+        car_fixture3 = b2FixtureDef(
+            categoryBits=main.CHASSIS_CATEGORY,
+            maskBits=main.CHASSIS_MASK,
+            density=self.car_density,
+            friction=0.1,
+            restitution=0.1,
+            shape=b2PolygonShape(vertices=vectors3)
+        )
+        self.chassis_body.CreateFixture(car_fixture3)
