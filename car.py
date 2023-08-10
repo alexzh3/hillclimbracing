@@ -4,14 +4,12 @@ try:
     from Box2D import *
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
-import numpy as np
 import pygame
 import main
-import random
-import noise
+import wheels
 
 
-class Ground:
+class Car:
     def __init__(self, x, y, world=None, player=None):
         self.world = world
         self.player = player
