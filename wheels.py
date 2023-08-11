@@ -36,3 +36,15 @@ class Wheel:
             pris_joint_def.Initialize(bodyA=self.rim_body, bodyB=chassis_body, anchor=self.body.position,
                                       axis=pygame.Vector2(0, -1))
             # Create distance joint between wheel and char
+            dist_joint_def = b2DistanceJointDef()
+            anchor_wheel = pygame.Vector2(x / main.SCALE, y / main.SCALE)
+            anchor_car = pygame.Vector2(x / main.SCALE, (y - r * 3) / main.SCALE)
+            dist_joint_def.Initialize(bodyA=self.rim_body, bodyB=chassis_body, anchorA=anchor_wheel, anchorB=anchor_car)
+            dist_joint_def.frequencyHz = 70
+            dist_joint_def.dampingRatio = 25
+            self.dist_joint = self.world.CreateJoint(dist_joint_def)
+
+        self.body.angularDamping(1.8)
+
+    def create_wheel_body(self):
+        wheel_body = b2BodyDef()
