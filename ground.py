@@ -134,7 +134,7 @@ class Ground:
         else:
             self.dirtBody.CreateFixture(fixDef)
 
-    def drawGround(self, screen):
+    def draw_ground(self, screen):
         # Light brown
         # ground_color = (102, 50, 20);
         # Brown

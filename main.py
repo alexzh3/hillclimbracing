@@ -28,20 +28,28 @@ SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
 DIFFICULTY = 50  # Difficulty of terrain, max 100
+panX = 0
 panY = 0
 GRAVITY = 10
+WHEEL_SIZE = 17
 
 # Game variables
 NUMBER_OF_WORLDS = 50
 grounds = []
 worlds = []
 
+# Load in pictures and scale
+wheel_sprite = pygame.image.load("pictures/wheel.png")
+wheel_sprite = pygame.transform.scale(
+    wheel_sprite, (WHEEL_SIZE * 2, WHEEL_SIZE * 2)
+)  # Scale wheel sprite
+
 # Contact listeners
 ...
 # Initialize Pygame
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Hill climb')
+pygame.display.set_caption("Hill climb")
 clock = pygame.time.Clock()
 
 
@@ -68,7 +76,6 @@ def initWorld():
     tempGround.setBodies(otherWorld)
 
 
-
 def draw():
     # Clear the screen
     screen.fill((255, 255, 255))
@@ -76,7 +83,7 @@ def draw():
     screen.fill((135, 206, 235))
     # Draw the ground to screen
     print(len(grounds))
-    grounds[0].drawGround(screen)
+    grounds[0].draw_ground(screen)
     # Update the screen
     pygame.display.flip()
 
