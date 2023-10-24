@@ -84,12 +84,10 @@ class Car:
 
         # Create back part
         vectors3 = []
-        vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 +5))
+        vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 + 5))
         vectors3.append(b2Vec2(self.chassis_width / 2 + 5, 0 - self.chassis_height / 2 + 8))
         vectors3.append(b2Vec2(self.chassis_width / 2 + 5, 0 - self.chassis_height / 2 - 5))
         vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2))
-        self.shapes.append(vectors3)
-
         for vector in vectors3:
             vector.x /= main.SCALE
             vector.y /= main.SCALE
@@ -103,3 +101,19 @@ class Car:
             shape=b2PolygonShape(vertices=vectors3)
         )
         self.chassis_body.CreateFixture(car_fixture3)
+        self.shapes.append(vectors3)
+
+        # Creating the wheels of the car
+        # First the left wheel
+        self.wheels.append(
+            wheels.Wheel(x - self.chassis_width / 2 + self.wheel_size * 1.2, y + self.chassis_height / 2 +
+            self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
+        )
+        # The right wheel
+        self.wheels.append(
+            wheels.Wheel(x + self.chassis_width / 2 - self.wheel_size * 1.2, y + self.chassis_height / 2 +
+            self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
+        )
+        # Create the person/character
+        
+

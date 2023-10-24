@@ -62,6 +62,7 @@ def initWorld():
         groundTemplate = ground.Ground()
         groundTemplate.randomizeGround()
 
+
     for i in range(0, NUMBER_OF_WORLDS):
         tempWorld = b2World(b2Vec2(0, GRAVITY), True)
         tempGround = ground.Ground(tempWorld)
