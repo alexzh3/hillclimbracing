@@ -97,6 +97,6 @@ class Wheel:
         main.wheel_sprite = pygame.transform.rotate(main.wheel_sprite, self.body.angle)
         # Update the wheel on screen position
         screen.blit(
-            soruce=main.wheel_sprite,
+            source=main.wheel_sprite,
             dest=(-self.radius + pos_x - main.panX, -self.radius + pos_y - main.panY),
         )

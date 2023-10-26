@@ -32,6 +32,7 @@ panX = 0
 panY = 0
 GRAVITY = 10
 WHEEL_SIZE = 17
+PERSON_WIDTH = 15
 
 # Game variables
 NUMBER_OF_WORLDS = 50
@@ -39,10 +40,16 @@ grounds = []
 worlds = []
 
 # Load in pictures and scale
+# Wheel sprite
 wheel_sprite = pygame.image.load("pictures/wheel.png")
 wheel_sprite = pygame.transform.scale(
     wheel_sprite, (WHEEL_SIZE * 2, WHEEL_SIZE * 2)
-)  # Scale wheel sprite
+)
+# Head sprite
+head_sprite = pygame.image.load("pictures/head.png")
+head_sprite = pygame.transform.scale(
+    head_sprite, (PERSON_WIDTH * 3, PERSON_WIDTH * 3)
+)
 
 # Contact listeners
 ...
