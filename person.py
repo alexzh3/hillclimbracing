@@ -71,22 +71,75 @@ class Head:
             shape=b2CircleShape(self.radius / main.SCALE)
         )
         self.body = self.world.CreateBody(body_def)
-        self.body.SetUserData = self
+        self.body.userData = self
         self.body.CreateFixture(fix_def)
 
     # Function that draws the head
     def draw_head(self, screen):
-        # x = self.body.GetPosition().x * main.SCALE
-        # y = self.body.GetPosition().y * main.SCALE
+        x = self.body.GetPosition().x * main.SCALE
+        y = self.body.GetPosition().y * main.SCALE
         # Get angle and rotate head
         angle = self.body.GetAngle()
         main.head_sprite = pygame.transform.rotate(main.head_sprite, angle)
         # Update the head on screen position
         screen.blit(
             source=main.head_sprite,
-            dest=(-self.radius - 8, -self.radius - 15)
+            dest=(x + -self.radius - 8, y + -self.radius - 15)
         )
 
 
 class Torso:
-    ...
+    def __init__(self, center_x, center_y, height, width, world):
+        self.id = "torso"
+        self.world = world
+        self.width = width
+        self.height = height
+        self.starting_position = pygame.Vector2(center_x, center_y)
+        self.body = None
+        self.colour = pygame.Color(0, 0, 0)
+        self.make_torso_body()
+
+    # Function that creates the torso body of the person
+    def make_torso_body(self):
+        body_def = b2BodyDef()
+        body_def.type = b2_dynamicBody
+        body_def.position.x = self.starting_position.x / main.SCALE
+        body_def.position.y = self.starting_position.y / main.SCALE
+        body_def.angle = 0
+
+        fix_def = b2FixtureDef(
+            categoryBits=main.PERSON_CATEGORY,
+            maskBits=main.PERSON_MASK,
+            density=0.002,
+            friction=0.01,
+            restitution=0.01,
+            shape=b2PolygonShape()
+        )
+        fix_def.shape.SetAsBox(self.width / 2 / main.SCALE, self.height / main.SCALE)
+
+        self.body = self.world.CreateBody(body_def)
+        self.body.userData = self
+        self.body.CreateFixture(fix_def)
+
+    # Function that draws the torso to the screen
+    def draw_torso(self, screen):
+        x = self.body.GetPosition().x * main.SCALE
+        y = self.body.GetPosition().y * main.SCALE
+        angle = self.body.GetAngle()
+
+        # # Create a surface to draw the rectangle on
+        # rect_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        #
+        # # Draw the rectangle on the surface
+        # pygame.draw.rect(rect_surface, self.colour, (0, 0, self.width, self.height))
+        #
+        # # Rotate the surface
+        # rotated_surface = pygame.transform.rotate(rect_surface, angle)
+        #
+        # # Calculate the new position for the rotated rectangle
+        # new_x = x - rotated_surface.get_width() / 2
+        # new_y = y - rotated_surface.get_height() / 2
+        #
+        # # Draw the rotated rectangle on the screen
+        # screen.blit(rotated_surface, (new_x, new_y))
+        # TBD hoe translate en een rectangle rotaten met pygame. (ook head moet aangepast worden)
