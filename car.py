@@ -1,3 +1,5 @@
+import random
+
 from gym.error import DependencyNotInstalled
 
 try:
@@ -7,6 +9,7 @@ except ImportError:
 import pygame
 import main
 import wheels
+import person
 
 
 class Car:
@@ -26,6 +29,7 @@ class Car:
         self.car_restitution = 0.01
         self.max_distance = 0
         self.motor_state = 0
+        self.rotation_torque = 2
 
         # vertices for car chassis
         vectors = []
@@ -107,13 +111,36 @@ class Car:
         # First the left wheel
         self.wheels.append(
             wheels.Wheel(x - self.chassis_width / 2 + self.wheel_size * 1.2, y + self.chassis_height / 2 +
-            self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
+                         self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
         )
         # The right wheel
         self.wheels.append(
             wheels.Wheel(x + self.chassis_width / 2 - self.wheel_size * 1.2, y + self.chassis_height / 2 +
-            self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
+                         self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
         )
-        # Create the person/character
         
+        # Create the person/character
+        self.person = person.Person(x=x, y=y, person_width=15, person_height=30, world=self.world)
+        # self.person.torso.color = pygame.Color(r=random.randint(0, 255), g=random.randint(0, 255),
+        #                                        b=random.randint(0, 255))
 
+        # Create revolute joint to connect the torso body to the chassis car body
+        rev_joint_def = b2RevoluteJointDef()
+        joint_pos = [x / main.SCALE, y / main.SCALE]
+        rev_joint_def.Initialize(bodyA=self.person.torso.body, bodyB=self.chassis_body, anchor=joint_pos)
+        self.rev_joint_torso_chassis = self.world.CreateJoint(rev_joint_def)
+
+        # Create distance joint to connect person's torso and car's chassis
+        dist_joint_def = b2DistanceJointDef()
+        anchor_person = [x / main.SCALE, (y - self.person.height * 2 / 3) / main.SCALE]
+        anchor_car = [(x + self.chassis_width / 2) / main.SCALE, (y - self.chassis_height / 2) / main.SCALE]
+        dist_joint_def.Initialize(bodyA=self.person.torso.body, bodyB=self.chassis_body, anchorA=anchor_person,
+                                  anchorB=anchor_car)
+        dist_joint_def.frequencyHz = 5
+        dist_joint_def.dampingRatio = 0.1
+        dist_joint_def.length *= 1.1
+        self.dist_joint_torso_chassis = self.world.CreateJoint(dist_joint_def)
+
+        # Set chassis_body variables
+        self.chassis_body.angularDamping = 0.1
+        self.chassis_body.userData = self
