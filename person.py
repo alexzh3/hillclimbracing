@@ -84,7 +84,7 @@ class Head:
         # Update the head on screen position
         screen.blit(
             source=main.head_sprite,
-            dest=(x + -self.radius - 8, y + -self.radius - 15)
+            dest=(x - main.panX - self.radius - 8, y - main.panY - self.radius - 15)
         )
 
 
@@ -127,19 +127,14 @@ class Torso:
         y = self.body.GetPosition().y * main.SCALE
         angle = self.body.GetAngle()
 
-        # # Create a surface to draw the rectangle on
-        # rect_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        #
-        # # Draw the rectangle on the surface
-        # pygame.draw.rect(rect_surface, self.colour, (0, 0, self.width, self.height))
-        #
-        # # Rotate the surface
-        # rotated_surface = pygame.transform.rotate(rect_surface, angle)
-        #
-        # # Calculate the new position for the rotated rectangle
-        # new_x = x - rotated_surface.get_width() / 2
-        # new_y = y - rotated_surface.get_height() / 2
-        #
-        # # Draw the rotated rectangle on the screen
-        # screen.blit(rotated_surface, (new_x, new_y))
-        # TBD hoe translate en een rectangle rotaten met pygame. (ook head moet aangepast worden)
+        # Create a surface to draw the rectangle on
+        rect_surface = pygame.Surface((self.width, self.height))
+
+        # Draw the rectangle on the surface
+        pygame.draw.rect(rect_surface, self.colour, (0, 0, self.width, self.height))
+
+        # Rotate the surface
+        rotated_surface = pygame.transform.rotate(rect_surface, angle)
+
+        # Draw the rotated rectangle on the screen
+        screen.blit(source=rotated_surface, dest=(x - main.panX, y - main.panY))
