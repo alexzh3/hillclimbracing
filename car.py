@@ -118,11 +118,9 @@ class Car:
             wheels.Wheel(x + self.chassis_width / 2 - self.wheel_size * 1.2, y + self.chassis_height / 2 +
                          self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
         )
-        
+
         # Create the person/character
         self.person = person.Person(x=x, y=y, person_width=15, person_height=30, world=self.world)
-        # self.person.torso.color = pygame.Color(r=random.randint(0, 255), g=random.randint(0, 255),
-        #                                        b=random.randint(0, 255))
 
         # Create revolute joint to connect the torso body to the chassis car body
         rev_joint_def = b2RevoluteJointDef()
@@ -144,3 +142,31 @@ class Car:
         # Set chassis_body variables
         self.chassis_body.angularDamping = 0.1
         self.chassis_body.userData = self
+
+    # Function to set random colour of shirt
+    def set_shirt_colour(self):
+        self.person.torso.color = pygame.Color(r=random.randint(0, 255), g=random.randint(0, 255),
+                                               b=random.randint(0, 255))
+
+    def draw_car(self, screen, head_sprite, wheel_sprite, car_sprite):
+
+        # Get position and angle of the car chassis
+        x = self.chassis_body.GetPosition().x * main.SCALE
+        y = self.chassis_body.GetPosition().y * main.SCALE
+        angle = self.chassis_body.GetPosition().GetAngle()
+
+        # Draw person on screen
+        self.person.draw_person(screen, head_sprite)
+
+        # Draw wheels on screen
+        for wheel in self.wheels:
+            wheel.draw_wheel(screen, wheel_sprite)
+
+
+
+
+
+
+
+
+

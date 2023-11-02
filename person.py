@@ -9,9 +9,8 @@ import main
 
 
 class Person:
-    def __init__(self, x, y, person_width, person_height, screen=None, world=None):
+    def __init__(self, x, y, person_width, person_height, world=None):
         self.world = world
-        self.screen = screen
         self.x = x
         self.y = y
         self.height = person_height
@@ -38,9 +37,9 @@ class Person:
         self.dist_joint = self.world.CreateJoint(dist_joint_def)
 
     # Function to render/draw the head and torso
-    def draw_person(self):
-        self.head.draw_head(self.screen)
-        self.torso.draw_torso(self.screen)
+    def draw_person(self, screen, head_sprite):
+        self.head.draw_head(screen, head_sprite)
+        self.torso.draw_torso(screen)
 
 
 class Head:
@@ -75,15 +74,15 @@ class Head:
         self.body.CreateFixture(fix_def)
 
     # Function that draws the head
-    def draw_head(self, screen):
+    def draw_head(self, screen, head_sprite):
         x = self.body.GetPosition().x * main.SCALE
         y = self.body.GetPosition().y * main.SCALE
         # Get angle and rotate head
         angle = self.body.GetAngle()
-        main.head_sprite = pygame.transform.rotate(main.head_sprite, angle)
+        head_sprite = pygame.transform.rotate(head_sprite, angle)
         # Update the head on screen position
         screen.blit(
-            source=main.head_sprite,
+            source=head_sprite,
             dest=(x - main.panX - self.radius - 8, y - main.panY - self.radius - 15)
         )
 
