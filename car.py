@@ -148,12 +148,21 @@ class Car:
         self.person.torso.color = pygame.Color(r=random.randint(0, 255), g=random.randint(0, 255),
                                                b=random.randint(0, 255))
 
-    def draw_car(self, screen, head_sprite, wheel_sprite, car_sprite):
+    # Function that draws/renders the person, wheels and the car on the screen
+    def draw_person_car(self, screen, head_sprite, wheel_sprite, car_sprite):
 
         # Get position and angle of the car chassis
         x = self.chassis_body.GetPosition().x * main.SCALE
         y = self.chassis_body.GetPosition().y * main.SCALE
         angle = self.chassis_body.GetPosition().GetAngle()
+
+        # Draw the char chassis
+        car_sprite = pygame.transform.rotate(car_sprite, angle)
+        screen.blit(
+            source=car_sprite,
+            dest=(-self.chassis_width / 2 - 7 - main.panX, self.chassis_height - 20 - main.panY,
+                  self.chassis_width + 23, self.chassis_height * 2 + 10),
+        )
 
         # Draw person on screen
         self.person.draw_person(screen, head_sprite)
@@ -162,11 +171,6 @@ class Car:
         for wheel in self.wheels:
             wheel.draw_wheel(screen, wheel_sprite)
 
-
-
-
-
-
-
-
-
+    # A function that updates the car's current position
+    def update_car_position(self):
+        ...
