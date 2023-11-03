@@ -161,7 +161,7 @@ class Car:
         screen.blit(
             source=car_sprite,
             dest=(-self.chassis_width / 2 - 7 - main.panX, self.chassis_height - 20 - main.panY,
-                  self.chassis_width + 23, self.chassis_height * 2 + 10),
+                  self.chassis_width + 23, self.chassis_height * 2 + 10)
         )
 
         # Draw person on screen
