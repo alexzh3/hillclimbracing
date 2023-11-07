@@ -26,6 +26,7 @@ class Car:
         self.max_distance = 0
         self.motor_state = 0
         self.rotation_torque = 2
+        self.motor_speed = 13
 
         # vertices for car chassis
         vectors = []
@@ -186,8 +187,34 @@ class Car:
             self.dead = True
             self.player.dead = True
 
-    def motor_on(self):
-        ...
+    # Function that turns on the motor on wheels and moves forward
+    def motor_on(self, forward):
+        self.wheels[0].joint.EnableMotor(True)
+        self.wheels[1].joint.EnableMotor(True)
+        old_state = self.motor_state
+        if forward:  # When we move forward / give gas
+            self.motor_state = 1
+            self.wheels[0].joint.SetMotorSpeed(-self.motor_speed * math.pi)
+            self.wheels[1].joint.SetMotorSpeed(-self.motor_speed * math.pi)
+            self.chassis_body.ApplyTorque(-self.rotation_torque)
+        else:   # When not giving gas we slow down
+            self.motor_state = -1
+            self.wheels[0].joint.SetMotorSpeed(self.motor_speed * math.pi)
+            self.wheels[1].joint.SetMotorSpeed(self.motor_speed * math.pi)
+        # Rotation applied to the car when we stop giving gas
+        if old_state + self.motor_state == 0:
+            if old_state == 1:
+                self.chassis_body.ApplyTorque(self.motor_state * -1 * self.rotation_torque)
 
+        # Set maximum motor torque on wheels
+        self.wheels[0].joint.SetMaxMotorTorque(700)
+        self.wheels[1].joint.SetMaxMotorTorque(350)
+
+    # When we brake, we turned the motor off, that will also apply torque
     def motor_off(self):
-        ...
+        if self.motor_state == 1:
+            self.chassis_body.ApplyTorque(self.motor_state * self.rotation_torque)
+        self.motor_state = 0
+        self.wheels[0].joint.EnableMotor(False)
+        self.wheels[1].joint.EnableMotor(False)
+
