@@ -38,6 +38,7 @@ PERSON_WIDTH = 15
 NUMBER_OF_WORLDS = 50
 grounds = []
 worlds = []
+HUMAN_PLAYING = False
 
 # Load in pictures and scale
 # Wheel sprite

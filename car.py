@@ -1,15 +1,11 @@
-import random
-
+import random, math, pygame
+import main, wheels, person
 from gym.error import DependencyNotInstalled
 
 try:
     from Box2D import *
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
-import pygame
-import main
-import wheels
-import person
 
 
 class Car:
@@ -171,6 +167,27 @@ class Car:
         for wheel in self.wheels:
             wheel.draw_wheel(screen, wheel_sprite)
 
-    # A function that updates the car's current position
-    def update_car_position(self):
+    # A function that updates whether the player status is alive or death
+    def update_status(self):
+        x = self.chassis_body.GetPosition().x * main.SCALE
+        y = self.chassis_body.GetPosition().y * main.SCALE
+        self.change_counter += 1
+        # Check whether we are moving forward with the car
+        if x > self.max_distance:
+            self.max_distance = x
+            if math.floor(self.max_distance) % 50 == 0:
+                self.change_counter = 0
+        else:  # When no significant distance has been made we set player status to dead
+            if self.change_counter > 250:
+                if not main.HUMAN_PLAYING:
+                    self.player.dead = True
+        # When player is out of the screen height, we set status to dead
+        if not self.dead and y > main.SCREEN_HEIGHT:
+            self.dead = True
+            self.player.dead = True
+
+    def motor_on(self):
+        ...
+
+    def motor_off(self):
         ...
