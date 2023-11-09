@@ -40,6 +40,7 @@ grounds = []
 worlds = []
 HUMAN_PLAYING = False
 SHOWING_GROUND = False
+RESET_WORLD = False
 
 # Load in pictures
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -53,7 +54,21 @@ class Contact_listener(b2ContactListener):
         b2ContactListener.__init__(self)
 
     def BeginContact(self, contact):
-        pass
+        world = contact.fixtureA.body.world
+        # If the head hits the ground, destroy the car and set the agent to dead
+        if contact.fixtureA.body.userData.id == "head":
+            if contact.fixtureB.body.userData.id == "ground":
+                if not contact.fixtureA.body.joints:  # If there is no joints to be found, we quit.
+                    return
+                # Gets the joint list from the torso of the person using the head
+                joint_list_torso = contact.fixtureA.body.joints.other
+                car = joint_list_torso.joints.other.userData  # Get the car object using the torso joint list
+
+                world.DestroyJoint(car.dist_joint_torso_chassis)
+                world.DestroyJoint(car.person.dist_joint_head_torso)
+                world.DestroyJoint(car.rev_joint_torso_chassis)
+                world.DestroyJoint(car.person.rev_joint_head_torso)
+                car.agent.shadow_dead = True
 
     def EndContact(self, contact):
         pass

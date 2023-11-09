@@ -11,7 +11,7 @@ except ImportError:
 class Agent:
     def __init__(self, real_world, spawning_y):
         self.dead = False
-        self.shadow_dead = False  # When agent has died but the dead count hasn't been upped yet
+        self.shadow_dead = False  # When agent has died but the dead count hasn't been increased yet
         self.score = 0
         self.world = real_world
         self.last_grounded = 0

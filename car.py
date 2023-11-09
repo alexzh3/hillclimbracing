@@ -9,9 +9,9 @@ except ImportError:
 
 
 class Car:
-    def __init__(self, x, y, world=None, player=None):
+    def __init__(self, x, y, world=None, agent=None):
         self.world = world
-        self.player = player
+        self.agent = agent
         self.wheels = []
         self.starting_position = pygame.Vector2(x, y)
         self.chassis_body = None
@@ -149,9 +149,9 @@ class Car:
     def draw_person_car(self):
 
         # Get position and angle of the car chassis
-        x = self.chassis_body.GetPosition().x * main.SCALE
-        y = self.chassis_body.GetPosition().y * main.SCALE
-        angle = self.chassis_body.GetPosition().GetAngle()
+        x = self.chassis_body.position.x * main.SCALE
+        y = self.chassis_body.position.y * main.SCALE
+        angle = self.chassis_body.angle
 
         # Scale the car sprite
         main.car_sprite = pygame.transform.scale(
@@ -169,26 +169,26 @@ class Car:
 
         # Draw wheels on screen
         for wheel in self.wheels:
-            wheel.draw_wheel(main.screen, main.wheel_sprite)
+            wheel.draw_wheel()
 
-    # A function that updates whether the player status is alive or death
+    # A function that updates whether the agent status is alive or death
     def update_status(self):
-        x = self.chassis_body.GetPosition().x * main.SCALE
-        y = self.chassis_body.GetPosition().y * main.SCALE
+        x = self.chassis_body.position.x * main.SCALE
+        y = self.chassis_body.position.y * main.SCALE
         self.change_counter += 1
         # Check whether we are moving forward with the car
         if x > self.max_distance:
             self.max_distance = x
             if math.floor(self.max_distance) % 50 == 0:
                 self.change_counter = 0
-        else:  # When no significant distance has been made we set player status to dead
+        else:  # When no significant distance has been made we set agent status to dead
             if self.change_counter > 250:
                 if not main.HUMAN_PLAYING:
-                    self.player.dead = True
-        # When player is out of the screen height, we set status to dead
+                    self.agent.dead = True
+        # When agent is out of the screen height, we set status to dead
         if not self.dead and y > main.SCREEN_HEIGHT:
             self.dead = True
-            self.player.dead = True
+            self.agent.dead = True
 
     # Function that turns on the motor on wheels and moves forward
     def motor_on(self, forward):

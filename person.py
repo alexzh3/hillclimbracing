@@ -22,7 +22,7 @@ class Person:
         rev_joint_def = b2RevoluteJointDef()
         joint_angle = [x / main.SCALE, (y - person_height) / main.SCALE]
         rev_joint_def.Initialize(bodyA=self.head.body, bodyB=self.torso.body, anchor=joint_angle)
-        self.head_joint = self.world.CreateJoint(rev_joint_def)
+        self.rev_joint_head_torso = self.world.CreateJoint(rev_joint_def)
 
         # Create distance joint for head and torso
         dist_joint_def = b2DistanceJointDef()
@@ -34,7 +34,7 @@ class Person:
             anchorA=anchor_head,
             anchorB=anchor_torso
         )
-        self.dist_joint = self.world.CreateJoint(dist_joint_def)
+        self.dist_joint_head_torso = self.world.CreateJoint(dist_joint_def)
 
     # Function to render/draw the head and torso
     def draw_person(self, screen, head_sprite):
@@ -75,14 +75,14 @@ class Head:
 
     # Function that draws the head
     def draw_head(self):
-        x = self.body.GetPosition().x * main.SCALE
-        y = self.body.GetPosition().y * main.SCALE
+        x = self.body.position.x * main.SCALE
+        y = self.body.position.y * main.SCALE
         # Scale head sprite
         main.head_sprite = pygame.transform.scale(
             main.head_sprite, (main.PERSON_WIDTH * 3, main.PERSON_WIDTH * 3)
         )
         # Get angle and rotate head
-        angle = self.body.GetAngle()
+        angle = self.body.angle
         main.head_sprite = pygame.transform.rotate(main.head_sprite, angle)
         # Update the head on screen position
         main.screen.blit(
@@ -126,9 +126,9 @@ class Torso:
 
     # Function that draws the torso to the screen
     def draw_torso(self, screen):
-        x = self.body.GetPosition().x * main.SCALE
-        y = self.body.GetPosition().y * main.SCALE
-        angle = self.body.GetAngle()
+        x = self.body.position.x * main.SCALE
+        y = self.body.position.y * main.SCALE
+        angle = self.body.angle
 
         # Create a surface to draw the rectangle on
         rect_surface = pygame.Surface((self.width, self.height))
