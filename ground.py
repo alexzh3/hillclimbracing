@@ -12,7 +12,7 @@ import noise
 
 
 class Ground:
-    def __init__(self, world=None):
+    def __init__(self, world: b2World = None):
         self.world = world
         self.ground_vectors = []
         self.dirtBody = None
@@ -80,7 +80,7 @@ class Ground:
 
     # returns a list of Y positions directly after the input x.
     # the list contains numberOfPositions Y values which represent the upcoming hills
-    def getPositions(self, x, numberOfPositions, skip):
+    def getPositions(self, x, numberOfPositions: int, skip: int):
         returnList = []
         for i in range(len(self.ground_vectors)):
             if self.ground_vectors[i].x >= x:
@@ -91,6 +91,7 @@ class Ground:
             returnList.append(returnList[-1])  # append last element to list again
         return returnList
 
+    # Clone vector values from the otherGround world to current object
     def cloneFrom(self, otherGround):
         for v in otherGround.ground_vectors:
             self.ground_vectors.append(pygame.Vector2(v.x, v.y))
@@ -134,7 +135,7 @@ class Ground:
         else:
             self.dirtBody.CreateFixture(fixDef)
 
-    def draw_ground(self, screen):
+    def draw_ground(self):
         # Light brown
         # ground_color = (102, 50, 20);
         # Brown
@@ -151,30 +152,30 @@ class Ground:
 
         # Draw the hills
         # Fill the base ground until the first layer of ground
-        pygame.draw.polygon(screen, ground_color, vertices)
-        pygame.draw.polygon(screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the base grass
+        pygame.draw.polygon(main.screen, ground_color, vertices)
+        pygame.draw.polygon(main.screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the base grass
 
         # Draw the transition colours from ground to grass (down to up)
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(screen, (66, 60, 0),
+            pygame.draw.line(main.screen, (66, 60, 0),
                              (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE + 9),
                              (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE + 9),
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(screen, (44, 90, 0),
+            pygame.draw.line(main.screen, (44, 90, 0),
                              (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE + 6),
                              (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE + 6),
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(screen, (0, 140, 0),
+            pygame.draw.line(main.screen, (0, 140, 0),
                              (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE - 5),
                              (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE - 5),
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(screen, (0, 130, 0),
+            pygame.draw.line(main.screen, (0, 130, 0),
                              (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE - 3),
                              (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE - 3),
                              3)

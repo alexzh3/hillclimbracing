@@ -146,27 +146,30 @@ class Car:
                                                b=random.randint(0, 255))
 
     # Function that draws/renders the person, wheels and the car on the screen
-    def draw_person_car(self, screen, head_sprite, wheel_sprite, car_sprite):
+    def draw_person_car(self):
 
         # Get position and angle of the car chassis
         x = self.chassis_body.GetPosition().x * main.SCALE
         y = self.chassis_body.GetPosition().y * main.SCALE
         angle = self.chassis_body.GetPosition().GetAngle()
 
+        # Scale the car sprite
+        main.car_sprite = pygame.transform.scale(
+            main.car_sprite, (self.chassis_width + 23, self.chassis_height * 2 + 10)
+        )
         # Draw the char chassis
-        car_sprite = pygame.transform.rotate(car_sprite, angle)
-        screen.blit(
-            source=car_sprite,
-            dest=(-self.chassis_width / 2 - 7 - main.panX, self.chassis_height - 20 - main.panY,
-                  self.chassis_width + 23, self.chassis_height * 2 + 10)
+        main.car_sprite = pygame.transform.rotate(main.car_sprite, angle)
+        main.screen.blit(
+            source=main.car_sprite,
+            dest=(-self.chassis_width / 2 - 7 - main.panX, self.chassis_height - 20 - main.panY)
         )
 
         # Draw person on screen
-        self.person.draw_person(screen, head_sprite)
+        self.person.draw_person(main.screen, main.head_sprite)
 
         # Draw wheels on screen
         for wheel in self.wheels:
-            wheel.draw_wheel(screen, wheel_sprite)
+            wheel.draw_wheel(main.screen, main.wheel_sprite)
 
     # A function that updates whether the player status is alive or death
     def update_status(self):

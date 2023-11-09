@@ -74,15 +74,19 @@ class Head:
         self.body.CreateFixture(fix_def)
 
     # Function that draws the head
-    def draw_head(self, screen, head_sprite):
+    def draw_head(self):
         x = self.body.GetPosition().x * main.SCALE
         y = self.body.GetPosition().y * main.SCALE
+        # Scale head sprite
+        main.head_sprite = pygame.transform.scale(
+            main.head_sprite, (main.PERSON_WIDTH * 3, main.PERSON_WIDTH * 3)
+        )
         # Get angle and rotate head
         angle = self.body.GetAngle()
-        head_sprite = pygame.transform.rotate(head_sprite, angle)
+        main.head_sprite = pygame.transform.rotate(main.head_sprite, angle)
         # Update the head on screen position
-        screen.blit(
-            source=head_sprite,
+        main.screen.blit(
+            source=main.head_sprite,
             dest=(x - main.panX - self.radius - 8, y - main.panY - self.radius - 15)
         )
 

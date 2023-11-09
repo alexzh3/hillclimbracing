@@ -35,25 +35,36 @@ WHEEL_SIZE = 17
 PERSON_WIDTH = 15
 
 # Game variables
-NUMBER_OF_WORLDS = 50
+NUMBER_OF_WORLDS = 100
 grounds = []
 worlds = []
 HUMAN_PLAYING = False
+SHOWING_GROUND = False
 
-# Load in pictures and scale
-# Wheel sprite
+# Load in pictures
 wheel_sprite = pygame.image.load("pictures/wheel.png")
-wheel_sprite = pygame.transform.scale(
-    wheel_sprite, (WHEEL_SIZE * 2, WHEEL_SIZE * 2)
-)
-# Head sprite
 head_sprite = pygame.image.load("pictures/head.png")
-head_sprite = pygame.transform.scale(
-    head_sprite, (PERSON_WIDTH * 3, PERSON_WIDTH * 3)
-)
+car_sprite = pygame.image.load("pictures/car.png")
 
-# Contact listeners
-...
+
+# Contact listener for head and ground
+class Contact_listener(b2ContactListener):
+    def __init__(self):
+        b2ContactListener.__init__(self)
+
+    def BeginContact(self, contact):
+        pass
+
+    def EndContact(self, contact):
+        pass
+
+    def PreSolve(self, contact, oldManifold):
+        pass
+
+    def PostSolve(self, contact, impulse):
+        pass
+
+
 # Initialize Pygame
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -69,7 +80,7 @@ def initWorld():
     while groundTemplate.groundTooSteep():
         groundTemplate = ground.Ground()
         groundTemplate.randomizeGround()
-
+    # Generate a set number of world with the same ground
     for i in range(0, NUMBER_OF_WORLDS):
         tempWorld = b2World(b2Vec2(0, GRAVITY), True)
         tempGround = ground.Ground(tempWorld)
@@ -82,30 +93,33 @@ def initWorld():
     tempGround = ground.Ground(otherWorld)
     tempGround.cloneFrom(groundTemplate)
     tempGround.setBodies(otherWorld)
+    return tempGround
 
 
-def draw():
+def draw(render_ground):
     # Clear the screen
     screen.fill((255, 255, 255))
     # Fill screen with sky colour
     screen.fill((135, 206, 235))
     # Draw the ground to screen
     print(len(grounds))
-    grounds[0].draw_ground(screen)
+    render_ground.draw_ground()
     # Update the screen
     pygame.display.flip()
 
 
 if __name__ == "__main__":
     # Initialize world
-    initWorld()
+    temp_ground = initWorld()
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         # Call the draw function
-        draw()
+        if not SHOWING_GROUND:
+            draw(temp_ground)
+            SHOWING_GROUND = True
         # Limit frames per second
         clock.tick(FPS)
     # Quit the game
