@@ -55,20 +55,35 @@ class Contact_listener(b2ContactListener):
 
     def BeginContact(self, contact):
         world = contact.fixtureA.body.world
-        # If the head hits the ground, destroy the car and set the agent to dead
-        if contact.fixtureA.body.userData.id == "head":
-            if contact.fixtureB.body.userData.id == "ground":
-                if not contact.fixtureA.body.joints:  # If there is no joints to be found, we quit.
-                    return
-                # Gets the joint list from the torso of the person using the head
-                joint_list_torso = contact.fixtureA.body.joints.other
-                car = joint_list_torso.joints.other.userData  # Get the car object using the torso joint list
+        # Fixture variables
+        head_fixture = None
+        ground_fixture = None
 
-                world.DestroyJoint(car.dist_joint_torso_chassis)
-                world.DestroyJoint(car.person.dist_joint_head_torso)
-                world.DestroyJoint(car.rev_joint_torso_chassis)
-                world.DestroyJoint(car.person.rev_joint_head_torso)
-                car.agent.shadow_dead = True
+        # If we contact the head with the ground or vice versa we destroy the car.
+        if contact.fixtureA.body.userData.id == "head" and contact.fixtureB.body.userData.id == "ground":
+            head_fixture = contact.fixtureA
+            ground_fixture = contact.fixtureB
+        elif contact.fixtureB.body.userData.id == "head" and contact.fixtureA.body.userData.id == "ground":
+            head_fixture = contact.fixtureB
+            ground_fixture = contact.fixtureA
+        else:
+            return
+
+        if head_fixture and ground_fixture and head_fixture.body.joints:
+            joint_list_torso = head_fixture.body.joints.other
+            car = joint_list_torso.joints.other.userData
+            world.DestroyJoint(car.dist_joint_torso_chassis)
+            world.DestroyJoint(car.person.dist_joint_head_torso)
+            world.DestroyJoint(car.rev_joint_torso_chassis)
+            world.DestroyJoint(car.person.rev_joint_head_torso)
+            car.agent.shadow_dead = True
+
+        # Check if we contact the wheel with the ground or vice versa.
+        if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData == "ground":
+            contact.fixtureA.body.userData.on_ground = True
+        elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData == "ground":
+            contact.fixtureB.body.userData.on_ground = True
+
 
     def EndContact(self, contact):
         pass
