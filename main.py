@@ -84,9 +84,12 @@ class Contact_listener(b2ContactListener):
         elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData == "ground":
             contact.fixtureB.body.userData.on_ground = True
 
-
     def EndContact(self, contact):
-        pass
+        # End of contact, we need to set the on_ground variable on false
+        if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData.id == "ground":
+            contact.fixtureA.body.userData.on_ground = False
+        elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData.id == "ground":
+            contact.fixtureA.body.userData.on_ground = False
 
     def PreSolve(self, contact, oldManifold):
         pass
