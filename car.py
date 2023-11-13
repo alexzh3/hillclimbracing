@@ -179,9 +179,9 @@ class Car:
         # Check whether we are moving forward with the car
         if x > self.max_distance:
             self.max_distance = x
-            if math.floor(self.max_distance) % 50 == 0:
+            if math.floor(self.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
                 self.change_counter = 0
-        else:  # When no significant distance has been made we set agent status to dead
+        else:  # When no significant distance has been made for a long time we set agent status to dead
             if self.change_counter > 250:
                 if not main.HUMAN_PLAYING:
                     self.agent.dead = True
@@ -200,7 +200,7 @@ class Car:
             self.wheels[0].joint.SetMotorSpeed(-self.motor_speed * math.pi)
             self.wheels[1].joint.SetMotorSpeed(-self.motor_speed * math.pi)
             self.chassis_body.ApplyTorque(-self.rotation_torque)
-        else:   # When not giving gas we slow down
+        else:  # When not giving gas we slow down
             self.motor_state = -1
             self.wheels[0].joint.SetMotorSpeed(self.motor_speed * math.pi)
             self.wheels[1].joint.SetMotorSpeed(self.motor_speed * math.pi)
@@ -220,4 +220,3 @@ class Car:
         self.motor_state = 0
         self.wheels[0].joint.EnableMotor(False)
         self.wheels[1].joint.EnableMotor(False)
-

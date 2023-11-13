@@ -27,7 +27,7 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 50  # Difficulty of terrain, max 100
+DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
 panX = 0
 panY = 0
 GRAVITY = 10
@@ -35,7 +35,7 @@ WHEEL_SIZE = 17
 PERSON_WIDTH = 15
 
 # Game variables
-NUMBER_OF_WORLDS = 100
+NUMBER_OF_WORLDS = 1
 grounds = []
 worlds = []
 HUMAN_PLAYING = False
@@ -49,7 +49,7 @@ car_sprite = pygame.image.load("pictures/car.png")
 
 
 # Contact listener for head and ground
-class Contact_listener(b2ContactListener):
+class ContactListener(b2ContactListener):
     def __init__(self):
         b2ContactListener.__init__(self)
 
@@ -59,7 +59,7 @@ class Contact_listener(b2ContactListener):
         head_fixture = None
         ground_fixture = None
 
-        # If we contact the head with the ground or vice versa we destroy the car.
+        # If we contact the head with the ground or vice versa we destroy the car's joints.
         if contact.fixtureA.body.userData.id == "head" and contact.fixtureB.body.userData.id == "ground":
             head_fixture = contact.fixtureA
             ground_fixture = contact.fixtureB
