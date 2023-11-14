@@ -9,7 +9,7 @@ except ImportError:
 
 
 class Agent:
-    def __init__(self, real_world, spawning_y):
+    def __init__(self, real_world):
         self.dead = False  # Whether the agent is dead
         self.shadow_dead = False  # When agent has died but the dead count hasn't been increased yet
         self.score = 0
@@ -18,14 +18,13 @@ class Agent:
         self.car = None
         self.dead_count = 50  # Amount of maximum deaths allowed
         self.motor_state = 2
-        self.spawning_y = spawning_y  # Spawn location
         self.x = 350  # Spawn location
         self.shirt_color_R = math.floor(random.randint(0, 255))
         self.shirt_color_G = math.floor(random.randint(0, 255))
         self.shirt_color_B = math.floor(random.randint(0, 255))
 
     def add_to_world(self):
-        self.car = car.Car(x=self.x, y=self.spawning_y, world=self.world)
+        self.car = car.Car(x=self.x, y=main.SPAWNING_Y, world=self.world)
         self.car.set_shirt_colour()
 
     def draw_agent(self):

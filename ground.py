@@ -9,6 +9,8 @@ import pygame
 import main
 import random
 import noise
+from typing import Type
+
 
 
 class Ground:
@@ -80,7 +82,7 @@ class Ground:
 
     # returns a list of Y positions directly after the input x.
     # the list contains numberOfPositions Y values which represent the upcoming hills
-    def getPositions(self, x, numberOfPositions: int, skip: int):
+    def getPositions(self, x: int, numberOfPositions: int, skip: int):
         returnList = []
         for i in range(len(self.ground_vectors)):
             if self.ground_vectors[i].x >= x:
@@ -92,11 +94,11 @@ class Ground:
         return returnList
 
     # Clone vector values from the otherGround world to current object
-    def cloneFrom(self, otherGround):
+    def cloneFrom(self, otherGround: 'Ground'):
         for v in otherGround.ground_vectors:
             self.ground_vectors.append(pygame.Vector2(v.x, v.y))
 
-    def setBodies(self, worldToAddTo):
+    def setBodies(self, worldToAddTo: b2World):
         self.world = worldToAddTo
         self.makeBody()
         for i in range(1, len(self.ground_vectors)):
@@ -118,7 +120,7 @@ class Ground:
         self.dirtBody.userData = self
         self.grassBody.userData = self
 
-    def addEdge(self, vec1, vec2, mask, category, isGrass):
+    def addEdge(self, vec1: int, vec2: int, mask: int, category: int, isGrass: bool):
         fixDef = b2FixtureDef(
             categoryBits=category,
             maskBits=mask,
@@ -143,7 +145,7 @@ class Ground:
         grass_color = (0, 120, 0)
         vertices = []
 
-        # Beginning vertice
+        # Beginning vertices
         vertices.append((0, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY))
         for i in range(0, len(self.ground_vectors) - 2):  # Scale the ground vectors back
             vertices.append((self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE))

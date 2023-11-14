@@ -4,7 +4,7 @@ try:
     from Box2D import *
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
-import ground
+import ground, agent
 import pygame
 
 # collisionCategories represented in bits
@@ -27,12 +27,13 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
+DIFFICULTY = 50  # Difficulty of terrain, max 100, min 100
 panX = 0
 panY = 0
 GRAVITY = 10
 WHEEL_SIZE = 17
 PERSON_WIDTH = 15
+SPAWNING_Y = 0
 
 # Game variables
 NUMBER_OF_WORLDS = 1
@@ -105,31 +106,38 @@ pygame.display.set_caption("Hill climb")
 clock = pygame.time.Clock()
 
 
-def initWorld():
-    # Create ground template
-    groundTemplate = ground.Ground()
-    groundTemplate.randomizeGround()
-    # Generate until we find a good ground
-    while groundTemplate.groundTooSteep():
-        groundTemplate = ground.Ground()
-        groundTemplate.randomizeGround()
-    # Generate a set number of world with the same ground
-    for i in range(0, NUMBER_OF_WORLDS):
-        tempWorld = b2World(b2Vec2(0, GRAVITY), True)
-        tempGround = ground.Ground(tempWorld)
-        tempGround.cloneFrom(groundTemplate)
-        tempGround.setBodies(tempWorld)
-        grounds.append(tempGround)
-        worlds.append(tempWorld)
+def setup_world():
+    # Variables
+    main_world = b2World(contactListener=ContactListener(), gravity=b2Vec2(0, GRAVITY), doSleep=True)
+    ground_template = ground.Ground()  # Template to store the ground vectors
+    ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
 
-    otherWorld = b2World(b2Vec2(0, GRAVITY), True)
-    tempGround = ground.Ground(otherWorld)
-    tempGround.cloneFrom(groundTemplate)
-    tempGround.setBodies(otherWorld)
-    return tempGround
+    # Generate until we find ground that is not too steep
+    while ground_template.groundTooSteep():
+        ground_template = ground.Ground()
+        ground_template.randomizeGround()
+
+    # # # Generate a set number of world with the same ground
+    # for i in range(0, NUMBER_OF_WORLDS):
+    #     main_world = b2World(b2Vec2(0, GRAVITY), True)
+    #     main_ground = ground.Ground(main_world)
+    #     main_ground.cloneFrom(ground_template)
+    #     main_ground.setBodies(main_world)
+    #     grounds.append(main_ground)
+    #     worlds.append(main_world)
+
+    # Set up the ground
+    main_ground = ground.Ground(main_world)
+    main_ground.cloneFrom(ground_template)
+    main_ground.setBodies(main_world)
+
+    # Set up the world and agent
+    human_agent = agent.Agent(real_world=main_world)
+    human_agent.add_to_world()
+    return main_ground, human_agent
 
 
-def draw(render_ground):
+def draw(render_ground, render_agent):
     # Clear the screen
     screen.fill((255, 255, 255))
     # Fill screen with sky colour
@@ -137,13 +145,15 @@ def draw(render_ground):
     # Draw the ground to screen
     print(len(grounds))
     render_ground.draw_ground()
+    # Draw the agent
+    render_agent.draw_agent()
     # Update the screen
     pygame.display.flip()
 
 
 if __name__ == "__main__":
     # Initialize world
-    temp_ground = initWorld()
+    current_ground, current_agent = setup_world()
     running = True
     while running:
         for event in pygame.event.get():
@@ -151,7 +161,7 @@ if __name__ == "__main__":
                 running = False
         # Call the draw function
         if not SHOWING_GROUND:
-            draw(temp_ground)
+            draw(current_ground, current_agent)
             SHOWING_GROUND = True
         # Limit frames per second
         clock.tick(FPS)

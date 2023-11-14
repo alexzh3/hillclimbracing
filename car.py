@@ -45,7 +45,7 @@ class Car:
         # Create main body and fixture for car
         car_body = b2BodyDef(
             type=b2_dynamicBody,
-            position=(x / main.SCALE / y / main.SCALE),
+            position=(x / main.SCALE, y / main.SCALE),
             angle=0
         )
         car_fixture = b2FixtureDef(
@@ -142,8 +142,8 @@ class Car:
 
     # Function to set random colour of shirt
     def set_shirt_colour(self):
-        self.person.torso.color = pygame.Color(r=random.randint(0, 255), g=random.randint(0, 255),
-                                               b=random.randint(0, 255))
+        self.person.torso.color = pygame.Color(random.randint(0, 255), random.randint(0, 255),
+                                               random.randint(0, 255))
 
     # Function that draws/renders the person, wheels and the car on the screen
     def draw_person_car(self):
@@ -165,7 +165,7 @@ class Car:
         )
 
         # Draw person on screen
-        self.person.draw_person(main.screen, main.head_sprite)
+        self.person.draw_person()
 
         # Draw wheels on screen
         for wheel in self.wheels:

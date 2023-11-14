@@ -15,7 +15,7 @@ class Person:
         self.y = y
         self.height = person_height
         self.width = person_width
-        self.torso = Torso(x, y - (person_height / 2), person_width, self.world)
+        self.torso = Torso(x, y - (person_height / 2), person_height, person_width, self.world)
         self.head = Head(x, y - (person_height + person_width * 1), person_width * 1, self.world)
 
         # Create revolute (angle) joint for person body and head
@@ -37,9 +37,9 @@ class Person:
         self.dist_joint_head_torso = self.world.CreateJoint(dist_joint_def)
 
     # Function to render/draw the head and torso
-    def draw_person(self, screen, head_sprite):
-        self.head.draw_head(screen, head_sprite)
-        self.torso.draw_torso(screen)
+    def draw_person(self):
+        self.head.draw_head()
+        self.torso.draw_torso()
 
 
 class Head:
@@ -60,14 +60,13 @@ class Head:
         body_def.position.x = self.starting_position.x / main.SCALE
         body_def.position.y = self.starting_position.y / main.SCALE
         body_def.angle = 0
-
         fix_def = b2FixtureDef(
             categoryBits=main.PERSON_CATEGORY,
             maskBits=main.PERSON_MASK,
             density=0.001,
             friction=0.01,
             restitution=0.01,
-            shape=b2CircleShape(self.radius / main.SCALE)
+            shape=b2CircleShape(radius=self.radius / main.SCALE)
         )
         self.body = self.world.CreateBody(body_def)
         self.body.userData = self
@@ -125,7 +124,7 @@ class Torso:
         self.body.CreateFixture(fix_def)
 
     # Function that draws the torso to the screen
-    def draw_torso(self, screen):
+    def draw_torso(self):
         x = self.body.position.x * main.SCALE
         y = self.body.position.y * main.SCALE
         angle = self.body.angle
@@ -140,4 +139,4 @@ class Torso:
         rotated_surface = pygame.transform.rotate(rect_surface, angle)
 
         # Draw the rotated rectangle on the screen
-        screen.blit(source=rotated_surface, dest=(x - main.panX, y - main.panY))
+        main.screen.blit(source=rotated_surface, dest=(x - main.panX, y - main.panY))
