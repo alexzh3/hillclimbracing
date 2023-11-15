@@ -1,5 +1,9 @@
-import random, math, pygame
-import main, wheels, person
+import math
+import pygame
+import random
+import main
+import person
+import wheels
 from gym.error import DependencyNotInstalled
 
 try:
@@ -11,6 +15,7 @@ except ImportError:
 class Car:
     def __init__(self, x, y, world=None, agent=None):
         self.world = world
+        self.id = "car"
         self.agent = agent
         self.wheels = []
         self.starting_position = pygame.Vector2(x, y)
@@ -54,7 +59,7 @@ class Car:
             density=self.car_density,
             friction=0.5,
             restitution=self.car_restitution,
-            shape=b2PolygonShape(vertices=vectors)
+            shape=b2PolygonShape(vertices=vectors, vertexCount=len(vectors))
         )
 
         # Create body in world and connect fixture to it
@@ -79,7 +84,7 @@ class Car:
             density=self.car_density,
             friction=0.5,
             restitution=self.car_restitution,
-            shape=b2PolygonShape(vertices=vectors2)
+            shape=b2PolygonShape(vertices=vectors2, vertexCount=len(vectors2))
         )
         self.chassis_body.CreateFixture(car_fixture2)
 
@@ -99,7 +104,7 @@ class Car:
             density=self.car_density,
             friction=0.1,
             restitution=0.1,
-            shape=b2PolygonShape(vertices=vectors3)
+            shape=b2PolygonShape(vertices=vectors3, vertexCount=len(vectors3))
         )
         self.chassis_body.CreateFixture(car_fixture3)
         self.shapes.append(vectors3)
@@ -149,8 +154,8 @@ class Car:
     def draw_person_car(self):
 
         # Get position and angle of the car chassis
-        x = self.chassis_body.position.x * main.SCALE
-        y = self.chassis_body.position.y * main.SCALE
+        pos_x = self.chassis_body.position.x * main.SCALE
+        pos_y = self.chassis_body.position.y * main.SCALE
         angle = self.chassis_body.angle
 
         # Scale the car sprite
@@ -161,7 +166,7 @@ class Car:
         main.car_sprite = pygame.transform.rotate(main.car_sprite, angle)
         main.screen.blit(
             source=main.car_sprite,
-            dest=(-self.chassis_width / 2 - 7 - main.panX, self.chassis_height - 20 - main.panY)
+            dest=((-self.chassis_width / 2 - 7) + pos_x - main.panX, -self.chassis_height - 20 + pos_y - main.panY)
         )
 
         # Draw person on screen

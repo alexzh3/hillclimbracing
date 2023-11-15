@@ -125,8 +125,8 @@ class Torso:
 
     # Function that draws the torso to the screen
     def draw_torso(self):
-        x = self.body.position.x * main.SCALE
-        y = self.body.position.y * main.SCALE
+        pos_x = self.body.position.x * main.SCALE
+        pos_y = self.body.position.y * main.SCALE
         angle = self.body.angle
 
         # Create a surface to draw the rectangle on
@@ -139,4 +139,4 @@ class Torso:
         rotated_surface = pygame.transform.rotate(rect_surface, angle)
 
         # Draw the rotated rectangle on the screen
-        main.screen.blit(source=rotated_surface, dest=(x - main.panX, y - main.panY))
+        main.screen.blit(source=rotated_surface, dest=(pos_x - main.panX, pos_y - main.panY))

@@ -11,6 +11,7 @@ import main
 class Wheel:
     def __init__(self, x, y, r, chassis_body=None, world=None):
         self.starting_position = pygame.Vector2(x, y)
+        self.id = "wheel"
         self.radius = r
         self.body = None
         self.world = world

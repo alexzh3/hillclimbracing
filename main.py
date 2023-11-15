@@ -25,7 +25,7 @@ PERSON_MASK = GRASS_CATEGORY
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
-FPS = 60  # frames per second
+FPS = 30  # frames per second
 TIME_STEP = 1.0 / FPS
 DIFFICULTY = 50  # Difficulty of terrain, max 100, min 100
 panX = 0
@@ -33,7 +33,7 @@ panY = 0
 GRAVITY = 10
 WHEEL_SIZE = 17
 PERSON_WIDTH = 15
-SPAWNING_Y = 0
+SPAWNING_Y = 300
 
 # Game variables
 NUMBER_OF_WORLDS = 1
@@ -45,7 +45,7 @@ RESET_WORLD = False
 
 # Load in pictures
 wheel_sprite = pygame.image.load("pictures/wheel.png")
-head_sprite = pygame.image.load("pictures/head.png")
+head_sprite = pygame.image.load("pictures/headLarge2.png")
 car_sprite = pygame.image.load("pictures/car.png")
 
 
@@ -71,8 +71,8 @@ class ContactListener(b2ContactListener):
             return
 
         if head_fixture and ground_fixture and head_fixture.body.joints:
-            joint_list_torso = head_fixture.body.joints.other
-            car = joint_list_torso.joints.other.userData
+            torso = head_fixture.body.joints[0].other  # Get the torso body object using the joint
+            car = torso.joints[3].other.userData    # Get the car body using the torso
             world.DestroyJoint(car.dist_joint_torso_chassis)
             world.DestroyJoint(car.person.dist_joint_head_torso)
             world.DestroyJoint(car.rev_joint_torso_chassis)
@@ -134,7 +134,7 @@ def setup_world():
     # Set up the world and agent
     human_agent = agent.Agent(real_world=main_world)
     human_agent.add_to_world()
-    return main_ground, human_agent
+    return main_ground, human_agent, main_world
 
 
 def draw(render_ground, render_agent):
@@ -143,7 +143,6 @@ def draw(render_ground, render_agent):
     # Fill screen with sky colour
     screen.fill((135, 206, 235))
     # Draw the ground to screen
-    print(len(grounds))
     render_ground.draw_ground()
     # Draw the agent
     render_agent.draw_agent()
@@ -153,17 +152,22 @@ def draw(render_ground, render_agent):
 
 if __name__ == "__main__":
     # Initialize world
-    current_ground, current_agent = setup_world()
+    current_ground, current_agent, main_world = setup_world()
     running = True
-    while running:
+    while not current_agent.dead:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         # Call the draw function
-        if not SHOWING_GROUND:
-            draw(current_ground, current_agent)
-            SHOWING_GROUND = True
-        # Limit frames per second
+        draw(current_ground, current_agent)
+        # Box2D simulation
+        main_world.Step(TIME_STEP, 10, 10)
+        # Update Agent
+        current_agent.update()
+        # Clear forces
+        main_world.ClearForces()
+        # Update render screen and fps
+        pygame.display.flip()
         clock.tick(FPS)
     # Quit the game
     pygame.quit()

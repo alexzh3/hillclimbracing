@@ -1,5 +1,7 @@
-import random, math, pygame
-import main, wheels, person, car
+import math
+import random
+import car
+import main
 from gym.error import DependencyNotInstalled
 
 try:
@@ -24,7 +26,7 @@ class Agent:
         self.shirt_color_B = math.floor(random.randint(0, 255))
 
     def add_to_world(self):
-        self.car = car.Car(x=self.x, y=main.SPAWNING_Y, world=self.world)
+        self.car = car.Car(x=self.x, y=main.SPAWNING_Y, world=self.world, agent=self)
         self.car.set_shirt_colour()
 
     def draw_agent(self):

@@ -16,6 +16,7 @@ from typing import Type
 class Ground:
     def __init__(self, world: b2World = None):
         self.world = world
+        self.id = "ground"
         self.ground_vectors = []
         self.dirtBody = None
         self.grassBody = None
