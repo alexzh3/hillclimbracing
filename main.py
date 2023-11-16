@@ -17,7 +17,7 @@ PERSON_CATEGORY = 0x0010
 # collisionMasks, which category it collides with
 WHEEL_MASK = GRASS_CATEGORY
 CHASSIS_MASK = DIRT_CATEGORY
-GRASS_MASK = WHEEL_CATEGORY | PERSON_CATEGORY
+GRASS_MASK = (WHEEL_CATEGORY | PERSON_CATEGORY)
 DIRT_MASK = CHASSIS_CATEGORY
 PERSON_MASK = GRASS_CATEGORY
 
@@ -25,7 +25,7 @@ PERSON_MASK = GRASS_CATEGORY
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
-FPS = 30  # frames per second
+FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
 DIFFICULTY = 50  # Difficulty of terrain, max 100, min 100
 panX = 0
@@ -33,7 +33,7 @@ panY = 0
 GRAVITY = 10
 WHEEL_SIZE = 17
 PERSON_WIDTH = 15
-SPAWNING_Y = 300
+SPAWNING_Y = 450
 
 # Game variables
 NUMBER_OF_WORLDS = 1
@@ -42,6 +42,7 @@ worlds = []
 HUMAN_PLAYING = False
 SHOWING_GROUND = False
 RESET_WORLD = False
+MAX_CHANGE_COUNTER = 10000
 
 # Load in pictures
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -71,6 +72,7 @@ class ContactListener(b2ContactListener):
             return
 
         if head_fixture and ground_fixture and head_fixture.body.joints:
+            print("true")
             torso = head_fixture.body.joints[0].other  # Get the torso body object using the joint
             car = torso.joints[3].other.userData    # Get the car body using the torso
             world.DestroyJoint(car.dist_joint_torso_chassis)
@@ -154,7 +156,7 @@ if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, main_world = setup_world()
     running = True
-    while not current_agent.dead:
+    while not current_agent.shadow_dead:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -164,6 +166,8 @@ if __name__ == "__main__":
         main_world.Step(TIME_STEP, 10, 10)
         # Update Agent
         current_agent.update()
+        # Drive forward
+        current_agent.car.motor_on(forward=True)
         # Clear forces
         main_world.ClearForces()
         # Update render screen and fps

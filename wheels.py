@@ -1,3 +1,5 @@
+import math
+
 from gym.error import DependencyNotInstalled
 
 try:
@@ -40,24 +42,25 @@ class Wheel:
         self.rim_body.userData = self
 
         if chassis_body is not None:
-            # Create wheel (revolute) joint to car
+            # Create wheel (revolute) joint for inner rim and wheel outer
             rev_joint_def = b2RevoluteJointDef()
             rev_joint_def.Initialize(
                 bodyA=self.body, bodyB=self.rim_body, anchor=self.body.position
             )
             self.joint = self.world.CreateJoint(rev_joint_def)
-            # Create wheel (prismatic) joint to car
+            # Create wheel (prismatic) joint to car chassis
             pris_joint_def = b2PrismaticJointDef()
             pris_joint_def.Initialize(
                 bodyA=self.rim_body,
                 bodyB=chassis_body,
                 anchor=self.body.position,
-                axis=pygame.Vector2(0, -1),
+                axis=b2Vec2(0, -1),
             )
+            self.pris_joint = self.world.CreateJoint(pris_joint_def)
             # Create distance joint between wheel and char
             dist_joint_def = b2DistanceJointDef()
-            anchor_wheel = pygame.Vector2(x / main.SCALE, y / main.SCALE)
-            anchor_car = pygame.Vector2(x / main.SCALE, (y - r * 3) / main.SCALE)
+            anchor_wheel = b2Vec2(x / main.SCALE, y / main.SCALE)
+            anchor_car = b2Vec2(x / main.SCALE, (y - r * 3) / main.SCALE)
             dist_joint_def.Initialize(
                 bodyA=self.rim_body,
                 bodyB=chassis_body,
@@ -67,6 +70,7 @@ class Wheel:
             dist_joint_def.frequencyHz = 70
             dist_joint_def.dampingRatio = 25
             self.dist_joint = self.world.CreateJoint(dist_joint_def)
+        self.body.angularDamping = 1.8
 
     def create_wheel(self):
         wheel_body = b2BodyDef(
@@ -76,7 +80,6 @@ class Wheel:
                 self.starting_position.y / main.SCALE,
             ),
             angle=0,
-            angularDamping=1.8,
         )
         wheel_fixture = b2FixtureDef(
             density=1,
@@ -94,12 +97,13 @@ class Wheel:
         # Scale back position of wheel body
         pos_x = self.body.position.x * main.SCALE
         pos_y = self.body.position.y * main.SCALE
+        degrees_angle = math.degrees(self.body.angle)
         # Scale wheel
         main.wheel_sprite = pygame.transform.scale(
             main.wheel_sprite, (main.WHEEL_SIZE * 2, main.WHEEL_SIZE * 2)
         )
         # Rotate the wheel by body angle
-        main.wheel_sprite = pygame.transform.rotate(main.wheel_sprite, self.body.angle)
+        # main.wheel_sprite = pygame.transform.rotate(main.wheel_sprite, degrees_angle)
         # Update the wheel on screen position
         main.screen.blit(
             source=main.wheel_sprite,

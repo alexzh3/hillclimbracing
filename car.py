@@ -40,12 +40,11 @@ class Car:
         vectors.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 + 5))
         vectors.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
         vectors.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
-        self.shapes.append(vectors)
-
         # Scale vertices
         for vector in vectors:
             vector.x /= main.SCALE
             vector.y /= main.SCALE
+        self.shapes.append(vectors)
 
         # Create main body and fixture for car
         car_body = b2BodyDef(
@@ -72,12 +71,9 @@ class Car:
         vectors2.append(b2Vec2(self.chassis_width / 4 - 15, 0 - self.chassis_height / 2 - 20))
         vectors2.append(b2Vec2(self.chassis_width / 4 - 5, 0 - self.chassis_height / 2 - 20))
         vectors2.append(b2Vec2(self.chassis_width / 4 + 10, 0 - self.chassis_height / 2))
-        self.shapes.append(vectors2)
-
         for vector in vectors2:
             vector.x /= main.SCALE
             vector.y /= main.SCALE
-
         car_fixture2 = b2FixtureDef(
             categoryBits=main.CHASSIS_CATEGORY,
             maskBits=main.CHASSIS_MASK,
@@ -87,13 +83,14 @@ class Car:
             shape=b2PolygonShape(vertices=vectors2, vertexCount=len(vectors2))
         )
         self.chassis_body.CreateFixture(car_fixture2)
+        self.shapes.append(vectors2)
 
         # Create back part
         vectors3 = []
         vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2 + 5))
         vectors3.append(b2Vec2(self.chassis_width / 2 + 5, 0 - self.chassis_height / 2 + 8))
-        vectors3.append(b2Vec2(self.chassis_width / 2 + 5, 0 - self.chassis_height / 2 - 5))
-        vectors3.append(b2Vec2(self.chassis_width / 2, 0 - self.chassis_height / 2))
+        vectors3.append(b2Vec2(self.chassis_width / 2 + 5, self.chassis_height / 2 - 5))
+        vectors3.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
         for vector in vectors3:
             vector.x /= main.SCALE
             vector.y /= main.SCALE
@@ -126,14 +123,14 @@ class Car:
 
         # Create revolute joint to connect the torso body to the chassis car body
         rev_joint_def = b2RevoluteJointDef()
-        joint_pos = [x / main.SCALE, y / main.SCALE]
+        joint_pos = b2Vec2(x / main.SCALE, y / main.SCALE)
         rev_joint_def.Initialize(bodyA=self.person.torso.body, bodyB=self.chassis_body, anchor=joint_pos)
         self.rev_joint_torso_chassis = self.world.CreateJoint(rev_joint_def)
 
         # Create distance joint to connect person's torso and car's chassis
         dist_joint_def = b2DistanceJointDef()
-        anchor_person = [x / main.SCALE, (y - self.person.height * 2 / 3) / main.SCALE]
-        anchor_car = [(x + self.chassis_width / 2) / main.SCALE, (y - self.chassis_height / 2) / main.SCALE]
+        anchor_person = b2Vec2(x / main.SCALE, (y - self.person.height * 2 / 3) / main.SCALE)
+        anchor_car = b2Vec2((x + self.chassis_width / 2) / main.SCALE, (y - self.chassis_height / 2) / main.SCALE)
         dist_joint_def.Initialize(bodyA=self.person.torso.body, bodyB=self.chassis_body, anchorA=anchor_person,
                                   anchorB=anchor_car)
         dist_joint_def.frequencyHz = 5
@@ -147,34 +144,31 @@ class Car:
 
     # Function to set random colour of shirt
     def set_shirt_colour(self):
-        self.person.torso.color = pygame.Color(random.randint(0, 255), random.randint(0, 255),
-                                               random.randint(0, 255))
+        self.person.torso.colour = pygame.Color(random.randint(0, 255), random.randint(0, 255),
+                                                random.randint(0, 255))
 
     # Function that draws/renders the person, wheels and the car on the screen
     def draw_person_car(self):
-
         # Get position and angle of the car chassis
         pos_x = self.chassis_body.position.x * main.SCALE
         pos_y = self.chassis_body.position.y * main.SCALE
-        angle = self.chassis_body.angle
-
+        angle_degree = math.degrees(self.chassis_body.angle)  # Pygame uses degree, Box2D uses radians
+        # Draw person on screen
+        self.person.draw_person()
+        # Draw wheels on screen
+        for wheel in self.wheels:
+            wheel.draw_wheel()
         # Scale the car sprite
         main.car_sprite = pygame.transform.scale(
             main.car_sprite, (self.chassis_width + 23, self.chassis_height * 2 + 10)
         )
         # Draw the char chassis
-        main.car_sprite = pygame.transform.rotate(main.car_sprite, angle)
+        # print(angle_degree)
+        # main.car_sprite = pygame.transform.rotate(main.car_sprite, angle_degree)
         main.screen.blit(
             source=main.car_sprite,
             dest=((-self.chassis_width / 2 - 7) + pos_x - main.panX, -self.chassis_height - 20 + pos_y - main.panY)
         )
-
-        # Draw person on screen
-        self.person.draw_person()
-
-        # Draw wheels on screen
-        for wheel in self.wheels:
-            wheel.draw_wheel()
 
     # A function that updates whether the agent status is alive or death
     def update_status(self):
@@ -187,7 +181,7 @@ class Car:
             if math.floor(self.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
                 self.change_counter = 0
         else:  # When no significant distance has been made for a long time we set agent status to dead
-            if self.change_counter > 250:
+            if self.change_counter > main.MAX_CHANGE_COUNTER:
                 if not main.HUMAN_PLAYING:
                     self.agent.dead = True
         # When agent is out of the screen height, we set status to dead
@@ -196,32 +190,32 @@ class Car:
             self.agent.dead = True
 
     # Function that turns on the motor on wheels and moves forward
-    def motor_on(self, forward):
-        self.wheels[0].joint.EnableMotor(True)
-        self.wheels[1].joint.EnableMotor(True)
+    def motor_on(self, forward: bool):
+        self.wheels[0].joint.enableMotor = True
+        self.wheels[1].joint.enableMotor = True
         old_state = self.motor_state
         if forward:  # When we move forward / give gas
             self.motor_state = 1
-            self.wheels[0].joint.SetMotorSpeed(-self.motor_speed * math.pi)
-            self.wheels[1].joint.SetMotorSpeed(-self.motor_speed * math.pi)
-            self.chassis_body.ApplyTorque(-self.rotation_torque)
+            self.wheels[0].joint.motorSpeed = -self.motor_speed * math.pi
+            self.wheels[1].joint.motorSpeed = -self.motor_speed * math.pi
+            self.chassis_body.ApplyTorque(-self.rotation_torque, False)
         else:  # When not giving gas we slow down
             self.motor_state = -1
-            self.wheels[0].joint.SetMotorSpeed(self.motor_speed * math.pi)
-            self.wheels[1].joint.SetMotorSpeed(self.motor_speed * math.pi)
+            self.wheels[0].joint.motorSpeed = self.motor_speed * math.pi
+            self.wheels[1].joint.motorSpeed = self.motor_speed * math.pi
         # Rotation applied to the car when we stop giving gas
         if old_state + self.motor_state == 0:
             if old_state == 1:
-                self.chassis_body.ApplyTorque(self.motor_state * -1 * self.rotation_torque)
+                self.chassis_body.ApplyTorque(self.motor_state * -1, False)
 
         # Set maximum motor torque on wheels
-        self.wheels[0].joint.SetMaxMotorTorque(700)
-        self.wheels[1].joint.SetMaxMotorTorque(350)
+        self.wheels[0].joint.maxMotorTorque = 700
+        self.wheels[1].joint.maxMotorTorque = 350
 
     # When we brake, we turned the motor off, that will also apply torque
     def motor_off(self):
         if self.motor_state == 1:
-            self.chassis_body.ApplyTorque(self.motor_state * self.rotation_torque)
+            self.chassis_body.ApplyTorque(self.motor_state * self.rotation_torque, False)
         self.motor_state = 0
-        self.wheels[0].joint.EnableMotor(False)
-        self.wheels[1].joint.EnableMotor(False)
+        self.wheels[0].joint.enableMotor = False
+        self.wheels[1].joint.enableMotor = False

@@ -20,7 +20,7 @@ class Agent:
         self.car = None
         self.dead_count = 50  # Amount of maximum deaths allowed
         self.motor_state = 2
-        self.x = 350  # Spawn location
+        self.x = 100  # Spawn location
         self.shirt_color_R = math.floor(random.randint(0, 255))
         self.shirt_color_G = math.floor(random.randint(0, 255))
         self.shirt_color_B = math.floor(random.randint(0, 255))
