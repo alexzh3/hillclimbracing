@@ -97,15 +97,15 @@ class Wheel:
         # Scale back position of wheel body
         pos_x = self.body.position.x * main.SCALE
         pos_y = self.body.position.y * main.SCALE
-        degrees_angle = math.degrees(self.body.angle)
+        degrees_angle = abs(math.degrees(self.body.angle))
         # Scale wheel
         main.wheel_sprite = pygame.transform.scale(
             main.wheel_sprite, (main.WHEEL_SIZE * 2, main.WHEEL_SIZE * 2)
         )
         # Rotate the wheel by body angle
-        # main.wheel_sprite = pygame.transform.rotate(main.wheel_sprite, degrees_angle)
+        rotated_wheel_sprite = pygame.transform.rotate(main.wheel_sprite, degrees_angle)
         # Update the wheel on screen position
         main.screen.blit(
-            source=main.wheel_sprite,
+            source=rotated_wheel_sprite,
             dest=(-self.radius + pos_x - main.panX, -self.radius + pos_y - main.panY),
         )

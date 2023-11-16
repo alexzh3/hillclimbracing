@@ -76,16 +76,16 @@ class Head:
     def draw_head(self):
         x = self.body.position.x * main.SCALE
         y = self.body.position.y * main.SCALE
+        degrees_angle = self.body.angle
         # Scale head sprite
         main.head_sprite = pygame.transform.scale(
             main.head_sprite, (main.PERSON_WIDTH * 3, main.PERSON_WIDTH * 3)
         )
         # Get angle and rotate head
-        angle = self.body.angle
-        main.head_sprite = pygame.transform.rotate(main.head_sprite, angle)
+        rotated_head_sprite = pygame.transform.rotate(main.head_sprite, degrees_angle)
         # Update the head on screen position
         main.screen.blit(
-            source=main.head_sprite,
+            source=rotated_head_sprite,
             dest=(x - main.panX - self.radius - 8, y - main.panY - self.radius - 15)
         )
 

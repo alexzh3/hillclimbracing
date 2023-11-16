@@ -27,13 +27,13 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 50  # Difficulty of terrain, max 100, min 100
+DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
 panX = 0
 panY = 0
 GRAVITY = 10
 WHEEL_SIZE = 17
 PERSON_WIDTH = 15
-SPAWNING_Y = 450
+SPAWNING_Y = 400
 
 # Game variables
 NUMBER_OF_WORLDS = 1
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         # Update Agent
         current_agent.update()
         # Drive forward
-        current_agent.car.motor_on(forward=True)
+        # current_agent.car.motor_on(forward=True)
         # Clear forces
         main_world.ClearForces()
         # Update render screen and fps

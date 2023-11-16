@@ -152,7 +152,7 @@ class Car:
         # Get position and angle of the car chassis
         pos_x = self.chassis_body.position.x * main.SCALE
         pos_y = self.chassis_body.position.y * main.SCALE
-        angle_degree = math.degrees(self.chassis_body.angle)  # Pygame uses degree, Box2D uses radians
+        angle_degree = abs(math.degrees(self.chassis_body.angle))  # Pygame uses absolute degree, Box2D uses radians
         # Draw person on screen
         self.person.draw_person()
         # Draw wheels on screen
@@ -162,12 +162,12 @@ class Car:
         main.car_sprite = pygame.transform.scale(
             main.car_sprite, (self.chassis_width + 23, self.chassis_height * 2 + 10)
         )
-        # Draw the char chassis
-        # print(angle_degree)
-        # main.car_sprite = pygame.transform.rotate(main.car_sprite, angle_degree)
+        # Rotate the car and draw the car to screen
+        rotated_image = pygame.transform.rotate(main.car_sprite, angle_degree)
         main.screen.blit(
-            source=main.car_sprite,
-            dest=((-self.chassis_width / 2 - 7) + pos_x - main.panX, -self.chassis_height - 20 + pos_y - main.panY)
+            source=rotated_image,
+            dest=((-self.chassis_width / 2 - 7) + pos_x - main.panX,
+                  -self.chassis_height - 20 + pos_y - main.panY)
         )
 
     # A function that updates whether the agent status is alive or death
@@ -191,8 +191,8 @@ class Car:
 
     # Function that turns on the motor on wheels and moves forward
     def motor_on(self, forward: bool):
-        self.wheels[0].joint.enableMotor = True
-        self.wheels[1].joint.enableMotor = True
+        self.wheels[0].joint.motorEnabled = True
+        self.wheels[1].joint.motorEnabled = True
         old_state = self.motor_state
         if forward:  # When we move forward / give gas
             self.motor_state = 1
@@ -217,5 +217,5 @@ class Car:
         if self.motor_state == 1:
             self.chassis_body.ApplyTorque(self.motor_state * self.rotation_torque, False)
         self.motor_state = 0
-        self.wheels[0].joint.enableMotor = False
-        self.wheels[1].joint.enableMotor = False
+        self.wheels[0].joint.motorEnabled = False
+        self.wheels[1].joint.motorEnabled = False
