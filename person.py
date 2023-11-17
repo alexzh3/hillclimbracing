@@ -86,7 +86,7 @@ class Head:
         # Update the head on screen position
         main.screen.blit(
             source=rotated_head_sprite,
-            dest=(x - main.panX - self.radius - 8, y - main.panY - self.radius - 15)
+            dest=(x - main.panX - self.radius + 12, y - main.panY - self.radius + 18)
         )
 
 

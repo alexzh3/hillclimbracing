@@ -119,7 +119,7 @@ class Car:
         )
 
         # Create the person/character
-        self.person = person.Person(x=x, y=y, person_width=15, person_height=30, world=self.world)
+        self.person = person.Person(x=x, y=y, person_width=20, person_height=50, world=self.world)
 
         # Create revolute joint to connect the torso body to the chassis car body
         rev_joint_def = b2RevoluteJointDef()

@@ -62,7 +62,7 @@ class Ground:
 
         self.ground_vectors.append(b2Vec2(self.distance, main.SCREEN_HEIGHT))
         self.ground_vectors.append(b2Vec2(0, main.SCREEN_HEIGHT))
-        spawningY = self.ground_vectors[10].y - 100
+        main.SPAWNING_Y = self.ground_vectors[10].y - 100
 
         for vect in self.ground_vectors:
             vect.x /= main.SCALE

@@ -33,7 +33,7 @@ panY = 0
 GRAVITY = 10
 WHEEL_SIZE = 17
 PERSON_WIDTH = 15
-SPAWNING_Y = 400
+SPAWNING_Y = 0
 
 # Game variables
 NUMBER_OF_WORLDS = 1
@@ -154,7 +154,7 @@ def draw(render_ground, render_agent):
 
 if __name__ == "__main__":
     # Initialize world
-    current_ground, current_agent, main_world = setup_world()
+    current_ground, current_agent, current_world = setup_world()
     running = True
     while not current_agent.shadow_dead:
         for event in pygame.event.get():
@@ -163,13 +163,13 @@ if __name__ == "__main__":
         # Call the draw function
         draw(current_ground, current_agent)
         # Box2D simulation
-        main_world.Step(TIME_STEP, 10, 10)
+        current_world.Step(TIME_STEP, 10, 10)
         # Update Agent
         current_agent.update()
         # Drive forward
         # current_agent.car.motor_on(forward=True)
         # Clear forces
-        main_world.ClearForces()
+        current_world.ClearForces()
         # Update render screen and fps
         pygame.display.flip()
         clock.tick(FPS)
