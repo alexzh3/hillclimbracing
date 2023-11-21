@@ -31,7 +31,7 @@ class Car:
         self.max_distance = 0
         self.motor_state = 0
         self.rotation_torque = 2
-        self.motor_speed = 6
+        self.motor_speed = 10
 
         # vertices for car chassis
         vectors = []
