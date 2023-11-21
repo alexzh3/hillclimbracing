@@ -4,7 +4,8 @@ try:
     from Box2D import *
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
-import ground, agent
+import ground
+import agent
 import pygame
 
 # collisionCategories represented in bits
@@ -31,7 +32,7 @@ DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
 panX = 0
 panY = 0
 GRAVITY = 10
-WHEEL_SIZE = 38
+WHEEL_SIZE = 35
 HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
@@ -42,8 +43,6 @@ NUMBER_OF_WORLDS = 1
 grounds = []
 worlds = []
 HUMAN_PLAYING = True
-LEFT_KEY_DOWN = None
-RIGHT_KEY_DOWN = None
 SHOWING_GROUND = False
 RESET_WORLD = False
 MAX_CHANGE_COUNTER = 1000
@@ -101,6 +100,31 @@ class ContactListener(b2ContactListener):
         pass
 
 
+# Key events handler when human is playing
+def handle_key_events(human_event, human_agent, human_right_down, human_left_down):
+    if human_event.type == pygame.KEYDOWN:
+        if human_event.key in (pygame.K_d, pygame.K_RIGHT):
+            human_agent.car.motor_on(forward=True)
+            human_right_down = True
+        elif human_event.key in (pygame.K_a, pygame.K_LEFT):
+            human_agent.car.motor_on(forward=False)
+            human_left_down = True
+
+    elif human_event.type == pygame.KEYUP:
+        if human_event.key in (pygame.K_d, pygame.K_RIGHT):
+            human_right_down = False
+            if human_left_down:
+                human_agent.car.motor_on(forward=False)
+            else:
+                human_agent.car.motor_off()
+        elif human_event.key in (pygame.K_a, pygame.K_LEFT):
+            human_left_down = False
+            if human_right_down:
+                human_agent.car.motor_on(forward=True)
+            else:
+                human_agent.car.motor_off()
+
+
 # Initialize Pygame
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -155,6 +179,10 @@ def draw(render_ground, render_agent):
 if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
+    # Initialize variables for when human plays
+    if HUMAN_PLAYING:
+        right_key_down = False
+        left_key_down = False
 
     while not current_agent.shadow_dead:
         for event in pygame.event.get():
@@ -164,26 +192,7 @@ if __name__ == "__main__":
                 print("Escape was pressed, quiting the game...")
                 pygame.quit()
             if HUMAN_PLAYING:
-                if event.type == pygame.KEYDOWN:  # checking if keydown event happened or not
-                    if event.key == pygame.K_d or pygame.K_RIGHT:  # Drive forward when D or arrow to right
-                        current_agent.car.motor_on(forward=True)
-                        RIGHT_KEY_DOWN = True
-                    if event.key == pygame.K_a or pygame.K_LEFT:  # Drive in reverse when A or arrow to left
-                        current_agent.car.motor_on(forward=False)
-                        LEFT_KEY_DOWN = True
-                if event.type == pygame.KEYUP:  # When key is released
-                    if event.key == pygame.K_d or pygame.K_RIGHT:  # When arrow to right or d is released
-                        RIGHT_KEY_DOWN = False
-                        if LEFT_KEY_DOWN:  # If the left key is down
-                            current_agent.car.motor_on(forward=False)  # Reverse
-                        else:
-                            current_agent.car.motor_off()  # Else turn off the motor
-                    if event.key == pygame.K_a or pygame.K_LEFT:
-                        LEFT_KEY_DOWN = True
-                        if RIGHT_KEY_DOWN:
-                            current_agent.car.motor_on(forward=True)  # Drive forward
-                        else:
-                            current_agent.car.motor_off()
+                handle_key_events(event, current_agent, right_key_down, left_key_down)
 
         # Call the draw function
         draw(current_ground, current_agent)
@@ -192,7 +201,7 @@ if __name__ == "__main__":
         # Update Agent
         current_agent.update()
         # # Drive forward
-        current_agent.car.motor_on(forward=True)
+        # current_agent.car.motor_on(forward=True)
         # # Clear forces
         # current_world.ClearForces()
         # Update render screen and fps

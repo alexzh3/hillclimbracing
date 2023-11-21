@@ -78,7 +78,7 @@ class Head:
     def draw_head(self):
         pos_x = self.body.position.x * main.SCALE
         pos_y = self.body.position.y * main.SCALE
-        degrees_angle = math.degrees(self.body.angle)
+        degrees_angle = math.degrees(self.body.angle) * -1
         # Scale head sprite
         main.head_sprite = pygame.transform.scale(
             main.head_sprite, (main.WHEEL_SIZE, main.WHEEL_SIZE)
@@ -128,7 +128,7 @@ class Torso:
     def draw_torso(self):
         pos_x = self.body.position.x * main.SCALE
         pos_y = self.body.position.y * main.SCALE
-        degrees_angle = abs(math.degrees(self.body.angle))
+        degrees_angle = math.degrees(self.body.angle) * -1
 
         main.torso_sprite = pygame.transform.scale(
             main.torso_sprite, (main.PERSON_WIDTH, main.PERSON_HEIGHT)
