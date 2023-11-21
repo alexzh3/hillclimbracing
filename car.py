@@ -31,7 +31,7 @@ class Car:
         self.max_distance = 0
         self.motor_state = 0
         self.rotation_torque = 2
-        self.motor_speed = 13
+        self.motor_speed = 10
 
         # vertices for car chassis
         vectors = []
@@ -209,8 +209,8 @@ class Car:
                 self.chassis_body.ApplyTorque(self.motor_state * -1, False)
 
         # Set maximum motor torque on wheels
-        self.wheels[0].joint.maxMotorTorque = 700
-        self.wheels[1].joint.maxMotorTorque = 350
+        self.wheels[0].joint.maxMotorTorque = 30
+        self.wheels[1].joint.maxMotorTorque = 15
 
     # When we brake, we turned the motor off, that will also apply torque
     def motor_off(self):

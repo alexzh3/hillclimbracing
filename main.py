@@ -31,7 +31,7 @@ DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
 panX = 0
 panY = 0
 GRAVITY = 10
-WHEEL_SIZE = 17
+WHEEL_SIZE = 35
 PERSON_WIDTH = 15
 SPAWNING_Y = 0
 
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         # Update Agent
         current_agent.update()
         # Drive forward
-        # current_agent.car.motor_on(forward=True)
+        current_agent.car.motor_on(forward=True)
         # Clear forces
         current_world.ClearForces()
         # Update render screen and fps
