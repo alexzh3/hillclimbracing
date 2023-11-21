@@ -1,3 +1,5 @@
+import math
+
 from gym.error import DependencyNotInstalled
 
 try:
@@ -74,19 +76,19 @@ class Head:
 
     # Function that draws the head
     def draw_head(self):
-        x = self.body.position.x * main.SCALE
-        y = self.body.position.y * main.SCALE
-        degrees_angle = self.body.angle
+        pos_x = self.body.position.x * main.SCALE
+        pos_y = self.body.position.y * main.SCALE
+        degrees_angle = math.degrees(self.body.angle)
         # Scale head sprite
         main.head_sprite = pygame.transform.scale(
-            main.head_sprite, (main.PERSON_WIDTH * 3, main.PERSON_WIDTH * 3)
+            main.head_sprite, (main.WHEEL_SIZE, main.WHEEL_SIZE)
         )
         # Get angle and rotate head
         rotated_head_sprite = pygame.transform.rotate(main.head_sprite, degrees_angle)
         # Update the head on screen position
         main.screen.blit(
             source=rotated_head_sprite,
-            dest=(x - main.panX - self.radius + 12, y - main.panY - self.radius + 18)
+            dest=(pos_x - main.panX - self.radius + 12, pos_y - main.panY - self.radius + 18)
         )
 
 
@@ -98,7 +100,6 @@ class Torso:
         self.height = height
         self.starting_position = pygame.Vector2(center_x, center_y)
         self.body = None
-        self.colour = pygame.Color(0, 0, 0)
         self.make_torso_body()
 
     # Function that creates the torso body of the person
@@ -127,16 +128,15 @@ class Torso:
     def draw_torso(self):
         pos_x = self.body.position.x * main.SCALE
         pos_y = self.body.position.y * main.SCALE
-        angle = self.body.angle
+        degrees_angle = abs(math.degrees(self.body.angle))
 
-        # Create a surface to draw the rectangle on
-        rect_surface = pygame.Surface((self.width, self.height))
-
-        # Draw the rectangle on the surface
-        pygame.draw.rect(rect_surface, self.colour, (0, 0, self.width, self.height))
-
-        # Rotate the surface
-        rotated_surface = pygame.transform.rotate(rect_surface, angle)
-
-        # Draw the rotated rectangle on the screen
-        main.screen.blit(source=rotated_surface, dest=(pos_x - main.panX, pos_y - main.panY))
+        main.torso_sprite = pygame.transform.scale(
+            main.torso_sprite, (main.PERSON_WIDTH, main.PERSON_HEIGHT)
+        )
+        # Get angle and rotate head
+        rotated_torso_sprite = pygame.transform.rotate(main.torso_sprite, degrees_angle)
+        # Update the head on screen position
+        main.screen.blit(
+            source=rotated_torso_sprite,
+            dest=(pos_x - main.panX, pos_y - main.panY)
+        )

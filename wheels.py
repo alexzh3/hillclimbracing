@@ -97,10 +97,10 @@ class Wheel:
         # Scale back position of wheel body
         pos_x = self.body.position.x * main.SCALE
         pos_y = self.body.position.y * main.SCALE
-        degrees_angle = abs(math.degrees(self.body.angle))
+        degrees_angle = math.degrees(self.body.angle)
         # Scale wheel
         main.wheel_sprite = pygame.transform.scale(
-            main.wheel_sprite, (main.WHEEL_SIZE, main.WHEEL_SIZE)
+            main.wheel_sprite, (main.HEAD_SIZE, main.HEAD_SIZE)
         )
         # Rotate the wheel by body angle
         rotated_wheel_sprite = pygame.transform.rotate(main.wheel_sprite, degrees_angle)

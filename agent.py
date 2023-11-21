@@ -21,13 +21,9 @@ class Agent:
         self.dead_count = 50  # Amount of maximum deaths allowed
         self.motor_state = 2
         self.x = 100  # Spawn location
-        self.shirt_color_R = math.floor(random.randint(0, 255))
-        self.shirt_color_G = math.floor(random.randint(0, 255))
-        self.shirt_color_B = math.floor(random.randint(0, 255))
 
     def add_to_world(self):
         self.car = car.Car(x=self.x, y=main.SPAWNING_Y, world=self.world, agent=self)
-        self.car.set_shirt_colour()
 
     def draw_agent(self):
         if not self.shadow_dead or self.dead_count > 0:  # Draw car when agent has died less than dead count amount
@@ -69,3 +65,7 @@ class Agent:
         self.world.DestroyBody(self.car.wheels[1].rim_body)
         self.world.DestroyBody(self.car.person.head.body)
         self.world.DestroyBody(self.car.person.torso.body)
+        self.world.DestroyJoint(self.car.dist_joint_torso_chassis)
+        self.world.DestroyJoint(self.car.person.dist_joint_head_torso)
+        self.world.DestroyJoint(self.car.rev_joint_torso_chassis)
+        self.world.DestroyJoint(self.car.person.rev_joint_head_torso)

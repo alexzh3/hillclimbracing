@@ -31,23 +31,28 @@ DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
 panX = 0
 panY = 0
 GRAVITY = 10
-WHEEL_SIZE = 35
-PERSON_WIDTH = 15
+WHEEL_SIZE = 38
+HEAD_SIZE = 40
+PERSON_WIDTH = 20
+PERSON_HEIGHT = 40
 SPAWNING_Y = 0
 
 # Game variables
 NUMBER_OF_WORLDS = 1
 grounds = []
 worlds = []
-HUMAN_PLAYING = False
+HUMAN_PLAYING = True
+LEFT_KEY_DOWN = None
+RIGHT_KEY_DOWN = None
 SHOWING_GROUND = False
 RESET_WORLD = False
-MAX_CHANGE_COUNTER = 10000
+MAX_CHANGE_COUNTER = 1000
 
 # Load in pictures
 wheel_sprite = pygame.image.load("pictures/wheel.png")
 head_sprite = pygame.image.load("pictures/headLarge2.png")
 car_sprite = pygame.image.load("pictures/car.png")
+torso_sprite = pygame.image.load("pictures/torsoLarge.png")
 
 
 # Contact listener for head and ground
@@ -72,13 +77,8 @@ class ContactListener(b2ContactListener):
             return
 
         if head_fixture and ground_fixture and head_fixture.body.joints:
-            print("true")
             torso = head_fixture.body.joints[0].other  # Get the torso body object using the joint
-            car = torso.joints[3].other.userData    # Get the car body using the torso
-            world.DestroyJoint(car.dist_joint_torso_chassis)
-            world.DestroyJoint(car.person.dist_joint_head_torso)
-            world.DestroyJoint(car.rev_joint_torso_chassis)
-            world.DestroyJoint(car.person.rev_joint_head_torso)
+            car = torso.joints[3].other.userData  # Get the car body using the torso
             car.agent.shadow_dead = True
 
         # Check if we contact the wheel with the ground or vice versa.
@@ -155,21 +155,46 @@ def draw(render_ground, render_agent):
 if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
-    running = True
+
     while not current_agent.shadow_dead:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Escape to quit game
+                print("Escape was pressed, quiting the game...")
+                pygame.quit()
+            if HUMAN_PLAYING:
+                if event.type == pygame.KEYDOWN:  # checking if keydown event happened or not
+                    if event.key == pygame.K_d or pygame.K_RIGHT:  # Drive forward when D or arrow to right
+                        current_agent.car.motor_on(forward=True)
+                        RIGHT_KEY_DOWN = True
+                    if event.key == pygame.K_a or pygame.K_LEFT:  # Drive in reverse when A or arrow to left
+                        current_agent.car.motor_on(forward=False)
+                        LEFT_KEY_DOWN = True
+                if event.type == pygame.KEYUP:  # When key is released
+                    if event.key == pygame.K_d or pygame.K_RIGHT:  # When arrow to right or d is released
+                        RIGHT_KEY_DOWN = False
+                        if LEFT_KEY_DOWN:  # If the left key is down
+                            current_agent.car.motor_on(forward=False)  # Reverse
+                        else:
+                            current_agent.car.motor_off()  # Else turn off the motor
+                    if event.key == pygame.K_a or pygame.K_LEFT:
+                        LEFT_KEY_DOWN = True
+                        if RIGHT_KEY_DOWN:
+                            current_agent.car.motor_on(forward=True)  # Drive forward
+                        else:
+                            current_agent.car.motor_off()
+
         # Call the draw function
         draw(current_ground, current_agent)
         # Box2D simulation
         current_world.Step(TIME_STEP, 10, 10)
         # Update Agent
         current_agent.update()
-        # Drive forward
+        # # Drive forward
         current_agent.car.motor_on(forward=True)
-        # Clear forces
-        current_world.ClearForces()
+        # # Clear forces
+        # current_world.ClearForces()
         # Update render screen and fps
         pygame.display.flip()
         clock.tick(FPS)

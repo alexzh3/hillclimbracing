@@ -31,7 +31,7 @@ class Car:
         self.max_distance = 0
         self.motor_state = 0
         self.rotation_torque = 2
-        self.motor_speed = 10
+        self.motor_speed = 6
 
         # vertices for car chassis
         vectors = []
@@ -119,7 +119,7 @@ class Car:
         )
 
         # Create the person/character
-        self.person = person.Person(x=x, y=y, person_width=20, person_height=50, world=self.world)
+        self.person = person.Person(x=x, y=y, person_width=main.PERSON_WIDTH, person_height=main.PERSON_HEIGHT, world=self.world)
 
         # Create revolute joint to connect the torso body to the chassis car body
         rev_joint_def = b2RevoluteJointDef()
@@ -141,11 +141,6 @@ class Car:
         # Set chassis_body variables
         self.chassis_body.angularDamping = 0.1
         self.chassis_body.userData = self
-
-    # Function to set random colour of shirt
-    def set_shirt_colour(self):
-        self.person.torso.colour = pygame.Color(random.randint(0, 255), random.randint(0, 255),
-                                                random.randint(0, 255))
 
     # Function that draws/renders the person, wheels and the car on the screen
     def draw_person_car(self):
@@ -198,24 +193,24 @@ class Car:
             self.motor_state = 1
             self.wheels[0].joint.motorSpeed = -self.motor_speed * math.pi
             self.wheels[1].joint.motorSpeed = -self.motor_speed * math.pi
-            self.chassis_body.ApplyTorque(-self.rotation_torque, False)
-        else:  # When not giving gas we slow down
+            self.chassis_body.ApplyTorque(-self.rotation_torque, True)
+        else:  # Reverse, gas to the other side
             self.motor_state = -1
             self.wheels[0].joint.motorSpeed = self.motor_speed * math.pi
             self.wheels[1].joint.motorSpeed = self.motor_speed * math.pi
         # Rotation applied to the car when we stop giving gas
         if old_state + self.motor_state == 0:
             if old_state == 1:
-                self.chassis_body.ApplyTorque(self.motor_state * -1, False)
+                self.chassis_body.ApplyTorque(self.motor_state * -1, True)
 
         # Set maximum motor torque on wheels
-        self.wheels[0].joint.maxMotorTorque = 30
-        self.wheels[1].joint.maxMotorTorque = 15
+        self.wheels[0].joint.maxMotorTorque = 100
+        self.wheels[1].joint.maxMotorTorque = 50
 
     # When we brake, we turned the motor off, that will also apply torque
     def motor_off(self):
         if self.motor_state == 1:
-            self.chassis_body.ApplyTorque(self.motor_state * self.rotation_torque, False)
+            self.chassis_body.ApplyTorque(self.motor_state * self.rotation_torque, True)
         self.motor_state = 0
         self.wheels[0].joint.motorEnabled = False
         self.wheels[1].joint.motorEnabled = False
