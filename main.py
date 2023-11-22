@@ -72,8 +72,6 @@ class ContactListener(b2ContactListener):
         elif contact.fixtureB.body.userData.id == "head" and contact.fixtureA.body.userData.id == "ground":
             head_fixture = contact.fixtureB
             ground_fixture = contact.fixtureA
-        else:
-            return
 
         if head_fixture and ground_fixture and head_fixture.body.joints:
             torso = head_fixture.body.joints[0].other  # Get the torso body object using the joint
@@ -207,5 +205,7 @@ if __name__ == "__main__":
         # Update render screen and fps
         pygame.display.flip()
         clock.tick(FPS)
+    # Print final score
+    print(f"Final score: {current_agent.score}")
     # Quit the game
     pygame.quit()

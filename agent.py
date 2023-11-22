@@ -43,8 +43,8 @@ class Agent:
         # When the agent dies, update dead count
         if self.shadow_dead:
             self.dead_count -= 1
+        # Calculate and update score
         self.score = max(1, math.floor((self.car.max_distance - 349)))  # Agent starts at x = 350
-
         # If agent is officially dead, remove the agent from world
         if self.dead:
             self.remove_agent_from_world()
