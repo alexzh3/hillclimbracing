@@ -7,7 +7,7 @@ try:
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
 import pygame
-import main
+import hill_racing
 
 
 class Person:
@@ -22,14 +22,14 @@ class Person:
 
         # Create revolute (angle) joint for person body and head
         rev_joint_def = b2RevoluteJointDef()
-        joint_angle = [x / main.SCALE, (y - person_height) / main.SCALE]
+        joint_angle = [x / hill_racing.SCALE, (y - person_height) / hill_racing.SCALE]
         rev_joint_def.Initialize(bodyA=self.head.body, bodyB=self.torso.body, anchor=joint_angle)
         self.rev_joint_head_torso = self.world.CreateJoint(rev_joint_def)
 
         # Create distance joint for head and torso
         dist_joint_def = b2DistanceJointDef()
-        anchor_torso = [x / main.SCALE, y / main.SCALE]
-        anchor_head = [x / main.SCALE, self.head.starting_position.y / main.SCALE]
+        anchor_torso = [x / hill_racing.SCALE, y / hill_racing.SCALE]
+        anchor_head = [x / hill_racing.SCALE, self.head.starting_position.y / hill_racing.SCALE]
         dist_joint_def.Initialize(
             bodyA=self.head.body,
             bodyB=self.torso.body,
@@ -59,16 +59,16 @@ class Head:
         body_def = b2BodyDef()
         body_def.type = b2_dynamicBody
 
-        body_def.position.x = self.starting_position.x / main.SCALE
-        body_def.position.y = self.starting_position.y / main.SCALE
+        body_def.position.x = self.starting_position.x / hill_racing.SCALE
+        body_def.position.y = self.starting_position.y / hill_racing.SCALE
         body_def.angle = 0
         fix_def = b2FixtureDef(
-            categoryBits=main.PERSON_CATEGORY,
-            maskBits=main.PERSON_MASK,
+            categoryBits=hill_racing.PERSON_CATEGORY,
+            maskBits=hill_racing.PERSON_MASK,
             density=0.001,
             friction=0.01,
             restitution=0.01,
-            shape=b2CircleShape(radius=self.radius / main.SCALE)
+            shape=b2CircleShape(radius=self.radius / hill_racing.SCALE)
         )
         self.body = self.world.CreateBody(body_def)
         self.body.userData = self
@@ -76,19 +76,19 @@ class Head:
 
     # Function that draws the head
     def draw_head(self):
-        pos_x = self.body.position.x * main.SCALE
-        pos_y = self.body.position.y * main.SCALE
+        pos_x = self.body.position.x * hill_racing.SCALE
+        pos_y = self.body.position.y * hill_racing.SCALE
         degrees_angle = math.degrees(self.body.angle) * -1
         # Scale head sprite
-        main.head_sprite = pygame.transform.scale(
-            main.head_sprite, (main.WHEEL_SIZE, main.WHEEL_SIZE)
+        hill_racing.head_sprite = pygame.transform.scale(
+            hill_racing.head_sprite, (hill_racing.WHEEL_SIZE, hill_racing.WHEEL_SIZE)
         )
         # Get angle and rotate head
-        rotated_head_sprite = pygame.transform.rotate(main.head_sprite, degrees_angle)
+        rotated_head_sprite = pygame.transform.rotate(hill_racing.head_sprite, degrees_angle)
         # Update the head on screen position
-        main.screen.blit(
+        hill_racing.screen.blit(
             source=rotated_head_sprite,
-            dest=(pos_x - main.panX - self.radius + 12, pos_y - main.panY - self.radius + 18)
+            dest=(pos_x - hill_racing.panX - self.radius + 12, pos_y - hill_racing.panY - self.radius + 18)
         )
 
 
@@ -106,19 +106,19 @@ class Torso:
     def make_torso_body(self):
         body_def = b2BodyDef()
         body_def.type = b2_dynamicBody
-        body_def.position.x = self.starting_position.x / main.SCALE
-        body_def.position.y = self.starting_position.y / main.SCALE
+        body_def.position.x = self.starting_position.x / hill_racing.SCALE
+        body_def.position.y = self.starting_position.y / hill_racing.SCALE
         body_def.angle = 0
 
         fix_def = b2FixtureDef(
-            categoryBits=main.PERSON_CATEGORY,
-            maskBits=main.PERSON_MASK,
+            categoryBits=hill_racing.PERSON_CATEGORY,
+            maskBits=hill_racing.PERSON_MASK,
             density=0.002,
             friction=0.01,
             restitution=0.01,
             shape=b2PolygonShape()
         )
-        fix_def.shape.SetAsBox(self.width / 2 / main.SCALE, self.height / main.SCALE)
+        fix_def.shape.SetAsBox(self.width / 2 / hill_racing.SCALE, self.height / hill_racing.SCALE)
 
         self.body = self.world.CreateBody(body_def)
         self.body.userData = self
@@ -126,17 +126,17 @@ class Torso:
 
     # Function that draws the torso to the screen
     def draw_torso(self):
-        pos_x = self.body.position.x * main.SCALE
-        pos_y = self.body.position.y * main.SCALE
+        pos_x = self.body.position.x * hill_racing.SCALE
+        pos_y = self.body.position.y * hill_racing.SCALE
         degrees_angle = math.degrees(self.body.angle) * -1
 
-        main.torso_sprite = pygame.transform.scale(
-            main.torso_sprite, (main.PERSON_WIDTH, main.PERSON_HEIGHT)
+        hill_racing.torso_sprite = pygame.transform.scale(
+            hill_racing.torso_sprite, (hill_racing.PERSON_WIDTH, hill_racing.PERSON_HEIGHT)
         )
         # Get angle and rotate head
-        rotated_torso_sprite = pygame.transform.rotate(main.torso_sprite, degrees_angle)
+        rotated_torso_sprite = pygame.transform.rotate(hill_racing.torso_sprite, degrees_angle)
         # Update the head on screen position
-        main.screen.blit(
+        hill_racing.screen.blit(
             source=rotated_torso_sprite,
-            dest=(pos_x - main.panX, pos_y - main.panY)
+            dest=(pos_x - hill_racing.panX, pos_y - hill_racing.panY)
         )

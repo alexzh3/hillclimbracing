@@ -1,7 +1,7 @@
 import math
 import random
 import car
-import main
+import hill_racing
 from gym.error import DependencyNotInstalled
 
 try:
@@ -23,14 +23,14 @@ class Agent:
         self.x = 100  # Spawn location
 
     def add_to_world(self):
-        self.car = car.Car(x=self.x, y=main.SPAWNING_Y, world=self.world, agent=self)
+        self.car = car.Car(x=self.x, y=hill_racing.SPAWNING_Y, world=self.world, agent=self)
 
     def draw_agent(self):
         if not self.shadow_dead or self.dead_count > 0:  # Draw car when agent has died less than dead count amount
             self.car.draw_person_car()
-            if main.SHOWING_GROUND:
-                main.grounds[0].draw_ground()
-                main.SHOWING_GROUND = True
+            if hill_racing.SHOWING_GROUND:
+                hill_racing.grounds[0].draw_ground()
+                hill_racing.SHOWING_GROUND = True
 
     def update(self):
         if self.car.dead:  # If the car is dead

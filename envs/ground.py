@@ -6,11 +6,10 @@ except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
 import numpy as np
 import pygame
-import main
+import hill_racing
 import random
 import noise
 from typing import Type
-
 
 
 class Ground:
@@ -20,7 +19,7 @@ class Ground:
         self.ground_vectors = []
         self.dirtBody = None
         self.grassBody = None
-        self.distance = 15 * main.SCREEN_WIDTH
+        self.distance = 15 * hill_racing.SCREEN_WIDTH
         self.x = 0
         self.y = 0
         self.smoothness = 15
@@ -44,7 +43,7 @@ class Ground:
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
             noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level
-            maxHeight = main.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
+            maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition
@@ -54,19 +53,20 @@ class Ground:
 
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
             self.ground_vectors.append(
-                b2Vec2(i, main.SCREEN_HEIGHT - np.interp(noisedY, [0, 1], [minHeight, maxHeight]) + heightAddition))
+                b2Vec2(i, hill_racing.SCREEN_HEIGHT - np.interp(noisedY, [0, 1],
+                                                                [minHeight, maxHeight]) + heightAddition))
             # Calculate the absolute difference between the previous and current y-values and add it to the total
             # difference
             if i > 0:
                 totalDifference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
 
-        self.ground_vectors.append(b2Vec2(self.distance, main.SCREEN_HEIGHT))
-        self.ground_vectors.append(b2Vec2(0, main.SCREEN_HEIGHT))
-        main.SPAWNING_Y = self.ground_vectors[10].y - 100
+        self.ground_vectors.append(b2Vec2(self.distance, hill_racing.SCREEN_HEIGHT))
+        self.ground_vectors.append(b2Vec2(0, hill_racing.SCREEN_HEIGHT))
+        hill_racing.SPAWNING_Y = self.ground_vectors[10].y - 100
 
         for vect in self.ground_vectors:
-            vect.x /= main.SCALE
-            vect.y /= main.SCALE
+            vect.x /= hill_racing.SCALE
+            vect.y /= hill_racing.SCALE
 
     # Function to see if ground is too steep
     def groundTooSteep(self):
@@ -103,13 +103,16 @@ class Ground:
         self.world = worldToAddTo
         self.makeBody()
         for i in range(1, len(self.ground_vectors)):
-            self.addEdge(self.ground_vectors[i - 1], self.ground_vectors[i], main.DIRT_MASK, main.DIRT_CATEGORY, False)
+            self.addEdge(self.ground_vectors[i - 1], self.ground_vectors[i], hill_racing.DIRT_MASK,
+                         hill_racing.DIRT_CATEGORY, False)
 
         for i in range(1, len(self.ground_vectors)):
             self.addEdge(
-                b2Vec2(self.ground_vectors[i - 1].x, self.ground_vectors[i - 1].y - self.grass_thickness / main.SCALE),
-                b2Vec2(self.ground_vectors[i].x, self.ground_vectors[i].y - self.grass_thickness / main.SCALE),
-                main.GRASS_MASK, main.GRASS_CATEGORY, True)
+                b2Vec2(self.ground_vectors[i - 1].x,
+                       self.ground_vectors[i - 1].y - self.grass_thickness / hill_racing.SCALE),
+                b2Vec2(self.ground_vectors[i].x,
+                       self.ground_vectors[i].y - self.grass_thickness / hill_racing.SCALE),
+                hill_racing.GRASS_MASK, hill_racing.GRASS_CATEGORY, True)
 
     def makeBody(self):
         bodyDef = b2BodyDef(
@@ -121,7 +124,7 @@ class Ground:
         self.dirtBody.userData = self
         self.grassBody.userData = self
 
-    def addEdge(self, vec1: int, vec2: int, mask: int, category: int, isGrass: bool):
+    def addEdge(self, vec1: b2Vec2, vec2: b2Vec2, mask: int, category: int, isGrass: bool):
         fixDef = b2FixtureDef(
             categoryBits=category,
             maskBits=mask,
@@ -147,38 +150,48 @@ class Ground:
         vertices = []
 
         # Beginning vertices
-        vertices.append((0, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY))
+        vertices.append((0, hill_racing.SCREEN_HEIGHT + self.grass_thickness * 2 + hill_racing.panY))
         for i in range(0, len(self.ground_vectors) - 2):  # Scale the ground vectors back
-            vertices.append((self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE))
+            vertices.append(
+                (self.ground_vectors[i].x * hill_racing.SCALE, self.ground_vectors[i].y * hill_racing.SCALE))
         # Append end vertices of screen
-        vertices.append((self.distance, main.SCREEN_HEIGHT + self.grass_thickness * 2 + main.panY))
+        vertices.append((self.distance, hill_racing.SCREEN_HEIGHT + self.grass_thickness * 2 + hill_racing.panY))
 
         # Draw the hills
         # Fill the base ground until the first layer of ground
-        pygame.draw.polygon(main.screen, ground_color, vertices)
-        pygame.draw.polygon(main.screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the base grass
+        pygame.draw.polygon(hill_racing.screen, ground_color, vertices)
+        pygame.draw.polygon(hill_racing.screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the
+        # base grass
 
         # Draw the transition colours from ground to grass (down to up)
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(main.screen, (66, 60, 0),
-                             (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE + 9),
-                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE + 9),
+            pygame.draw.line(hill_racing.screen, (66, 60, 0),
+                             (self.ground_vectors[i].x * hill_racing.SCALE,
+                              self.ground_vectors[i].y * hill_racing.SCALE + 9),
+                             (self.ground_vectors[i + 1].x * hill_racing.SCALE,
+                              self.ground_vectors[i + 1].y * hill_racing.SCALE + 9),
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(main.screen, (44, 90, 0),
-                             (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE + 6),
-                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE + 6),
+            pygame.draw.line(hill_racing.screen, (44, 90, 0),
+                             (self.ground_vectors[i].x * hill_racing.SCALE,
+                              self.ground_vectors[i].y * hill_racing.SCALE + 6),
+                             (self.ground_vectors[i + 1].x * hill_racing.SCALE,
+                              self.ground_vectors[i + 1].y * hill_racing.SCALE + 6),
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(main.screen, (0, 140, 0),
-                             (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE - 5),
-                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE - 5),
+            pygame.draw.line(hill_racing.screen, (0, 140, 0),
+                             (self.ground_vectors[i].x * hill_racing.SCALE,
+                              self.ground_vectors[i].y * hill_racing.SCALE - 5),
+                             (self.ground_vectors[i + 1].x * hill_racing.SCALE,
+                              self.ground_vectors[i + 1].y * hill_racing.SCALE - 5),
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(main.screen, (0, 130, 0),
-                             (self.ground_vectors[i].x * main.SCALE, self.ground_vectors[i].y * main.SCALE - 3),
-                             (self.ground_vectors[i + 1].x * main.SCALE, self.ground_vectors[i + 1].y * main.SCALE - 3),
+            pygame.draw.line(hill_racing.screen, (0, 130, 0),
+                             (self.ground_vectors[i].x * hill_racing.SCALE,
+                              self.ground_vectors[i].y * hill_racing.SCALE - 3),
+                             (self.ground_vectors[i + 1].x * hill_racing.SCALE,
+                              self.ground_vectors[i + 1].y * hill_racing.SCALE - 3),
                              3)

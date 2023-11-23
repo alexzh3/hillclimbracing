@@ -1,7 +1,7 @@
 import math
 import pygame
 import random
-import main
+import hill_racing
 import person
 import wheels
 from gym.error import DependencyNotInstalled
@@ -31,7 +31,7 @@ class Car:
         self.max_distance = 0
         self.motor_state = 0
         self.rotation_torque = 2
-        self.motor_speed = 10
+        self.motor_speed = 13
 
         # vertices for car chassis
         vectors = []
@@ -42,19 +42,19 @@ class Car:
         vectors.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
         # Scale vertices
         for vector in vectors:
-            vector.x /= main.SCALE
-            vector.y /= main.SCALE
+            vector.x /= hill_racing.SCALE
+            vector.y /= hill_racing.SCALE
         self.shapes.append(vectors)
 
-        # Create main body and fixture for car
+        # Create hill_racing body and fixture for car
         car_body = b2BodyDef(
             type=b2_dynamicBody,
-            position=(x / main.SCALE, y / main.SCALE),
+            position=(x / hill_racing.SCALE, y / hill_racing.SCALE),
             angle=0
         )
         car_fixture = b2FixtureDef(
-            categoryBits=main.CHASSIS_CATEGORY,
-            maskBits=main.CHASSIS_MASK,
+            categoryBits=hill_racing.CHASSIS_CATEGORY,
+            maskBits=hill_racing.CHASSIS_MASK,
             density=self.car_density,
             friction=0.5,
             restitution=self.car_restitution,
@@ -72,11 +72,11 @@ class Car:
         vectors2.append(b2Vec2(self.chassis_width / 4 - 5, 0 - self.chassis_height / 2 - 20))
         vectors2.append(b2Vec2(self.chassis_width / 4 + 10, 0 - self.chassis_height / 2))
         for vector in vectors2:
-            vector.x /= main.SCALE
-            vector.y /= main.SCALE
+            vector.x /= hill_racing.SCALE
+            vector.y /= hill_racing.SCALE
         car_fixture2 = b2FixtureDef(
-            categoryBits=main.CHASSIS_CATEGORY,
-            maskBits=main.CHASSIS_MASK,
+            categoryBits=hill_racing.CHASSIS_CATEGORY,
+            maskBits=hill_racing.CHASSIS_MASK,
             density=self.car_density,
             friction=0.5,
             restitution=self.car_restitution,
@@ -92,12 +92,12 @@ class Car:
         vectors3.append(b2Vec2(self.chassis_width / 2 + 5, self.chassis_height / 2 - 5))
         vectors3.append(b2Vec2(self.chassis_width / 2, self.chassis_height / 2))
         for vector in vectors3:
-            vector.x /= main.SCALE
-            vector.y /= main.SCALE
+            vector.x /= hill_racing.SCALE
+            vector.y /= hill_racing.SCALE
 
         car_fixture3 = b2FixtureDef(
-            categoryBits=main.CHASSIS_CATEGORY,
-            maskBits=main.CHASSIS_MASK,
+            categoryBits=hill_racing.CHASSIS_CATEGORY,
+            maskBits=hill_racing.CHASSIS_MASK,
             density=self.car_density,
             friction=0.1,
             restitution=0.1,
@@ -119,18 +119,20 @@ class Car:
         )
 
         # Create the person/character
-        self.person = person.Person(x=x, y=y, person_width=main.PERSON_WIDTH, person_height=main.PERSON_HEIGHT, world=self.world)
+        self.person = person.Person(x=x, y=y, person_width=hill_racing.PERSON_WIDTH,
+                                    person_height=hill_racing.PERSON_HEIGHT, world=self.world)
 
         # Create revolute joint to connect the torso body to the chassis car body
         rev_joint_def = b2RevoluteJointDef()
-        joint_pos = b2Vec2(x / main.SCALE, y / main.SCALE)
+        joint_pos = b2Vec2(x / hill_racing.SCALE, y / hill_racing.SCALE)
         rev_joint_def.Initialize(bodyA=self.person.torso.body, bodyB=self.chassis_body, anchor=joint_pos)
         self.rev_joint_torso_chassis = self.world.CreateJoint(rev_joint_def)
 
         # Create distance joint to connect person's torso and car's chassis
         dist_joint_def = b2DistanceJointDef()
-        anchor_person = b2Vec2(x / main.SCALE, (y - self.person.height * 2 / 3) / main.SCALE)
-        anchor_car = b2Vec2((x + self.chassis_width / 2) / main.SCALE, (y - self.chassis_height / 2) / main.SCALE)
+        anchor_person = b2Vec2(x / hill_racing.SCALE, (y - self.person.height * 2 / 3) / hill_racing.SCALE)
+        anchor_car = b2Vec2((x + self.chassis_width / 2) / hill_racing.SCALE,
+                            (y - self.chassis_height / 2) / hill_racing.SCALE)
         dist_joint_def.Initialize(bodyA=self.person.torso.body, bodyB=self.chassis_body, anchorA=anchor_person,
                                   anchorB=anchor_car)
         dist_joint_def.frequencyHz = 5
@@ -145,8 +147,8 @@ class Car:
     # Function that draws/renders the person, wheels and the car on the screen
     def draw_person_car(self):
         # Get position and angle of the car chassis
-        pos_x = self.chassis_body.position.x * main.SCALE
-        pos_y = self.chassis_body.position.y * main.SCALE
+        pos_x = self.chassis_body.position.x * hill_racing.SCALE
+        pos_y = self.chassis_body.position.y * hill_racing.SCALE
         angle_degree = math.degrees(self.chassis_body.angle) * -1  # Pygame uses absolute degree, Box2D uses radians
         # Draw person on screen
         self.person.draw_person()
@@ -154,21 +156,21 @@ class Car:
         for wheel in self.wheels:
             wheel.draw_wheel()
         # Scale the car sprite
-        main.car_sprite = pygame.transform.scale(
-            main.car_sprite, (self.chassis_width + 23, self.chassis_height * 2 + 10)
+        hill_racing.car_sprite = pygame.transform.scale(
+            hill_racing.car_sprite, (self.chassis_width + 23, self.chassis_height * 2 + 10)
         )
         # Rotate the car and draw the car to screen
-        rotated_image = pygame.transform.rotate(main.car_sprite, angle_degree)
-        main.screen.blit(
+        rotated_image = pygame.transform.rotate(hill_racing.car_sprite, angle_degree)
+        hill_racing.screen.blit(
             source=rotated_image,
-            dest=((-self.chassis_width / 2 - 7) + pos_x - main.panX,
-                  -self.chassis_height - 20 + pos_y - main.panY)
+            dest=((-self.chassis_width / 2 - 7) + pos_x - hill_racing.panX,
+                  -self.chassis_height - 20 + pos_y - hill_racing.panY)
         )
 
     # A function that updates whether the agent status is alive or death
     def update_status(self):
-        x = self.chassis_body.position.x * main.SCALE
-        y = self.chassis_body.position.y * main.SCALE
+        x = self.chassis_body.position.x * hill_racing.SCALE
+        y = self.chassis_body.position.y * hill_racing.SCALE
         self.change_counter += 1
         # Check whether we are moving forward with the car
         if x > self.max_distance:
@@ -176,11 +178,11 @@ class Car:
             if math.floor(self.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
                 self.change_counter = 0
         else:  # When no significant distance has been made for a long time we set agent status to dead
-            if self.change_counter > main.MAX_CHANGE_COUNTER:
-                if not main.HUMAN_PLAYING:
+            if self.change_counter > hill_racing.MAX_CHANGE_COUNTER:
+                if not hill_racing.HUMAN_PLAYING:
                     self.agent.dead = True
         # When agent is out of the screen height, we set status to dead
-        if not self.dead and y > main.SCREEN_HEIGHT:
+        if not self.dead and y > hill_racing.SCREEN_HEIGHT:
             self.dead = True
             self.agent.dead = True
 
@@ -204,8 +206,8 @@ class Car:
                 self.chassis_body.ApplyTorque(self.motor_state * -1, True)
 
         # Set maximum motor torque on wheels
-        self.wheels[0].joint.maxMotorTorque = 100
-        self.wheels[1].joint.maxMotorTorque = 50
+        self.wheels[0].joint.maxMotorTorque = 700
+        self.wheels[1].joint.maxMotorTorque = 350
 
     # When we brake, we turned the motor off, that will also apply torque
     def motor_off(self):

@@ -7,7 +7,7 @@ try:
 except ImportError:
     raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
 import pygame
-import main
+import hill_racing
 
 
 class Wheel:
@@ -24,8 +24,8 @@ class Wheel:
         body_def = b2BodyDef(
             type=b2_dynamicBody,
             position=(
-                self.starting_position.x / main.SCALE,
-                self.starting_position.y / main.SCALE,
+                self.starting_position.x / hill_racing.SCALE,
+                self.starting_position.y / hill_racing.SCALE,
             ),
             angle=0,
         )
@@ -34,7 +34,7 @@ class Wheel:
             density=0.05,
             friction=0.99,
             restitution=0.2,
-            shape=b2CircleShape(radius=(self.radius / main.SCALE)),
+            shape=b2CircleShape(radius=(self.radius / hill_racing.SCALE)),
             groupIndex=-1,
         )
         self.rim_body = self.world.CreateBody(body_def)
@@ -59,8 +59,8 @@ class Wheel:
             self.pris_joint = self.world.CreateJoint(pris_joint_def)
             # Create distance joint between wheel and char
             dist_joint_def = b2DistanceJointDef()
-            anchor_wheel = b2Vec2(x / main.SCALE, y / main.SCALE)
-            anchor_car = b2Vec2(x / main.SCALE, (y - r * 3) / main.SCALE)
+            anchor_wheel = b2Vec2(x / hill_racing.SCALE, y / hill_racing.SCALE)
+            anchor_car = b2Vec2(x / hill_racing.SCALE, (y - r * 3) / hill_racing.SCALE)
             dist_joint_def.Initialize(
                 bodyA=self.rim_body,
                 bodyB=chassis_body,
@@ -76,8 +76,8 @@ class Wheel:
         wheel_body = b2BodyDef(
             type=b2_dynamicBody,
             position=(
-                self.starting_position.x / main.SCALE,
-                self.starting_position.y / main.SCALE,
+                self.starting_position.x / hill_racing.SCALE,
+                self.starting_position.y / hill_racing.SCALE,
             ),
             angle=0,
         )
@@ -85,9 +85,9 @@ class Wheel:
             density=1,
             friction=1.5,
             restitution=0.1,
-            shape=b2CircleShape(radius=self.radius / main.SCALE),
-            categoryBits=main.WHEEL_CATEGORY,
-            maskBits=main.WHEEL_MASK,
+            shape=b2CircleShape(radius=self.radius / hill_racing.SCALE),
+            categoryBits=hill_racing.WHEEL_CATEGORY,
+            maskBits=hill_racing.WHEEL_MASK,
         )
         self.body = self.world.CreateBody(wheel_body)
         self.body.CreateFixture(wheel_fixture)
@@ -95,17 +95,17 @@ class Wheel:
 
     def draw_wheel(self):
         # Scale back position of wheel body
-        pos_x = self.body.position.x * main.SCALE
-        pos_y = self.body.position.y * main.SCALE
+        pos_x = self.body.position.x * hill_racing.SCALE
+        pos_y = self.body.position.y * hill_racing.SCALE
         degrees_angle = math.degrees(self.body.angle) * -1
         # Scale wheel
-        main.wheel_sprite = pygame.transform.scale(
-            main.wheel_sprite, (main.HEAD_SIZE, main.HEAD_SIZE)
+        hill_racing.wheel_sprite = pygame.transform.scale(
+            hill_racing.wheel_sprite, (hill_racing.HEAD_SIZE, hill_racing.HEAD_SIZE)
         )
         # Rotate the wheel by body angle
-        rotated_wheel_sprite = pygame.transform.rotate(main.wheel_sprite, degrees_angle)
+        rotated_wheel_sprite = pygame.transform.rotate(hill_racing.wheel_sprite, degrees_angle)
         # Update the wheel on screen position
-        main.screen.blit(
+        hill_racing.screen.blit(
             source=rotated_wheel_sprite,
-            dest=(-self.radius + pos_x - main.panX, -self.radius + pos_y - main.panY),
+            dest=(-self.radius + pos_x - hill_racing.panX, -self.radius + pos_y - hill_racing.panY),
         )

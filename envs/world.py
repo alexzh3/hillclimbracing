@@ -1,5 +1,5 @@
 import gym
-import main
+import hill_racing
 import random
 from gym import error, spaces
 from gym.error import DependencyNotInstalled
@@ -11,10 +11,10 @@ except ImportError:
 
 class World:
     def __init__(self,
-                 gravity: float = main.GRAVITY,
-                 width: int = main.SCREEN_WIDTH,
-                 height: int = main.SCREEN_HEIGHT,
-                 difficulty: int = main.DIFFICULTY
+                 gravity: float = hill_racing.GRAVITY,
+                 width: int = hill_racing.SCREEN_WIDTH,
+                 height: int = hill_racing.SCREEN_HEIGHT,
+                 difficulty: int = hill_racing.DIFFICULTY
                  ):
         self.gravity = gravity
         self.width = width

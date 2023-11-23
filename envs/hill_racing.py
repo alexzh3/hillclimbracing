@@ -1,12 +1,12 @@
-from gym.error import DependencyNotInstalled
-
+from gymnasium.error import DependencyNotInstalled
 try:
     from Box2D import *
 except ImportError:
-    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
+    raise DependencyNotInstalled("box2d is not installed")
 import ground
 import agent
 import pygame
+from typing import Type
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -45,9 +45,9 @@ worlds = []
 HUMAN_PLAYING = True
 SHOWING_GROUND = False
 RESET_WORLD = False
-MAX_CHANGE_COUNTER = 1000
+MAX_CHANGE_COUNTER = 5  # How long without progress in distance made do we continue the game
 
-# Load in pictures
+# Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")
 head_sprite = pygame.image.load("pictures/headLarge2.png")
 car_sprite = pygame.image.load("pictures/car.png")
@@ -59,7 +59,7 @@ class ContactListener(b2ContactListener):
     def __init__(self):
         b2ContactListener.__init__(self)
 
-    def BeginContact(self, contact):
+    def BeginContact(self, contact: b2Contact) -> None:
         world = contact.fixtureA.body.world
         # Fixture variables
         head_fixture = None
@@ -84,22 +84,23 @@ class ContactListener(b2ContactListener):
         elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData == "ground":
             contact.fixtureB.body.userData.on_ground = True
 
-    def EndContact(self, contact):
+    def EndContact(self, contact: b2Contact) -> None:
         # End of contact, we need to set the on_ground variable on false
         if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData.id == "ground":
             contact.fixtureA.body.userData.on_ground = False
         elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData.id == "ground":
             contact.fixtureA.body.userData.on_ground = False
 
-    def PreSolve(self, contact, oldManifold):
-        pass
-
-    def PostSolve(self, contact, impulse):
-        pass
+    # def PreSolve(self, contact, oldManifold) -> None:
+    #     pass
+    #
+    # def PostSolve(self, contact, impulse) -> None:
+    #     pass
 
 
 # Key events handler when human is playing
-def handle_key_events(human_event, human_agent, human_right_down, human_left_down):
+def handle_key_events(human_event: pygame.event, human_agent: 'agent.Agent',
+                      human_right_down: bool, human_left_down: bool) -> None:
     if human_event.type == pygame.KEYDOWN:
         if human_event.key in (pygame.K_d, pygame.K_RIGHT):
             human_agent.car.motor_on(forward=True)
@@ -130,7 +131,7 @@ pygame.display.set_caption("Hill climb")
 clock = pygame.time.Clock()
 
 
-def setup_world():
+def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
     # Variables
     main_world = b2World(contactListener=ContactListener(), gravity=b2Vec2(0, GRAVITY), doSleep=True)
     ground_template = ground.Ground()  # Template to store the ground vectors
@@ -161,7 +162,7 @@ def setup_world():
     return main_ground, human_agent, main_world
 
 
-def draw(render_ground, render_agent):
+def draw(render_ground, render_agent) -> None:
     # Clear the screen
     screen.fill((255, 255, 255))
     # Fill screen with sky colour
@@ -177,10 +178,6 @@ def draw(render_ground, render_agent):
 if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
-    # Initialize variables for when human plays
-    if HUMAN_PLAYING:
-        right_key_down = False
-        left_key_down = False
 
     while not current_agent.shadow_dead:
         for event in pygame.event.get():
@@ -190,6 +187,9 @@ if __name__ == "__main__":
                 print("Escape was pressed, quiting the game...")
                 pygame.quit()
             if HUMAN_PLAYING:
+                # Initialize key variables for when human plays
+                right_key_down = False
+                left_key_down = False
                 handle_key_events(event, current_agent, right_key_down, left_key_down)
 
         # Call the draw function
@@ -200,8 +200,8 @@ if __name__ == "__main__":
         current_agent.update()
         # # Drive forward
         # current_agent.car.motor_on(forward=True)
-        # # Clear forces
-        # current_world.ClearForces()
+        # Clear forces
+        current_world.ClearForces()
         # Update render screen and fps
         pygame.display.flip()
         clock.tick(FPS)
