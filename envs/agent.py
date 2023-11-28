@@ -45,6 +45,7 @@ class Agent:
             self.dead_count -= 1
         # Calculate and update score
         self.score = max(1, math.floor((self.car.max_distance - 349)))  # Agent starts at x = 350
+        print(self.score)
         # If agent is officially dead, remove the agent from world
         if self.dead:
             self.remove_agent_from_world()
@@ -69,3 +70,4 @@ class Agent:
         self.world.DestroyJoint(self.car.person.dist_joint_head_torso)
         self.world.DestroyJoint(self.car.rev_joint_torso_chassis)
         self.world.DestroyJoint(self.car.person.rev_joint_head_torso)
+

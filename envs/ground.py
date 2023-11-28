@@ -113,6 +113,26 @@ class Ground:
                 b2Vec2(self.ground_vectors[i].x,
                        self.ground_vectors[i].y - self.grass_thickness / hill_racing.SCALE),
                 hill_racing.GRASS_MASK, hill_racing.GRASS_CATEGORY, True)
+        # Create an invisible wall at spawn
+        self.create_invisible_wall()
+
+    # Function that creates an invisible wall at spawn
+    def create_invisible_wall(self):
+        wall_body = b2BodyDef(
+            type=b2_staticBody,
+            position=(0, 0),
+            angle=0
+        )
+        wall_fixture = b2FixtureDef(
+            density=0,
+            friction=0,
+            restitution=0,
+            shape=b2PolygonShape(box=(0, 10000))
+        )
+        invisible_wall = self.world.CreateBody(wall_body)
+        invisible_wall.userData = self
+        invisible_wall.CreateFixture(wall_fixture)
+
 
     def makeBody(self):
         bodyDef = b2BodyDef(
