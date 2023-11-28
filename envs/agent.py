@@ -20,7 +20,7 @@ class Agent:
         self.car = None
         self.dead_count = 50  # Amount of maximum deaths allowed
         self.motor_state = 2
-        self.x = 100  # Spawn location
+        self.x = 150  # Spawn location
 
     def add_to_world(self):
         self.car = car.Car(x=self.x, y=hill_racing.SPAWNING_Y, world=self.world, agent=self)
@@ -33,6 +33,10 @@ class Agent:
                 hill_racing.SHOWING_GROUND = True
 
     def update(self):
+        # Update the panX and panY offset for camera
+        hill_racing.panX = self.car.chassis_body.position.x * hill_racing.SCALE - 100
+        # hill_racing.panY = self.car.chassis_body.position.y * hill_racing.SCALE - hill_racing.SPAWNING_Y
+
         if self.car.dead:  # If the car is dead
             self.shadow_dead = True
         if not self.shadow_dead or self.dead_count > 0:
@@ -45,7 +49,6 @@ class Agent:
             self.dead_count -= 1
         # Calculate and update score
         self.score = max(1, math.floor((self.car.max_distance - 349)))  # Agent starts at x = 350
-        print(self.score)
         # If agent is officially dead, remove the agent from world
         if self.dead:
             self.remove_agent_from_world()

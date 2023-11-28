@@ -1,4 +1,5 @@
 from gymnasium.error import DependencyNotInstalled
+
 try:
     from Box2D import *
 except ImportError:
@@ -178,7 +179,6 @@ def draw(render_ground, render_agent) -> None:
 if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
-
     while not current_agent.shadow_dead:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
