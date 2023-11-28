@@ -10,7 +10,7 @@ import pygame
 from typing import Type, TYPE_CHECKING, List, Optional
 import numpy as np
 import gymnasium as gym
-
+from gymnasium import spaces
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -32,7 +32,7 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 0  # Difficulty of terrain, max 100, min 100
+DIFFICULTY = 0  # Difficulty of terrain, max 80, min 250 (almost flat terrain)
 panX = 0
 panY = 0
 GRAVITY = 10
@@ -213,6 +213,7 @@ if __name__ == "__main__":
     # Quit the game
     pygame.quit()
 
+
     class HillRacingEnv(gym.Env):
         metadata = {
             "render_modes": ["human", "rgb_array"],
@@ -221,4 +222,6 @@ if __name__ == "__main__":
 
         def __init__(self, render_mode: Optional[str] = None):
             self.world = b2World()
-            
+            self.ground_template = None
+            self.difficulty = DIFFICULTY
+            self.action_space = spaces.Discrete(3)  # 3 actions, gas, reverse and doing nothing
