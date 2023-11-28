@@ -7,7 +7,10 @@ except ImportError:
 import ground
 import agent
 import pygame
-from typing import Type
+from typing import Type, TYPE_CHECKING, List, Optional
+import numpy as np
+import gymnasium as gym
+
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -209,3 +212,13 @@ if __name__ == "__main__":
     print(f"Final score: {current_agent.score}")
     # Quit the game
     pygame.quit()
+
+    class HillRacingEnv(gym.Env):
+        metadata = {
+            "render_modes": ["human", "rgb_array"],
+            "render_fps": FPS
+        }
+
+        def __init__(self, render_mode: Optional[str] = None):
+            self.world = b2World()
+            
