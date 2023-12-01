@@ -107,12 +107,12 @@ class Car:
         self.shapes.append(vectors3)
 
         # Creating the wheels of the car
-        # First the left wheel
+        # First the left (back) wheel
         self.wheels.append(
             wheels.Wheel(x - self.chassis_width / 2 + self.wheel_size * 1.2, y + self.chassis_height / 2 +
                          self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
         )
-        # The right wheel
+        # The right (front) wheel
         self.wheels.append(
             wheels.Wheel(x + self.chassis_width / 2 - self.wheel_size * 1.2, y + self.chassis_height / 2 +
                          self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)

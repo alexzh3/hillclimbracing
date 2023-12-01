@@ -32,7 +32,7 @@ SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
 TIME_STEP = 1.0 / FPS
-DIFFICULTY = 0  # Difficulty of terrain, max 80, min 250 (almost flat terrain)
+DIFFICULTY = 0  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 panX = 0
 panY = 0
 GRAVITY = 10
@@ -223,5 +223,14 @@ if __name__ == "__main__":
         def __init__(self, render_mode: Optional[str] = None):
             self.world = b2World()
             self.ground_template = None
-            self.difficulty = DIFFICULTY
-            self.action_space = spaces.Discrete(3)  # 3 actions, gas, reverse and doing nothing
+            self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
+            self.action_space = spaces.Discrete(2)  # 2 do-able actions: gas, reverse, 3rd action is idling
+            self.observation_space = spaces.Dict(
+                {
+                    "chassis_position": spaces.Box(low=0, high=1000, shape=(2,), dtype=np.float32),
+                    "chassis_angle": ...,
+                    "wheels_speed": ...,
+                    # "wheels_position": ...,
+                    # "current_score": ...
+                }
+            )

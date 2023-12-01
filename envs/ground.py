@@ -19,7 +19,7 @@ class Ground:
         self.ground_vectors = []
         self.dirtBody = None
         self.grassBody = None
-        self.distance = 15 * hill_racing.SCREEN_WIDTH
+        self.distance = 1000 * hill_racing.SCALE  # Max distance of the world in pixels
         self.x = 0
         self.y = 0
         self.smoothness = 15
@@ -38,7 +38,7 @@ class Ground:
             flatLength = 500
             # Initialize a variable to store the additional height to be added for the flat section of the ground vector
             heightAddition = 0
-            # Calculate the steepness level using linear interpolation between 140 and 250
+            # Calculate the steepness level using linear interpolation between 130 and 250
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
             noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
@@ -60,8 +60,8 @@ class Ground:
             if i > 0:
                 totalDifference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
 
-        self.ground_vectors.append(b2Vec2(self.distance, hill_racing.SCREEN_HEIGHT))
-        self.ground_vectors.append(b2Vec2(0, hill_racing.SCREEN_HEIGHT))
+        self.ground_vectors.append(b2Vec2(self.distance, hill_racing.SCREEN_HEIGHT))  # End point vector
+        self.ground_vectors.append(b2Vec2(0, hill_racing.SCREEN_HEIGHT))  # Starting point vector
         hill_racing.SPAWNING_Y = self.ground_vectors[10].y - 100
 
         for vect in self.ground_vectors:

@@ -33,6 +33,7 @@ class Agent:
                 hill_racing.SHOWING_GROUND = True
 
     def update(self):
+        print(self.car.chassis_body.position.x, self.car.chassis_body.position.y)
         # Update the panX and panY offset for camera
         hill_racing.panX = self.car.chassis_body.position.x * hill_racing.SCALE - 100
         # hill_racing.panY = self.car.chassis_body.position.y * hill_racing.SCALE - hill_racing.SPAWNING_Y
