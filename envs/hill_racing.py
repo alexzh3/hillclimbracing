@@ -200,13 +200,13 @@ if __name__ == "__main__":
         # Update render screen and fps
         pygame.display.flip()
         clock.tick(FPS)
-    # Print final score
-    print(f"Final score: {current_agent.score}")
+    # Print final distance
+    print(f"Final distance: {current_agent.car.max_distance}")
     # Quit the game
     pygame.quit()
 
 
-    class HillRacingEnv(gym.Env):
+    class HillRacing(gym.Env):
         metadata = {
             "render_modes": ["human", "rgb_array"],
             "render_fps": FPS
@@ -233,13 +233,6 @@ if __name__ == "__main__":
             )
             assert render_mode is None or render_mode in self.metadata["render_modes"]
             self.render_mode = render_mode
-            """
-            If human-rendering is used, `self.window` will be a reference
-            to the window that we draw to. `self.clock` will be a clock that is used
-            to ensure that the environment is rendered at the correct framerate in
-            human-mode. They will remain `None` until human-mode is used for the
-            first time.
-            """
             self.screen: Optional[pygame.Surface] = None
             self.clock = None
 
@@ -272,13 +265,35 @@ if __name__ == "__main__":
             # Add the ground to the world
             main_ground = ground.Ground(self.world)
             main_ground.cloneFrom(ground_template)  # Copy the ground_template to main_ground
-            main_ground.setBodies(self.world)   # Add the bodies to the world
+            main_ground.setBodies(self.world)  # Add the bodies to the world
 
         def _generate_agent(self):
             self.agent = agent.Agent(real_world=self.world)
             self.agent.add_to_world()
 
         def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
+            super().reset(seed=seed)
+            # Destroy world
+            self._destroy_world()
+            self.game_over = False
+            # Generate new world
+            self.world.contactListener = ContactListener
+            self._generate_ground()
+            self._generate_agent()
+            # Get the initial observations
+            observations = {
+                "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
+                "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
+                "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joints.speed)
+                }
+            # Render mode
+            if self.render_mode == "human":
+                self.render()
+
+            return observations
+
+        def step(self, action: np.ndarray):
             ...
 
-
+        def render(self):
+            ...

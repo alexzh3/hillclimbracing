@@ -97,7 +97,7 @@ class Wheel:
         # Scale back position of wheel body
         pos_x = self.body.position.x * hill_racing.SCALE
         pos_y = self.body.position.y * hill_racing.SCALE
-        degrees_angle = math.degrees(self.body.angle) * -1
+        degrees_angle = math.degrees(-self.body.angle)
         # Scale wheel
         hill_racing.wheel_sprite = pygame.transform.scale(
             hill_racing.wheel_sprite, (hill_racing.HEAD_SIZE, hill_racing.HEAD_SIZE)

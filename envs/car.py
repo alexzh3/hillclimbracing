@@ -149,7 +149,7 @@ class Car:
         # Get position and angle of the car chassis
         pos_x = self.chassis_body.position.x * hill_racing.SCALE
         pos_y = self.chassis_body.position.y * hill_racing.SCALE
-        angle_degree = math.degrees(self.chassis_body.angle) * -1  # Pygame uses absolute degree, Box2D uses radians
+        angle_degree = math.degrees(-self.chassis_body.angle)  # Pygame uses absolute degree, Box2D uses radians
         # Draw person on screen
         self.person.draw_person()
         # Draw wheels on screen
