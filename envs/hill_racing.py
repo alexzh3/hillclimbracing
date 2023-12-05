@@ -260,4 +260,25 @@ if __name__ == "__main__":
             self.agent = None
 
         def _generate_ground(self):
+            # Variables
+            ground_template = ground.Ground()  # Template to store the ground vectors
+            ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
+
+            # Generate until we find ground that is not too steep
+            while ground_template.groundTooSteep():
+                ground_template = ground.Ground()
+                ground_template.randomizeGround()
+
+            # Add the ground to the world
+            main_ground = ground.Ground(self.world)
+            main_ground.cloneFrom(ground_template)  # Copy the ground_template to main_ground
+            main_ground.setBodies(self.world)   # Add the bodies to the world
+
+        def _generate_agent(self):
+            self.agent = agent.Agent(real_world=self.world)
+            self.agent.add_to_world()
+
+        def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
             ...
+
+
