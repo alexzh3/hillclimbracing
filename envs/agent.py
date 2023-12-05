@@ -33,7 +33,7 @@ class Agent:
                 hill_racing.SHOWING_GROUND = True
 
     def update(self):
-        print(self.car.chassis_body.position.x, self.car.chassis_body.position.y)
+        # print(self.car.wheels[0].joint.speed, self.car.wheels[1].joint.speed)
         # Update the panX and panY offset for camera
         hill_racing.panX = self.car.chassis_body.position.x * hill_racing.SCALE - 100
         # hill_racing.panY = self.car.chassis_body.position.y * hill_racing.SCALE - hill_racing.SPAWNING_Y
@@ -50,19 +50,19 @@ class Agent:
             self.dead_count -= 1
         # Calculate and update score
         self.score = max(1, math.floor((self.car.max_distance - 349)))  # Agent starts at x = 350
-        # If agent is officially dead, remove the agent from world
-        if self.dead:
-            self.remove_agent_from_world()
+        # # If agent is officially dead, remove the agent from world
+        # if self.dead:
+        #     self.remove_agent_from_world()
 
     # Function that removes body from world
     def remove_agent_from_world(self):
-        self.destroy_car()
+        self.destroy_agent()
 
     def reset_car(self):
-        self.destroy_car()
+        self.destroy_agent()
         self.car = car.Car(350, 0, self.world)
 
-    def destroy_car(self):
+    def destroy_agent(self):
         self.world.DestroyBody(self.car.chassis_body)
         self.world.DestroyBody(self.car.wheels[0].body)
         self.world.DestroyBody(self.car.wheels[0].rim_body)

@@ -11,6 +11,7 @@ from typing import Type, TYPE_CHECKING, List, Optional
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+import math
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -146,15 +147,6 @@ def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
         ground_template = ground.Ground()
         ground_template.randomizeGround()
 
-    # # # Generate a set number of world with the same ground
-    # for i in range(0, NUMBER_OF_WORLDS):
-    #     main_world = b2World(b2Vec2(0, GRAVITY), True)
-    #     main_ground = ground.Ground(main_world)
-    #     main_ground.cloneFrom(ground_template)
-    #     main_ground.setBodies(main_world)
-    #     grounds.append(main_ground)
-    #     worlds.append(main_world)
-
     # Set up the ground
     main_ground = ground.Ground(main_world)
     main_ground.cloneFrom(ground_template)
@@ -221,16 +213,51 @@ if __name__ == "__main__":
         }
 
         def __init__(self, render_mode: Optional[str] = None):
-            self.world = b2World()
-            self.ground_template = None
+            self.world = b2World(gravity=GRAVITY, doSleep=True)
+            self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
+            self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
             self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
             self.action_space = spaces.Discrete(2)  # 2 do-able actions: gas, reverse, 3rd action is idling
             self.observation_space = spaces.Dict(
                 {
-                    "chassis_position": spaces.Box(low=0, high=1000, shape=(2,), dtype=np.float32),
-                    "chassis_angle": ...,
-                    "wheels_speed": ...,
+                    # x coordinate from 0 to 1000 and y from 0 to 700.
+                    "chassis_position": spaces.Box(low=np.array([0, 0]), high=np.array([1000, 700]), shape=(2,),
+                                                   dtype=np.float32),
+                    # Angle in degrees, can be -720 to 720.
+                    "chassis_angle": spaces.Box(low=-720, high=720, shape=(1,), dtype=np.float32),
+                    # Wheels speed, back and front wheel have same speed limits
+                    "wheels_speed": spaces.Box(low=-10 * math.pi, high=10 * math.pi, shape=(2,), dtype=np.float32),
                     # "wheels_position": ...,
                     # "current_score": ...
                 }
             )
+            assert render_mode is None or render_mode in self.metadata["render_modes"]
+            self.render_mode = render_mode
+            """
+            If human-rendering is used, `self.window` will be a reference
+            to the window that we draw to. `self.clock` will be a clock that is used
+            to ensure that the environment is rendered at the correct framerate in
+            human-mode. They will remain `None` until human-mode is used for the
+            first time.
+            """
+            self.screen: Optional[pygame.Surface] = None
+            self.clock = None
+
+        def _destroy_world(self):
+            if not self.ground:
+                return
+            self.world.contactListener = None
+            # Destroy ground bodies
+            for gras in self.ground.grassBody:
+                self.world.DestroyBody(gras)
+            for dirt in self.ground.dirtBody:
+                self.world.DestroyBody(dirt)
+            self.ground = None
+            if not self.agent:
+                return
+            # Function that destroys the whole agent, which means, car, person and wheels
+            self.agent.destroy_agent()
+            self.agent = None
+
+        def _generate_ground(self):
+            ...
