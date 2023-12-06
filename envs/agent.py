@@ -23,12 +23,9 @@ class Agent:
     def add_to_world(self):
         self.car = car.Car(x=self.x, y=hill_racing.SPAWNING_Y, world=self.world, agent=self)
 
-    def draw_agent(self):
+    def draw_agent(self, surface_screen):
         if not self.dead:  # Draw car when agent has died less than dead count amount
-            self.car.draw_person_car()
-            if hill_racing.SHOWING_GROUND:
-                hill_racing.grounds[0].draw_ground()
-                hill_racing.SHOWING_GROUND = True
+            self.car.draw_person_car(surface_screen)
 
     def update(self):
         print(self.car.chassis_body.position.x, self.car.max_distance)

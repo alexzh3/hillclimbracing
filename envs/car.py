@@ -144,23 +144,23 @@ class Car:
         self.chassis_body.userData = self
 
     # Function that draws/renders the person, wheels and the car on the screen
-    def draw_person_car(self):
+    def draw_person_car(self, surface_screen):
         # Get position and angle of the car chassis
         pos_x = self.chassis_body.position.x * hill_racing.SCALE
         pos_y = self.chassis_body.position.y * hill_racing.SCALE
         angle_degree = math.degrees(-self.chassis_body.angle)  # Pygame uses absolute degree, Box2D uses radians
         # Draw person on screen
-        self.person.draw_person()
+        self.person.draw_person(surface_screen)
         # Draw wheels on screen
         for wheel in self.wheels:
-            wheel.draw_wheel()
+            wheel.draw_wheel(surface_screen)
         # Scale the car sprite
         hill_racing.car_sprite = pygame.transform.scale(
             hill_racing.car_sprite, (self.chassis_width + 23, self.chassis_height * 2 + 10)
         )
         # Rotate the car and draw the car to screen
         rotated_image = pygame.transform.rotate(hill_racing.car_sprite, angle_degree)
-        hill_racing.screen.blit(
+        surface_screen.blit(
             source=rotated_image,
             dest=((-self.chassis_width / 2 - 7) + pos_x - hill_racing.panX,
                   -self.chassis_height - 20 + pos_y - hill_racing.panY)

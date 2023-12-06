@@ -41,15 +41,7 @@ HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
 SPAWNING_Y = 0
-
-# Game variables
-NUMBER_OF_WORLDS = 1
-grounds = []
-worlds = []
 HUMAN_PLAYING = True
-SHOWING_GROUND = False
-RESET_WORLD = False
-MAX_CHANGE_COUNTER = 5  # How long without progress in distance made do we continue the game
 
 # Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -94,12 +86,6 @@ class ContactListener(b2ContactListener):
             contact.fixtureA.body.userData.on_ground = False
         elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData.id == "ground":
             contact.fixtureA.body.userData.on_ground = False
-
-    # def PreSolve(self, contact, oldManifold) -> None:
-    #     pass
-    #
-    # def PostSolve(self, contact, impulse) -> None:
-    #     pass
 
 
 # Key events handler when human is playing
@@ -158,22 +144,23 @@ def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
 
 
 def draw(render_ground, render_agent) -> None:
-    # Clear the screen
-    screen.fill((255, 255, 255))
     # Fill screen with sky colour
     screen.fill((135, 206, 235))
     # Draw the ground to screen
-    render_ground.draw_ground()
+    render_ground.draw_ground(screen)
     # Draw the agent
-    render_agent.draw_agent()
+    render_agent.draw_agent(screen)
     # Update the screen
     pygame.display.flip()
 
 
 # For human manual play
-if __name__ == "__main__":
+def human_play():
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
+    # Initialize key variables for when human plays
+    right_key_down = False
+    left_key_down = False
     while not current_agent.dead:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -181,11 +168,7 @@ if __name__ == "__main__":
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Escape to quit game
                 print("Escape was pressed, quiting the game...")
                 pygame.quit()
-            if HUMAN_PLAYING:
-                # Initialize key variables for when human plays
-                right_key_down = False
-                left_key_down = False
-                handle_key_events(event, current_agent, right_key_down, left_key_down)
+            handle_key_events(event, current_agent, right_key_down, left_key_down)
 
         # Call the draw function
         draw(current_ground, current_agent)
@@ -193,10 +176,6 @@ if __name__ == "__main__":
         current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
         # Update Agent
         current_agent.update()
-        # # Drive forward
-        # current_agent.car.motor_on(forward=True)
-        # Clear forces
-        current_world.ClearForces()
         # Update render screen and fps
         pygame.display.flip()
         clock.tick(FPS)
@@ -206,133 +185,159 @@ if __name__ == "__main__":
     pygame.quit()
 
 
-    class HillRacing(gym.Env):
-        metadata = {
-            "render_modes": ["human", "rgb_array"],
-            "render_fps": FPS
+if __name__ == "__main__":
+    if HUMAN_PLAYING:
+        human_play()
+
+
+class HillRacing(gym.Env):
+    metadata = {
+        "render_modes": ["human"],
+        "render_fps": FPS
+    }
+
+    def __init__(self, render_mode: Optional[str] = None):
+        self.world = b2World(gravity=GRAVITY, doSleep=True)
+        self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
+        self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
+        self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
+        self.action_space = spaces.Discrete(3)  # 2 do-able actions: gas, reverse, 3rd action is idling
+        self.observation_space = spaces.Dict(
+            {
+                # x coordinate from 0 to 1000 and y from 0 to 700.
+                "chassis_position": spaces.Box(low=np.array([0, 0]), high=np.array([1000, 700]), shape=(2,),
+                                               dtype=np.float32),
+                # Angle in degrees, can be -720 to 720.
+                "chassis_angle": spaces.Box(low=-720, high=720, shape=(1,), dtype=np.float32),
+                # Wheels speed, back and front wheel have same speed limits
+                "wheels_speed": spaces.Box(low=-10 * math.pi, high=10 * math.pi, shape=(2,), dtype=np.float32),
+                # "wheels_position": ...,
+                # "current_score": ...
+            }
+        )
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = render_mode
+        self.screen: Optional[pygame.Surface] = None
+        self.clock = None
+
+    def _destroy_world(self):
+        if not self.ground:
+            return
+        self.world.contactListener = None
+        # Destroy ground bodies
+        for gras in self.ground.grassBody:
+            self.world.DestroyBody(gras)
+        for dirt in self.ground.dirtBody:
+            self.world.DestroyBody(dirt)
+        self.ground = None
+        if not self.agent:
+            return
+        # Function that destroys the whole agent, which means, car, person and wheels
+        self.agent.destroy_agent()
+        self.agent = None
+
+    def _generate_ground(self):
+        # Variables
+        ground_template = ground.Ground()  # Template to store the ground vectors
+        ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
+
+        # Generate until we find ground that is not too steep
+        while ground_template.groundTooSteep():
+            ground_template = ground.Ground()
+            ground_template.randomizeGround()
+
+        # Add the ground to the world
+        main_ground = ground.Ground(self.world)
+        main_ground.cloneFrom(ground_template)  # Copy the ground_template to main_ground
+        main_ground.setBodies(self.world)  # Add the bodies to the world
+
+    def _generate_agent(self):
+        self.agent = agent.Agent(real_world=self.world)
+        self.agent.add_to_world()
+
+    def _get_obs(self):
+        return {
+            "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
+            "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
+            "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joints.speed)
         }
 
-        def __init__(self, render_mode: Optional[str] = None):
-            self.world = b2World(gravity=GRAVITY, doSleep=True)
-            self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
-            self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
-            self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
-            self.action_space = spaces.Discrete(3)  # 2 do-able actions: gas, reverse, 3rd action is idling
-            self.observation_space = spaces.Dict(
-                {
-                    # x coordinate from 0 to 1000 and y from 0 to 700.
-                    "chassis_position": spaces.Box(low=np.array([0, 0]), high=np.array([1000, 700]), shape=(2,),
-                                                   dtype=np.float32),
-                    # Angle in degrees, can be -720 to 720.
-                    "chassis_angle": spaces.Box(low=-720, high=720, shape=(1,), dtype=np.float32),
-                    # Wheels speed, back and front wheel have same speed limits
-                    "wheels_speed": spaces.Box(low=-10 * math.pi, high=10 * math.pi, shape=(2,), dtype=np.float32),
-                    # "wheels_position": ...,
-                    # "current_score": ...
-                }
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
+        super().reset(seed=seed)
+        # Destroy world
+        self._destroy_world()
+        self.game_over = False
+        # Generate new world
+        self.world.contactListener = ContactListener
+        self._generate_ground()
+        self._generate_agent()
+        # Get the initial observations
+        observations = self._get_obs()
+        # Render mode
+        if self.render_mode == "human":
+            self.render()
+
+        return observations
+
+    def step(self, action: int):
+        terminated = False
+        reward = 0
+        observation = {}
+        info = {}
+
+        match action:
+            case 0:  # Idle
+                self.agent.car.motor_off()
+            case 1:  # Gas
+                self.agent.car.motor_on(forward=True)
+            case 2:  # Reverse
+                self.agent.car.motor_on(forward=False)
+
+        # Step forward in the world
+        self.world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
+
+        # Dying is termination
+        if self.agent.dead:
+            terminated = True
+        # When agent reaches the end, meaning 1000 meters
+        elif self.agent.car.chassis_body.position.x >= 999:
+            terminated = True
+
+        # Reward is equal to 1 + current_distance - max_distance
+        if self.agent.car.chassis_body.position.x >= self.agent.car.max_distance:
+            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance) * 10
+        # Reward is equal to -1 + current_distance - max_distance
+        elif self.agent.car.chassis_body.position.x < self.agent.car.max_distance:
+            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance) * 10
+
+        # Get the current step observation
+        observation = self._get_obs()
+
+        return observation, reward, terminated, False, info
+
+    def render(self):
+        if self.screen is None and self.render_mode == "human":
+            pygame.init()
+            pygame.display.init()
+            self.screen = pygame.display.set_mode(
+                (SCREEN_WIDTH, SCREEN_HEIGHT)
             )
-            assert render_mode is None or render_mode in self.metadata["render_modes"]
-            self.render_mode = render_mode
-            self.screen: Optional[pygame.Surface] = None
-            self.clock = None
+            pygame.display.set_caption("Hill climb RL")
+        if self.clock is None and self.render_mode == "human":
+            self.clock = pygame.time.Clock()
+            clock.tick(self.metadata["render_fps"])
+        if self.render_mode == "human":
+            assert self.screen is not None
+            # Fill screen with sky colour
+            self.screen.fill((135, 206, 235))
+            # Draw the ground to screen
+            self.ground.draw_ground(self.screen)
+            # Draw the agent
+            self.agent.draw_agent(self.screen)
+            # Update the screen
+            pygame.display.flip()
 
-        def _destroy_world(self):
-            if not self.ground:
-                return
-            self.world.contactListener = None
-            # Destroy ground bodies
-            for gras in self.ground.grassBody:
-                self.world.DestroyBody(gras)
-            for dirt in self.ground.dirtBody:
-                self.world.DestroyBody(dirt)
-            self.ground = None
-            if not self.agent:
-                return
-            # Function that destroys the whole agent, which means, car, person and wheels
-            self.agent.destroy_agent()
-            self.agent = None
-
-        def _generate_ground(self):
-            # Variables
-            ground_template = ground.Ground()  # Template to store the ground vectors
-            ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
-
-            # Generate until we find ground that is not too steep
-            while ground_template.groundTooSteep():
-                ground_template = ground.Ground()
-                ground_template.randomizeGround()
-
-            # Add the ground to the world
-            main_ground = ground.Ground(self.world)
-            main_ground.cloneFrom(ground_template)  # Copy the ground_template to main_ground
-            main_ground.setBodies(self.world)  # Add the bodies to the world
-
-        def _generate_agent(self):
-            self.agent = agent.Agent(real_world=self.world)
-            self.agent.add_to_world()
-
-        def _get_obs(self):
-            return {
-                "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
-                "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
-                "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joints.speed)
-            }
-
-        def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
-            super().reset(seed=seed)
-            # Destroy world
-            self._destroy_world()
-            self.game_over = False
-            # Generate new world
-            self.world.contactListener = ContactListener
-            self._generate_ground()
-            self._generate_agent()
-            # Get the initial observations
-            observations = self._get_obs()
-            # Render mode
-            if self.render_mode == "human":
-                self.render()
-
-            return observations
-
-        def step(self, action: int):
-            terminated = False
-            reward = 0
-            observation = {}
-            info = {}
-
-            match action:
-                case 0:  # Idle
-                    self.agent.car.motor_off()
-                case 1:  # Gas
-                    self.agent.car.motor_on(forward=True)
-                case 2:  # Reverse
-                    self.agent.car.motor_on(forward=False)
-
-            # Step forward in the world
-            self.world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
-
-            # Dying is termination
-            if self.agent.dead:
-                terminated = True
-            # When agent reaches the end, meaning 1000 meters
-            elif self.agent.car.chassis_body.position.x >= 999:
-                terminated = True
-
-            # Reward is equal to 1 + current_distance - max_distance
-            if self.agent.car.chassis_body.position.x >= self.agent.car.max_distance:
-                reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
-            # Reward is equal to -1 + current_distance - max_distance
-            elif self.agent.car.chassis_body.position.x < self.agent.car.max_distance:
-                reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
-
-            # Get the current step observation
-            observation = self._get_obs()
-
-            return observation, reward, terminated, False, info
-
-        def render(self):
-            ...
-
-        def close(self):
-            ...
+    def close(self):
+        if self.screen is not None:
+            pygame.display.quit()
+            pygame.quit()

@@ -160,7 +160,7 @@ class Ground:
         else:
             self.dirtBody.CreateFixture(fixDef)
 
-    def draw_ground(self):
+    def draw_ground(self, surface_screen):
         # Light brown
         # ground_color = (102, 50, 20);
         # Brown
@@ -180,12 +180,12 @@ class Ground:
 
         # Draw the hills
         # Fill the base ground until the first layer of ground
-        pygame.draw.polygon(hill_racing.screen, ground_color, vertices)
-        pygame.draw.polygon(hill_racing.screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the
+        pygame.draw.polygon(surface_screen, ground_color, vertices)
+        pygame.draw.polygon(surface_screen, grass_color, vertices, width=self.grass_thickness * 2)  # Draw the
 
         # Draw the transition colours from ground to grass (down to up)
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(hill_racing.screen, (66, 60, 0),
+            pygame.draw.line(surface_screen, (66, 60, 0),
                              (self.ground_vectors[i].x * hill_racing.SCALE - hill_racing.panX,
                               self.ground_vectors[i].y * hill_racing.SCALE + 9 - hill_racing.panY),
                              (self.ground_vectors[i + 1].x * hill_racing.SCALE - hill_racing.panX,
@@ -193,7 +193,7 @@ class Ground:
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(hill_racing.screen, (44, 90, 0),
+            pygame.draw.line(surface_screen, (44, 90, 0),
                              (self.ground_vectors[i].x * hill_racing.SCALE - hill_racing.panX,
                               self.ground_vectors[i].y * hill_racing.SCALE + 6 - hill_racing.panY),
                              (self.ground_vectors[i + 1].x * hill_racing.SCALE - hill_racing.panX,
@@ -201,7 +201,7 @@ class Ground:
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(hill_racing.screen, (0, 140, 0),
+            pygame.draw.line(surface_screen, (0, 140, 0),
                              (self.ground_vectors[i].x * hill_racing.SCALE - hill_racing.panX,
                               self.ground_vectors[i].y * hill_racing.SCALE - 5 - hill_racing.panY),
                              (self.ground_vectors[i + 1].x * hill_racing.SCALE - hill_racing.panX,
@@ -209,7 +209,7 @@ class Ground:
                              3)
 
         for i in range(len(self.ground_vectors) - 3):
-            pygame.draw.line(hill_racing.screen, (0, 130, 0),
+            pygame.draw.line(surface_screen, (0, 130, 0),
                              (self.ground_vectors[i].x * hill_racing.SCALE - hill_racing.panX,
                               self.ground_vectors[i].y * hill_racing.SCALE - 3 - hill_racing.panY),
                              (self.ground_vectors[i + 1].x * hill_racing.SCALE - hill_racing.panX,

@@ -93,7 +93,7 @@ class Wheel:
         self.body.CreateFixture(wheel_fixture)
         self.body.userData = self
 
-    def draw_wheel(self):
+    def draw_wheel(self, surface_screen):
         # Scale back position of wheel body
         pos_x = self.body.position.x * hill_racing.SCALE
         pos_y = self.body.position.y * hill_racing.SCALE
@@ -105,7 +105,7 @@ class Wheel:
         # Rotate the wheel by body angle
         rotated_wheel_sprite = pygame.transform.rotate(hill_racing.wheel_sprite, degrees_angle)
         # Update the wheel on screen position
-        hill_racing.screen.blit(
+        surface_screen.blit(
             source=rotated_wheel_sprite,
             dest=(-self.radius + pos_x - hill_racing.panX, -self.radius + pos_y - hill_racing.panY),
         )

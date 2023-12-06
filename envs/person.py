@@ -39,9 +39,9 @@ class Person:
         self.dist_joint_head_torso = self.world.CreateJoint(dist_joint_def)
 
     # Function to render/draw the head and torso
-    def draw_person(self):
-        self.head.draw_head()
-        self.torso.draw_torso()
+    def draw_person(self, surface_screen):
+        self.head.draw_head(surface_screen)
+        self.torso.draw_torso(surface_screen)
 
 
 class Head:
@@ -75,7 +75,7 @@ class Head:
         self.body.CreateFixture(fix_def)
 
     # Function that draws the head
-    def draw_head(self):
+    def draw_head(self, surface_screen):
         pos_x = self.body.position.x * hill_racing.SCALE
         pos_y = self.body.position.y * hill_racing.SCALE
         degrees_angle = math.degrees(-self.body.angle)
@@ -86,7 +86,7 @@ class Head:
         # Get angle and rotate head
         rotated_head_sprite = pygame.transform.rotate(hill_racing.head_sprite, degrees_angle)
         # Update the head on screen position
-        hill_racing.screen.blit(
+        surface_screen.blit(
             source=rotated_head_sprite,
             dest=(pos_x - hill_racing.panX - self.radius + 12, pos_y - hill_racing.panY - self.radius + 18)
         )
@@ -125,7 +125,7 @@ class Torso:
         self.body.CreateFixture(fix_def)
 
     # Function that draws the torso to the screen
-    def draw_torso(self):
+    def draw_torso(self, surface_screen):
         pos_x = self.body.position.x * hill_racing.SCALE
         pos_y = self.body.position.y * hill_racing.SCALE
         degrees_angle = math.degrees(self.body.angle) * -1
@@ -136,7 +136,7 @@ class Torso:
         # Get angle and rotate head
         rotated_torso_sprite = pygame.transform.rotate(hill_racing.torso_sprite, degrees_angle)
         # Update the head on screen position
-        hill_racing.screen.blit(
+        surface_screen.blit(
             source=rotated_torso_sprite,
             dest=(pos_x - hill_racing.panX, pos_y - hill_racing.panY)
         )
