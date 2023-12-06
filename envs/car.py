@@ -24,7 +24,6 @@ class Car:
         self.chassis_height = 40
         self.wheel_size = 17
         self.dead = False
-        self.change_counter = 0
         self.shapes = []
         self.car_density = 1
         self.car_restitution = 0.01
@@ -169,20 +168,15 @@ class Car:
 
     # A function that updates whether the agent status is alive or death
     def update_status(self):
-        x = self.chassis_body.position.x * hill_racing.SCALE
-        y = self.chassis_body.position.y * hill_racing.SCALE
-        self.change_counter += 1
+        pos_x = self.chassis_body.position.x
+        pos_y = self.chassis_body.position.y * hill_racing.SCALE
+
         # Check whether we are moving forward with the car
-        if x > self.max_distance:
-            self.max_distance = x
-            if math.floor(self.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
-                self.change_counter = 0
-        else:  # When no significant distance has been made for a long time we set agent status to dead
-            if self.change_counter > hill_racing.MAX_CHANGE_COUNTER:
-                if not hill_racing.HUMAN_PLAYING:
-                    self.agent.dead = True
+        if pos_x > self.max_distance:
+            self.max_distance = pos_x
+
         # When agent is out of the screen height, we set status to dead
-        if not self.dead and y > hill_racing.SCREEN_HEIGHT:
+        if not self.dead and pos_y > hill_racing.SCREEN_HEIGHT:
             self.dead = True
             self.agent.dead = True
 

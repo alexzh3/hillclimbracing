@@ -32,7 +32,6 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
-TIME_STEP = 1.0 / FPS
 DIFFICULTY = 0  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 panX = 0
 panY = 0
@@ -81,7 +80,7 @@ class ContactListener(b2ContactListener):
         if head_fixture and ground_fixture and head_fixture.body.joints:
             torso = head_fixture.body.joints[0].other  # Get the torso body object using the joint
             car = torso.joints[3].other.userData  # Get the car body using the torso
-            car.agent.shadow_dead = True
+            car.agent.dead = True
 
         # Check if we contact the wheel with the ground or vice versa.
         if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData == "ground":
@@ -175,7 +174,7 @@ def draw(render_ground, render_agent) -> None:
 if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
-    while not current_agent.shadow_dead:
+    while not current_agent.dead:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -191,7 +190,7 @@ if __name__ == "__main__":
         # Call the draw function
         draw(current_ground, current_agent)
         # Box2D simulation
-        current_world.Step(TIME_STEP, 10, 10)
+        current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
         # Update Agent
         current_agent.update()
         # # Drive forward
@@ -297,6 +296,11 @@ if __name__ == "__main__":
             return observations
 
         def step(self, action: int):
+            terminated = False
+            reward = 0
+            observation = {}
+            info = {}
+
             match action:
                 case 0:  # Idle
                     self.agent.car.motor_off()
@@ -304,14 +308,26 @@ if __name__ == "__main__":
                     self.agent.car.motor_on(forward=True)
                 case 2:  # Reverse
                     self.agent.car.motor_on(forward=False)
-            terminated = False
+
+            # Step forward in the world
+            self.world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
+
+            # Dying is termination
+            if self.agent.dead:
+                terminated = True
             # When agent reaches the end, meaning 1000 meters
-            if self.agent.car.chassis_body.position.x >= 999:
+            elif self.agent.car.chassis_body.position.x >= 999:
                 terminated = True
 
-            reward = ...
+            # Reward is equal to 1 + current_distance - max_distance
+            if self.agent.car.chassis_body.position.x >= self.agent.car.max_distance:
+                reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
+            # Reward is equal to -1 + current_distance - max_distance
+            elif self.agent.car.chassis_body.position.x < self.agent.car.max_distance:
+                reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
+
+            # Get the current step observation
             observation = self._get_obs()
-            info = ...
 
             return observation, reward, terminated, False, info
 
