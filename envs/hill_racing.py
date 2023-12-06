@@ -171,6 +171,7 @@ def draw(render_ground, render_agent) -> None:
     pygame.display.flip()
 
 
+# For human manual play
 if __name__ == "__main__":
     # Initialize world
     current_ground, current_agent, current_world = setup_world()
@@ -217,7 +218,7 @@ if __name__ == "__main__":
             self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
             self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
             self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
-            self.action_space = spaces.Discrete(2)  # 2 do-able actions: gas, reverse, 3rd action is idling
+            self.action_space = spaces.Discrete(3)  # 2 do-able actions: gas, reverse, 3rd action is idling
             self.observation_space = spaces.Dict(
                 {
                     # x coordinate from 0 to 1000 and y from 0 to 700.
@@ -271,6 +272,13 @@ if __name__ == "__main__":
             self.agent = agent.Agent(real_world=self.world)
             self.agent.add_to_world()
 
+        def _get_obs(self):
+            return {
+                "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
+                "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
+                "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joints.speed)
+            }
+
         def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
             super().reset(seed=seed)
             # Destroy world
@@ -281,19 +289,34 @@ if __name__ == "__main__":
             self._generate_ground()
             self._generate_agent()
             # Get the initial observations
-            observations = {
-                "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
-                "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
-                "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joints.speed)
-                }
+            observations = self._get_obs()
             # Render mode
             if self.render_mode == "human":
                 self.render()
 
             return observations
 
-        def step(self, action: np.ndarray):
-            ...
+        def step(self, action: int):
+            match action:
+                case 0:  # Idle
+                    self.agent.car.motor_off()
+                case 1:  # Gas
+                    self.agent.car.motor_on(forward=True)
+                case 2:  # Reverse
+                    self.agent.car.motor_on(forward=False)
+            terminated = False
+            # When agent reaches the end, meaning 1000 meters
+            if self.agent.car.chassis_body.position.x >= 999:
+                terminated = True
+
+            reward = ...
+            observation = self._get_obs()
+            info = ...
+
+            return observation, reward, terminated, False, info
 
         def render(self):
+            ...
+
+        def close(self):
             ...
