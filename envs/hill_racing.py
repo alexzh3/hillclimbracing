@@ -190,7 +190,7 @@ if __name__ == "__main__":
         human_play()
 
 
-class HillRacing(gym.Env):
+class HillRacingEnv(gym.Env):
     metadata = {
         "render_modes": ["human"],
         "render_fps": FPS
