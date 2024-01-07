@@ -1,5 +1,4 @@
 import math
-import random
 import car
 import hill_racing
 from gym.error import DependencyNotInstalled

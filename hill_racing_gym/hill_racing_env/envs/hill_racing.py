@@ -32,7 +32,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale
 FPS = 60  # frames per second
-DIFFICULTY = 0  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
+DIFFICULTY = -100  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 panX = 0
 panY = 0
 GRAVITY = 10
@@ -41,7 +41,7 @@ HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
 SPAWNING_Y = 0
-HUMAN_PLAYING = True
+HUMAN_PLAYING = False
 
 # Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -185,11 +185,6 @@ def human_play():
     pygame.quit()
 
 
-if __name__ == "__main__":
-    if HUMAN_PLAYING:
-        human_play()
-
-
 class HillRacingEnv(gym.Env):
     metadata = {
         "render_modes": ["human"],
@@ -197,7 +192,7 @@ class HillRacingEnv(gym.Env):
     }
 
     def __init__(self, render_mode: Optional[str] = None):
-        self.world = b2World(gravity=GRAVITY, doSleep=True)
+        self.world = b2World(gravity=(0, GRAVITY), doSleep=True)
         self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
         self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
         self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
@@ -259,17 +254,17 @@ class HillRacingEnv(gym.Env):
         return {
             "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
             "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
-            "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joints.speed)
+            "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joint.speed)
         }
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         # Destroy world
         self._destroy_world()
-        self.game_over = False
+        # self.game_over = False
         # Generate new world
-        self.world.contactListener = ContactListener
-        self._generate_ground()
+        self.world.contactListener = ContactListener()
+        # self._generate_ground()
         self._generate_agent()
         # Get the initial observations
         observations = self._get_obs()
@@ -316,6 +311,15 @@ class HillRacingEnv(gym.Env):
         return observation, reward, terminated, False, info
 
     def render(self):
+        if self.render_mode is None:
+            assert self.spec is not None
+            gym.logger.warn(
+                "You are calling render method without specifying any render mode. "
+                "You can specify the render_mode at initialization, "
+                f'e.g. gym.make("{self.spec.id}", render_mode="rgb_array")'
+            )
+            return
+
         if self.screen is None and self.render_mode == "human":
             pygame.init()
             pygame.display.init()
@@ -326,18 +330,40 @@ class HillRacingEnv(gym.Env):
         if self.clock is None and self.render_mode == "human":
             self.clock = pygame.time.Clock()
             clock.tick(self.metadata["render_fps"])
-        if self.render_mode == "human":
-            assert self.screen is not None
-            # Fill screen with sky colour
-            self.screen.fill((135, 206, 235))
-            # Draw the ground to screen
-            self.ground.draw_ground(self.screen)
-            # Draw the agent
-            self.agent.draw_agent(self.screen)
-            # Update the screen
-            pygame.display.flip()
+
+        assert self.screen is not None
+        assert self.clock is not None
+        # Fill screen with sky colour
+        self.screen.fill((135, 206, 235))
+        # Draw the ground to screen
+        self.ground.draw_ground(self.screen)
+        # Draw the agent
+        self.agent.draw_agent(self.screen)
+        # Update the screen
+        pygame.display.flip()
 
     def close(self):
         if self.screen is not None:
             pygame.display.quit()
             pygame.quit()
+
+
+if __name__ == "__main__":
+    if HUMAN_PLAYING:
+        human_play()
+    else:
+        env = HillRacingEnv(render_mode=None)
+        episodes = 10
+        for episode in range(1, episodes + 1):
+            state = env.reset()
+            done = False
+            score = 0
+
+            while not done:
+                # env.render()
+                action = env.action_space.sample()
+                obs, reward, done, truncated, info = env.step(action)
+                score += reward
+            print('Episode:{} Score:{}'.format(episode, score))
+            # TBD: 1. Ground needs to be generated once and has to be the same for every episode, 2. Fix render,
+            # why does it still open render window when render_mode = None?

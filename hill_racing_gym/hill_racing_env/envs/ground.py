@@ -9,7 +9,6 @@ import pygame
 import hill_racing
 import random
 import noise
-from typing import Type
 
 
 class Ground:
