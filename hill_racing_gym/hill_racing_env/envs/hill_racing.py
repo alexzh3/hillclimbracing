@@ -212,10 +212,8 @@ class HillRacingEnv(gym.Env):
             return
         self.world.contactListener = None
         # Destroy ground bodies
-        for grass in self.ground.grassBody:
-            self.world.DestroyBody(grass)
-        for dirt in self.ground.dirtBody:
-            self.world.DestroyBody(dirt)
+        self.world.DestroyBody(self.ground.grassBody)
+        self.world.DestroyBody(self.ground.dirtBody)
         self.ground = None
         if not self.agent:
             return
@@ -237,7 +235,6 @@ class HillRacingEnv(gym.Env):
         self.ground = ground.Ground(self.world)
         self.ground.cloneFrom(ground_template)  # Copy the ground_template to self.ground
         self.ground.setBodies(self.world)  # Add the bodies to the world
-        print(self.ground)  # For debugging
 
     def _generate_agent(self):
         self.agent = agent.Agent(real_world=self.world)
@@ -363,4 +360,5 @@ if __name__ == "__main__":
                 action = env.action_space.sample()
                 obs, reward, done, truncated, info = env.step(action)
                 score += reward
+
             print('Episode:{} Score:{}'.format(episode, score))

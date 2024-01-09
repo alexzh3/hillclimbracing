@@ -60,8 +60,8 @@ class Agent:
         self.world.DestroyBody(self.car.wheels[1].rim_body)
         self.world.DestroyBody(self.car.person.head.body)
         self.world.DestroyBody(self.car.person.torso.body)
-        self.world.DestroyJoint(self.car.dist_joint_torso_chassis)
-        self.world.DestroyJoint(self.car.person.dist_joint_head_torso)
-        self.world.DestroyJoint(self.car.rev_joint_torso_chassis)
-        self.world.DestroyJoint(self.car.person.rev_joint_head_torso)
+        # self.world.DestroyJoint(self.car.dist_joint_torso_chassis)
+        # self.world.DestroyJoint(self.car.person.dist_joint_head_torso)
+        # self.world.DestroyJoint(self.car.rev_joint_torso_chassis)
+        # self.world.DestroyJoint(self.car.person.rev_joint_head_torso)
 
