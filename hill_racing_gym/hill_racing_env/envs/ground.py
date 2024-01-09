@@ -9,6 +9,7 @@ import pygame
 import hill_racing
 import random
 import noise
+from typing import Optional
 
 
 class Ground:
@@ -27,8 +28,10 @@ class Ground:
         self.steepness_Level = 0
         self.estimated_difficulty = 0
 
-    def randomizeGround(self):
-        startingPoint = random.uniform(0, 100000)
+    def randomizeGround(self, seed: Optional[int] = None):
+        if seed is not None:
+            random.seed(seed)
+        ground_seed = random.uniform(0, 100000)  # Generates a random seed that will define the terrain
         totalDifference = 0
 
         # Iterate over a range from 0 to self.distance with a step size of self.smoothness
@@ -40,14 +43,14 @@ class Ground:
             # Calculate the steepness level using linear interpolation between 130 and 250
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
-            noisedY = abs(noise.pnoise1(startingPoint + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
+            noisedY = abs(noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level
             maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition
             if i < flatLength:
-                noisedY = abs(noise.pnoise1(startingPoint, octaves=4))
+                noisedY = abs(noise.pnoise1(ground_seed, octaves=4))
                 heightAddition = (flatLength - i) / 25
 
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition

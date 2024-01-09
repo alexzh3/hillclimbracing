@@ -7,7 +7,7 @@ except ImportError:
 import ground
 import agent
 import pygame
-from typing import Type, TYPE_CHECKING, List, Optional
+from typing import Optional
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
@@ -114,11 +114,34 @@ def handle_key_events(human_event: pygame.event, human_agent: 'agent.Agent',
                 human_agent.car.motor_off()
 
 
-# Initialize Pygame
-pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Hill climb")
-clock = pygame.time.Clock()
+def human_play():
+    # Initialize world
+    current_ground, current_agent, current_world = setup_world()
+    # Initialize key variables for when human plays
+    right_key_down = False
+    left_key_down = False
+    while not current_agent.dead:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Escape to quit game
+                print("Escape was pressed, quiting the game...")
+                pygame.quit()
+            handle_key_events(event, current_agent, right_key_down, left_key_down)
+
+        # Call the draw function
+        draw(current_ground, current_agent)
+        # Box2D simulation
+        current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
+        # Update Agent
+        current_agent.update()
+        # Update render screen and fps
+        pygame.display.flip()
+        clock.tick(FPS)
+    # Print final distance
+    print(f"Final distance: {current_agent.car.max_distance}")
+    # Quit the game
+    pygame.quit()
 
 
 def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
@@ -152,37 +175,6 @@ def draw(render_ground, render_agent) -> None:
     render_agent.draw_agent(screen)
     # Update the screen
     pygame.display.flip()
-
-
-# For human manual play
-def human_play():
-    # Initialize world
-    current_ground, current_agent, current_world = setup_world()
-    # Initialize key variables for when human plays
-    right_key_down = False
-    left_key_down = False
-    while not current_agent.dead:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Escape to quit game
-                print("Escape was pressed, quiting the game...")
-                pygame.quit()
-            handle_key_events(event, current_agent, right_key_down, left_key_down)
-
-        # Call the draw function
-        draw(current_ground, current_agent)
-        # Box2D simulation
-        current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
-        # Update Agent
-        current_agent.update()
-        # Update render screen and fps
-        pygame.display.flip()
-        clock.tick(FPS)
-    # Print final distance
-    print(f"Final distance: {current_agent.car.max_distance}")
-    # Quit the game
-    pygame.quit()
 
 
 class HillRacingEnv(gym.Env):
@@ -220,8 +212,8 @@ class HillRacingEnv(gym.Env):
             return
         self.world.contactListener = None
         # Destroy ground bodies
-        for gras in self.ground.grassBody:
-            self.world.DestroyBody(gras)
+        for grass in self.ground.grassBody:
+            self.world.DestroyBody(grass)
         for dirt in self.ground.dirtBody:
             self.world.DestroyBody(dirt)
         self.ground = None
@@ -231,10 +223,10 @@ class HillRacingEnv(gym.Env):
         self.agent.destroy_agent()
         self.agent = None
 
-    def _generate_ground(self):
+    def _generate_ground(self, seed: Optional[int] = None):
         # Variables
         ground_template = ground.Ground()  # Template to store the ground vectors
-        ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
+        ground_template.randomizeGround(seed=seed)  # Randomizes the ground using the difficulty and perlin noise
 
         # Generate until we find ground that is not too steep
         while ground_template.groundTooSteep():
@@ -242,9 +234,10 @@ class HillRacingEnv(gym.Env):
             ground_template.randomizeGround()
 
         # Add the ground to the world
-        main_ground = ground.Ground(self.world)
-        main_ground.cloneFrom(ground_template)  # Copy the ground_template to main_ground
-        main_ground.setBodies(self.world)  # Add the bodies to the world
+        self.ground = ground.Ground(self.world)
+        self.ground.cloneFrom(ground_template)  # Copy the ground_template to self.ground
+        self.ground.setBodies(self.world)  # Add the bodies to the world
+        print(self.ground)  # For debugging
 
     def _generate_agent(self):
         self.agent = agent.Agent(real_world=self.world)
@@ -264,7 +257,7 @@ class HillRacingEnv(gym.Env):
         # self.game_over = False
         # Generate new world
         self.world.contactListener = ContactListener()
-        # self._generate_ground()
+        self._generate_ground(seed=seed)
         self._generate_agent()
         # Get the initial observations
         observations = self._get_obs()
@@ -277,7 +270,6 @@ class HillRacingEnv(gym.Env):
     def step(self, action: int):
         terminated = False
         reward = 0
-        observation = {}
         info = {}
 
         match action:
@@ -290,6 +282,8 @@ class HillRacingEnv(gym.Env):
 
         # Step forward in the world
         self.world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
+        # Update car status
+        self.agent.car.update_status()
 
         # Dying is termination
         if self.agent.dead:
@@ -298,12 +292,12 @@ class HillRacingEnv(gym.Env):
         elif self.agent.car.chassis_body.position.x >= 999:
             terminated = True
 
-        # Reward is equal to 1 + current_distance - max_distance
+        # Reward is equal to 1 + current_position - max_distance
         if self.agent.car.chassis_body.position.x >= self.agent.car.max_distance:
-            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance) * 10
+            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
         # Reward is equal to -1 + current_distance - max_distance
         elif self.agent.car.chassis_body.position.x < self.agent.car.max_distance:
-            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance) * 10
+            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
 
         # Get the current step observation
         observation = self._get_obs()
@@ -329,7 +323,7 @@ class HillRacingEnv(gym.Env):
             pygame.display.set_caption("Hill climb RL")
         if self.clock is None and self.render_mode == "human":
             self.clock = pygame.time.Clock()
-            clock.tick(self.metadata["render_fps"])
+            self.clock.tick(self.metadata["render_fps"])
 
         assert self.screen is not None
         assert self.clock is not None
@@ -350,20 +344,23 @@ class HillRacingEnv(gym.Env):
 
 if __name__ == "__main__":
     if HUMAN_PLAYING:
+        # Initialize Pygame
+        pygame.init()
+        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Hill climb")
+        clock = pygame.time.Clock()
         human_play()
     else:
-        env = HillRacingEnv(render_mode=None)
+        env = HillRacingEnv(render_mode="human")
         episodes = 10
         for episode in range(1, episodes + 1):
-            state = env.reset()
+            state = env.reset(seed=1)
             done = False
             score = 0
 
             while not done:
-                # env.render()
+                env.render()
                 action = env.action_space.sample()
                 obs, reward, done, truncated, info = env.step(action)
                 score += reward
             print('Episode:{} Score:{}'.format(episode, score))
-            # TBD: 1. Ground needs to be generated once and has to be the same for every episode, 2. Fix render,
-            # why does it still open render window when render_mode = None?
