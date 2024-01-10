@@ -1,11 +1,5 @@
 import math
-
-from gym.error import DependencyNotInstalled
-
-try:
-    from Box2D import *
-except ImportError:
-    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
+from Box2D import *
 import pygame
 import hill_racing
 

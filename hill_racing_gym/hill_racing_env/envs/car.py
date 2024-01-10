@@ -4,12 +4,7 @@ import random
 import hill_racing
 import person
 import wheels
-from gym.error import DependencyNotInstalled
-
-try:
-    from Box2D import *
-except ImportError:
-    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
+from Box2D import *
 
 
 class Car:
@@ -28,6 +23,7 @@ class Car:
         self.car_density = 1
         self.car_restitution = 0.01
         self.max_distance = 0
+        self.prev_max_distance = 0
         self.motor_state = 0
         self.rotation_torque = 2
         self.motor_speed = 10
@@ -173,7 +169,9 @@ class Car:
 
         # Check whether we are moving forward with the car
         if pos_x > self.max_distance:
+            self.prev_max_distance = self.max_distance
             self.max_distance = pos_x
+
 
         # When agent is out of the screen height, we set status to dead
         if not self.dead and pos_y > hill_racing.SCREEN_HEIGHT:

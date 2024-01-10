@@ -3,15 +3,17 @@ from gymnasium.error import DependencyNotInstalled
 try:
     from Box2D import *
 except ImportError:
-    raise DependencyNotInstalled("box2d is not installed")
-import ground
-import agent
+    raise DependencyNotInstalled("box2d is not installed, try 'pip install box2d box2d-kengz'")
 import pygame
-from typing import Optional
-import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+from typing import Optional
+import numpy as np
 import math
+import ground
+import agent
+from stable_baselines3 import A2C
+from stable_baselines3.common.env_checker import check_env
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -242,13 +244,16 @@ class HillRacingEnv(gym.Env):
 
     def _get_obs(self):
         return {
-            "chassis_position": (self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y),
-            "chassis_angle": math.degrees(-self.agent.car.chassis_body.angle),
-            "wheels_speed": (self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joint.speed)
+            "chassis_position": np.array(
+                [self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y], dtype=np.float32),
+            "chassis_angle": np.array([math.degrees(-self.agent.car.chassis_body.angle)], dtype=np.float32),
+            "wheels_speed": np.array([self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joint.speed],
+                                     dtype=np.float32)
         }
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
+        info = {}
         # Destroy world
         self._destroy_world()
         # self.game_over = False
@@ -262,7 +267,7 @@ class HillRacingEnv(gym.Env):
         if self.render_mode == "human":
             self.render()
 
-        return observations
+        return observations, info
 
     def step(self, action: int):
         terminated = False
@@ -279,8 +284,8 @@ class HillRacingEnv(gym.Env):
 
         # Step forward in the world
         self.world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
-        # Update car status
-        self.agent.car.update_status()
+        # Update agent status
+        self.agent.update()
 
         # Dying is termination
         if self.agent.dead:
@@ -289,15 +294,24 @@ class HillRacingEnv(gym.Env):
         elif self.agent.car.chassis_body.position.x >= 999:
             terminated = True
 
-        # Reward is equal to 1 + current_position - max_distance
-        if self.agent.car.chassis_body.position.x >= self.agent.car.max_distance:
-            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
+        # # If the agent is dead
+        if self.agent.dead:
+            reward = -2
+        elif self.agent.car.chassis_body.position.x >= 999:
+            reward = 100
         # Reward is equal to -1 + current_distance - max_distance
-        elif self.agent.car.chassis_body.position.x < self.agent.car.max_distance:
-            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.max_distance)
+        if self.agent.car.chassis_body.position.x <= self.agent.car.prev_max_distance:
+            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance) * 10
+        # # Reward -1 if agent is at or around same position as last step
+        # elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.01:
+        #     reward = -1
+        # Reward is equal to 1 + current_position - max_distance
+        elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
+            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance) * 10
 
-        # Get the current step observation
+        # Get the current step observation and info for debugging
         observation = self._get_obs()
+        info = {"car_position": self.agent.car.chassis_body.position.x, "prev_max_distance": self.agent.car.prev_max_distance}
 
         return observation, reward, terminated, False, info
 
@@ -348,17 +362,32 @@ if __name__ == "__main__":
         clock = pygame.time.Clock()
         human_play()
     else:
+        # env = HillRacingEnv(render_mode="human")
+        # episodes = 10
+        # print(f"Testing {episodes} episodes with random samples")
+        # for episode in range(1, episodes + 1):
+        #     state = env.reset(seed=1)
+        #     done = False
+        #     score = 0
+        #
+        #     while not done:
+        #         env.render()
+        #         action = env.action_space.sample()
+        #         obs, reward, done, truncated, info = env.step(action)
+        #         print(obs)
+        #         score += reward
+        #
+        #     print('Episode:{} Score:{}'.format(episode, score))
         env = HillRacingEnv(render_mode="human")
-        episodes = 10
-        for episode in range(1, episodes + 1):
-            state = env.reset(seed=1)
-            done = False
-            score = 0
-
-            while not done:
-                env.render()
-                action = env.action_space.sample()
-                obs, reward, done, truncated, info = env.step(action)
-                score += reward
-
-            print('Episode:{} Score:{}'.format(episode, score))
+        model = A2C("MultiInputPolicy", env, verbose=1)
+        model.learn(total_timesteps=20_000)
+        vec_env = model.get_env()
+        obs = vec_env.reset()
+        for i in range(10000):
+            action, _state = model.predict(obs, deterministic=True)
+            obs, reward, done, info = vec_env.step(action)
+            print(reward, info)
+            vec_env.render("human")
+            # VecEnv resets automatically
+            # if done:
+            #   obs = vec_env.reset()

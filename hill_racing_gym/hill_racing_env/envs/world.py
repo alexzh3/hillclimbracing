@@ -1,12 +1,5 @@
-import gym
 import hill_racing
-import random
-from gym import error, spaces
-from gym.error import DependencyNotInstalled
-try:
-    from Box2D import *
-except ImportError:
-    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
+from Box2D import *
 
 
 class World:

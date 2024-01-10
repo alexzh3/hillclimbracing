@@ -1,13 +1,7 @@
 import math
 import car
 import hill_racing
-from gym.error import DependencyNotInstalled
-
-try:
-    from Box2D import *
-except ImportError:
-    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
-
+from Box2D import *
 
 class Agent:
     def __init__(self, real_world):
@@ -17,7 +11,7 @@ class Agent:
         self.last_grounded = 0
         self.car = None
         self.motor_state = 2
-        self.x = 150  # Spawn location
+        self.x = 200  # Spawn location
 
     def add_to_world(self):
         self.car = car.Car(x=self.x, y=hill_racing.SPAWNING_Y, world=self.world, agent=self)
@@ -27,7 +21,7 @@ class Agent:
             self.car.draw_person_car(surface_screen)
 
     def update(self):
-        print(self.car.chassis_body.position.x, self.car.max_distance)
+        # print(self.car.chassis_body.position.x, self.car.max_distance)
         # print(self.car.wheels[0].joint.speed, self.car.wheels[1].joint.speed)
         # Update the panX and panY offset for camera
         hill_racing.panX = self.car.chassis_body.position.x * hill_racing.SCALE - 100

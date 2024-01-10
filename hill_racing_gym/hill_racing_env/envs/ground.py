@@ -1,9 +1,4 @@
-from gym.error import DependencyNotInstalled
-
-try:
-    from Box2D import *
-except ImportError:
-    raise DependencyNotInstalled("box2d is not installed, run `pip install gym[box2d]`")
+from Box2D import *
 import numpy as np
 import pygame
 import hill_racing
@@ -127,9 +122,9 @@ class Ground:
         )
         wall_fixture = b2FixtureDef(
             density=0,
-            friction=0,
+            friction=0.99,
             restitution=0,
-            shape=b2PolygonShape(box=(0, 10000))
+            shape=b2PolygonShape(box=(4, 10000))
         )
         invisible_wall = self.world.CreateBody(wall_body)
         invisible_wall.userData = self
