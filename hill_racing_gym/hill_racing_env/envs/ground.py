@@ -74,7 +74,7 @@ class Ground:
                 totalDifference += max(0, oi[i - 1] - oi[i])
             if totalDifference > 5:
                 print(totalDifference)
-                print("Too Steep, bad ground!")
+                print("Too Steep, generating new ground!")
                 return True
         return False
 

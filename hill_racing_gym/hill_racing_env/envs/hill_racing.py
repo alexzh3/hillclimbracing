@@ -12,8 +12,12 @@ import numpy as np
 import math
 import ground
 import agent
-from stable_baselines3 import A2C
+from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_checker import check_env
+from gymnasium.envs.registration import register
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.env_util import make_vec_env
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -43,6 +47,7 @@ HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
 SPAWNING_Y = 0
+SPAWNING_X = 200
 HUMAN_PLAYING = False
 
 # Load in pictures/sprites
@@ -196,10 +201,10 @@ class HillRacingEnv(gym.Env):
                 # x coordinate from 0 to 1000 and y from 0 to 700.
                 "chassis_position": spaces.Box(low=np.array([0, 0]), high=np.array([1000, 700]), shape=(2,),
                                                dtype=np.float32),
-                # Angle in degrees, can be -720 to 720.
-                "chassis_angle": spaces.Box(low=-720, high=720, shape=(1,), dtype=np.float32),
+                # Angle in degrees, can be -36000 to 36000.
+                "chassis_angle": spaces.Box(low=-36000, high=36000, shape=(1,), dtype=np.float32),
                 # Wheels speed, back and front wheel have same speed limits
-                "wheels_speed": spaces.Box(low=-10 * math.pi, high=10 * math.pi, shape=(2,), dtype=np.float32),
+                "wheels_speed": spaces.Box(low=-11 * math.pi, high=11 * math.pi, shape=(2,), dtype=np.float32),
                 # "wheels_position": ...,
                 # "current_score": ...
             }
@@ -271,7 +276,7 @@ class HillRacingEnv(gym.Env):
 
     def step(self, action: int):
         terminated = False
-        reward = 0
+        reward = 0  # initial reward of -1, if the agent does completely nothing
         info = {}
 
         match action:
@@ -290,28 +295,27 @@ class HillRacingEnv(gym.Env):
         # Dying is termination
         if self.agent.dead:
             terminated = True
+            reward = -100
         # When agent reaches the end, meaning 1000 meters
         elif self.agent.car.chassis_body.position.x >= 999:
             terminated = True
-
-        # # If the agent is dead
-        if self.agent.dead:
-            reward = -2
-        elif self.agent.car.chassis_body.position.x >= 999:
             reward = 100
         # Reward is equal to -1 + current_distance - max_distance
-        if self.agent.car.chassis_body.position.x <= self.agent.car.prev_max_distance:
-            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance) * 10
-        # # Reward -1 if agent is at or around same position as last step
-        # elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.01:
-        #     reward = -1
+        elif self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
+            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+        # Reward -1 if agent is at or around same position as last step
+        elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
+            reward = -0.5
         # Reward is equal to 1 + current_position - max_distance
         elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
-            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance) * 10
+            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
 
         # Get the current step observation and info for debugging
         observation = self._get_obs()
-        info = {"car_position": self.agent.car.chassis_body.position.x, "prev_max_distance": self.agent.car.prev_max_distance}
+        info = {
+            "car_position": self.agent.car.chassis_body.position.x,
+            "prev_max_distance": self.agent.car.prev_max_distance
+        }
 
         return observation, reward, terminated, False, info
 
@@ -378,16 +382,20 @@ if __name__ == "__main__":
         #         score += reward
         #
         #     print('Episode:{} Score:{}'.format(episode, score))
-        env = HillRacingEnv(render_mode="human")
-        model = A2C("MultiInputPolicy", env, verbose=1)
-        model.learn(total_timesteps=20_000)
-        vec_env = model.get_env()
+        register(
+            id='hill_racing_env/HillRacing-v0',
+            entry_point='hill_racing:HillRacingEnv',
+        )
+        env_id = 'hill_racing_env/HillRacing-v0'
+        num_cpu = 18
+        vec_env = make_vec_env(env_id, n_envs=num_cpu, seed=1, vec_env_cls=SubprocVecEnv,
+                               env_kwargs={'render_mode': 'human'})
+        model = PPO("MultiInputPolicy", vec_env, verbose=1, seed=1)
+        model.learn(total_timesteps=500_000)
+        model.save("ppo_hcr")
         obs = vec_env.reset()
-        for i in range(10000):
-            action, _state = model.predict(obs, deterministic=True)
-            obs, reward, done, info = vec_env.step(action)
-            print(reward, info)
+        while True:
+            action, _states = model.predict(obs)
+            obs, rewards, dones, info = vec_env.step(action)
+            print(info, rewards)
             vec_env.render("human")
-            # VecEnv resets automatically
-            # if done:
-            #   obs = vec_env.reset()

@@ -11,10 +11,11 @@ class Agent:
         self.last_grounded = 0
         self.car = None
         self.motor_state = 2
-        self.x = 200  # Spawn location
+        self.spawning_x = hill_racing.SPAWNING_X  # Spawn location
+        self.spawning_y = hill_racing.SPAWNING_Y
 
     def add_to_world(self):
-        self.car = car.Car(x=self.x, y=hill_racing.SPAWNING_Y, world=self.world, agent=self)
+        self.car = car.Car(x=self.spawning_x, y=self.spawning_y, world=self.world, agent=self)
 
     def draw_agent(self, surface_screen):
         if not self.dead:  # Draw car when agent has died less than dead count amount
@@ -33,7 +34,7 @@ class Agent:
             self.car.update_status()
 
         # Calculate and update score
-        self.score = max(1, math.floor((self.car.max_distance - (self.x-1))))
+        # self.score = max(1, math.floor((self.car.max_distance - (self.spawning_x-1))))
         # # If agent is officially dead, remove the agent from world
         # if self.dead:
         #     self.remove_agent_from_world()
@@ -44,7 +45,7 @@ class Agent:
 
     def reset_car(self):
         self.destroy_agent()
-        self.car = car.Car(350, 0, self.world)
+        self.car = car.Car(self.spawning_x, self.spawning_y, self.world)
 
     def destroy_agent(self):
         self.world.DestroyBody(self.car.chassis_body)
