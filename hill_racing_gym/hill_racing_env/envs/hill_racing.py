@@ -18,6 +18,7 @@ from gymnasium.envs.registration import register
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.env_util import make_vec_env
+import hill_racing_env
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -203,8 +204,9 @@ class HillRacingEnv(gym.Env):
                                                dtype=np.float32),
                 # Angle in degrees, can be -36000 to 36000.
                 "chassis_angle": spaces.Box(low=-36000, high=36000, shape=(1,), dtype=np.float32),
-                # Wheels speed, back and front wheel have same speed limits
-                "wheels_speed": spaces.Box(low=-11 * math.pi, high=11 * math.pi, shape=(2,), dtype=np.float32),
+                # Wheels speed, back and front wheel have same speed limits, add 0.1 to avoid precision errors
+                "wheels_speed": spaces.Box(low=-13 * math.pi + 0.1, high=13 * math.pi + 0.1, shape=(2,),
+                                           dtype=np.float32),
                 # "wheels_position": ...,
                 # "current_score": ...
             }
@@ -382,17 +384,14 @@ if __name__ == "__main__":
         #         score += reward
         #
         #     print('Episode:{} Score:{}'.format(episode, score))
-        register(
-            id='hill_racing_env/HillRacing-v0',
-            entry_point='hill_racing:HillRacingEnv',
-        )
+
         env_id = 'hill_racing_env/HillRacing-v0'
-        num_cpu = 18
+        num_cpu = 20
         vec_env = make_vec_env(env_id, n_envs=num_cpu, seed=1, vec_env_cls=SubprocVecEnv,
                                env_kwargs={'render_mode': 'human'})
         model = PPO("MultiInputPolicy", vec_env, verbose=1, seed=1)
         model.learn(total_timesteps=500_000)
-        model.save("ppo_hcr")
+        model.save("ppo_hcr_500k")
         obs = vec_env.reset()
         while True:
             action, _states = model.predict(obs)
