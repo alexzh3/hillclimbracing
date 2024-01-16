@@ -290,7 +290,7 @@ class HillRacingEnv(gym.Env):
                 self.agent.car.motor_on(forward=False)
 
         # Step forward in the world
-        self.world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
+        self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30, positionIterations=2 * 30)
         # Update agent status
         self.agent.update()
 
@@ -386,7 +386,7 @@ if __name__ == "__main__":
         #     print('Episode:{} Score:{}'.format(episode, score))
 
         env_id = 'hill_racing_env/HillRacing-v0'
-        num_cpu = 20
+        num_cpu = 10
         vec_env = make_vec_env(env_id, n_envs=num_cpu, seed=1, vec_env_cls=SubprocVecEnv,
                                env_kwargs={'render_mode': 'human'})
         model = PPO("MultiInputPolicy", vec_env, verbose=1, seed=1)
