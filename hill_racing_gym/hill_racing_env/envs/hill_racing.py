@@ -37,8 +37,11 @@ PERSON_MASK = GRASS_CATEGORY
 # Define constants
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-SCALE = 30  # Pixels per meter / Scale
+SCALE = 30  # Pixels per meter / Scale, Box2D counts in meters, pygame counts in pixels.
 FPS = 60  # frames per second
+SPAWNING_Y = 0
+SPAWNING_X = 200  # Spawn coordinate in pixels
+GROUND_DISTANCE = int(1000 * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -100  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 panX = 0
 panY = 0
@@ -47,8 +50,7 @@ WHEEL_SIZE = 35
 HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
-SPAWNING_Y = 0
-SPAWNING_X = 200
+
 HUMAN_PLAYING = False
 
 # Load in pictures/sprites
@@ -64,7 +66,6 @@ class ContactListener(b2ContactListener):
         b2ContactListener.__init__(self)
 
     def BeginContact(self, contact: b2Contact) -> None:
-        world = contact.fixtureA.body.world
         # Fixture variables
         head_fixture = None
         ground_fixture = None
@@ -83,17 +84,17 @@ class ContactListener(b2ContactListener):
             car.agent.dead = True
 
         # Check if we contact the wheel with the ground or vice versa.
-        if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData == "ground":
+        if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData.id == "ground":
             contact.fixtureA.body.userData.on_ground = True
-        elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData == "ground":
+        if contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData.id == "ground":
             contact.fixtureB.body.userData.on_ground = True
 
     def EndContact(self, contact: b2Contact) -> None:
         # End of contact, we need to set the on_ground variable on false
         if contact.fixtureA.body.userData.id == "wheel" and contact.fixtureB.body.userData.id == "ground":
             contact.fixtureA.body.userData.on_ground = False
-        elif contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData.id == "ground":
-            contact.fixtureA.body.userData.on_ground = False
+        if contact.fixtureB.body.userData.id == "wheel" and contact.fixtureA.body.userData.id == "ground":
+            contact.fixtureB.body.userData.on_ground = False
 
 
 # Key events handler when human is playing
@@ -207,8 +208,8 @@ class HillRacingEnv(gym.Env):
                 # Wheels speed, back and front wheel have same speed limits, add 0.1 to avoid precision errors
                 "wheels_speed": spaces.Box(low=-13 * math.pi + 0.1, high=13 * math.pi + 0.1, shape=(2,),
                                            dtype=np.float32),
-                # "wheels_position": ...,
-                # "current_score": ...
+                # If one of the wheels is touching the ground or not, 0 is left/back wheel, 1 is right/front wheel
+                "on_ground": spaces.MultiBinary(n=2)
             }
         )
         assert render_mode is None or render_mode in self.metadata["render_modes"]
@@ -255,7 +256,8 @@ class HillRacingEnv(gym.Env):
                 [self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y], dtype=np.float32),
             "chassis_angle": np.array([math.degrees(-self.agent.car.chassis_body.angle)], dtype=np.float32),
             "wheels_speed": np.array([self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joint.speed],
-                                     dtype=np.float32)
+                                     dtype=np.float32),
+            "on_ground": np.array([int(self.agent.car.wheels[0].on_ground), int(self.agent.car.wheels[1].on_ground)])
         }
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
@@ -263,7 +265,6 @@ class HillRacingEnv(gym.Env):
         info = {}
         # Destroy world
         self._destroy_world()
-        # self.game_over = False
         # Generate new world
         self.world.contactListener = ContactListener()
         self._generate_ground(seed=seed)
@@ -290,7 +291,8 @@ class HillRacingEnv(gym.Env):
                 self.agent.car.motor_on(forward=False)
 
         # Step forward in the world
-        self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30, positionIterations=2 * 30)
+        self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30,
+                        positionIterations=2 * 30)
         # Update agent status
         self.agent.update()
 
@@ -316,7 +318,8 @@ class HillRacingEnv(gym.Env):
         observation = self._get_obs()
         info = {
             "car_position": self.agent.car.chassis_body.position.x,
-            "prev_max_distance": self.agent.car.prev_max_distance
+            "prev_max_distance": self.agent.car.prev_max_distance,
+            "score": self.agent.score
         }
 
         return observation, reward, terminated, False, info
@@ -367,34 +370,3 @@ if __name__ == "__main__":
         pygame.display.set_caption("Hill climb")
         clock = pygame.time.Clock()
         human_play()
-    else:
-        # env = HillRacingEnv(render_mode="human")
-        # episodes = 10
-        # print(f"Testing {episodes} episodes with random samples")
-        # for episode in range(1, episodes + 1):
-        #     state = env.reset(seed=1)
-        #     done = False
-        #     score = 0
-        #
-        #     while not done:
-        #         env.render()
-        #         action = env.action_space.sample()
-        #         obs, reward, done, truncated, info = env.step(action)
-        #         print(obs)
-        #         score += reward
-        #
-        #     print('Episode:{} Score:{}'.format(episode, score))
-
-        env_id = 'hill_racing_env/HillRacing-v0'
-        num_cpu = 10
-        vec_env = make_vec_env(env_id, n_envs=num_cpu, seed=1, vec_env_cls=SubprocVecEnv,
-                               env_kwargs={'render_mode': 'human'})
-        model = PPO("MultiInputPolicy", vec_env, verbose=1, seed=1)
-        model.learn(total_timesteps=500_000)
-        model.save("ppo_hcr_500k")
-        obs = vec_env.reset()
-        while True:
-            action, _states = model.predict(obs)
-            obs, rewards, dones, info = vec_env.step(action)
-            print(info, rewards)
-            vec_env.render("human")

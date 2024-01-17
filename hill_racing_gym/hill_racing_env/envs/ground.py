@@ -14,7 +14,7 @@ class Ground:
         self.ground_vectors = []
         self.dirtBody = None
         self.grassBody = None
-        self.distance = 1000 * hill_racing.SCALE  # Max distance of the world in pixels
+        self.distance = hill_racing.GROUND_DISTANCE  # Max distance of the world in pixels
         self.x = 0
         self.y = 0
         self.smoothness = 15

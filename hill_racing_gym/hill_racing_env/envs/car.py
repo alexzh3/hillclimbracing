@@ -165,7 +165,7 @@ class Car:
     # A function that updates whether the agent status is alive or death
     def update_status(self):
         pos_x = self.chassis_body.position.x
-        pos_y = self.chassis_body.position.y * hill_racing.SCALE
+        pos_y = self.chassis_body.position.y
 
         # Check whether we are moving forward with the car
         if pos_x > self.max_distance:
