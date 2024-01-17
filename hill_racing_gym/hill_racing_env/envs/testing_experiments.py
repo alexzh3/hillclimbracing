@@ -36,12 +36,12 @@ def test_model(model):
     while True:
         action, _states = model.predict(obs)
         obs, rewards, dones, info = vec_env.step(action)
-        print(info, rewards)
+        print(rewards, obs, info)
         vec_env.render("human")
 
 
 if __name__ == "__main__":
     env = gym.make(env_id, render_mode="human")
-    test_env(env)
-    # model = PPO.load("baseline_models/ppo_base", env=env)
-    # test_model(model)
+    # test_env(env)
+    model = PPO.load("baseline_models/ppo_base", env=env)
+    test_model(model)

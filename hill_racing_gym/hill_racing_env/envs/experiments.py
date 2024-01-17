@@ -63,9 +63,24 @@ def exp_obs_on_ground():
     model.learn(total_timesteps=1_000_000)
     model.save("baseline_models/ppo_on_ground")
 
+
 #######################################################################################################################
 # Multi observation input experiments
 
+# TBD, position + angle?
+def exp_obs_pos_angle():
+    env = gym.make(env_id)
+    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
+    env = Monitor(env, 'ppo_position', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_position")
+
+
+#######################################################################################################################
+# Action input experiments
+def exp_action_discrete():
+    ...
 
 
 if __name__ == "__main__":

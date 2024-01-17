@@ -72,7 +72,7 @@ class Head:
     def draw_head(self, surface_screen):
         pos_x = self.body.position.x * hill_racing.SCALE
         pos_y = self.body.position.y * hill_racing.SCALE
-        degrees_angle = math.degrees(-self.body.angle)
+        degrees_angle = math.degrees(-self.body.angle) % 360
         # Scale head sprite
         hill_racing.head_sprite = pygame.transform.scale(
             hill_racing.head_sprite, (hill_racing.WHEEL_SIZE, hill_racing.WHEEL_SIZE)

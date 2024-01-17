@@ -1,5 +1,4 @@
 from gymnasium.error import DependencyNotInstalled
-
 try:
     from Box2D import *
 except ImportError:
@@ -12,13 +11,6 @@ import numpy as np
 import math
 import ground
 import agent
-from stable_baselines3 import PPO, A2C
-from stable_baselines3.common.env_checker import check_env
-from gymnasium.envs.registration import register
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.env_util import make_vec_env
-import hill_racing_env
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -50,7 +42,6 @@ WHEEL_SIZE = 35
 HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
-
 HUMAN_PLAYING = False
 
 # Load in pictures/sprites
@@ -148,7 +139,7 @@ def human_play():
         pygame.display.flip()
         clock.tick(FPS)
     # Print final distance
-    print(f"Final distance: {current_agent.car.max_distance}")
+    print(f"Final score: {current_agent.score}")
     # Quit the game
     pygame.quit()
 
@@ -204,7 +195,7 @@ class HillRacingEnv(gym.Env):
                 "chassis_position": spaces.Box(low=np.array([0, 0]), high=np.array([1000, 700]), shape=(2,),
                                                dtype=np.float32),
                 # Angle in degrees, can be -36000 to 36000.
-                "chassis_angle": spaces.Box(low=-36000, high=36000, shape=(1,), dtype=np.float32),
+                "chassis_angle": spaces.Box(low=0, high=360, shape=(1,), dtype=np.float32),
                 # Wheels speed, back and front wheel have same speed limits, add 0.1 to avoid precision errors
                 "wheels_speed": spaces.Box(low=-13 * math.pi + 0.1, high=13 * math.pi + 0.1, shape=(2,),
                                            dtype=np.float32),
@@ -254,7 +245,7 @@ class HillRacingEnv(gym.Env):
         return {
             "chassis_position": np.array(
                 [self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y], dtype=np.float32),
-            "chassis_angle": np.array([math.degrees(-self.agent.car.chassis_body.angle)], dtype=np.float32),
+            "chassis_angle": np.array([(math.degrees(-self.agent.car.chassis_body.angle) % 360)], dtype=np.float32),
             "wheels_speed": np.array([self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joint.speed],
                                      dtype=np.float32),
             "on_ground": np.array([int(self.agent.car.wheels[0].on_ground), int(self.agent.car.wheels[1].on_ground)])
