@@ -67,14 +67,44 @@ def exp_obs_on_ground():
 #######################################################################################################################
 # Multi observation input experiments
 
-# TBD, position + angle?
+# Position + angle
 def exp_obs_pos_angle():
     env = gym.make(env_id)
     env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
-    env = Monitor(env, 'ppo_position', info_keywords=("score",))
+    env = Monitor(env, 'ppo_position_angle', info_keywords=("score",))
     model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
     model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_position")
+    model.save("baseline_models/ppo_position_angle")
+
+
+# Position + wheel speed
+def exp_obs_pos_speed():
+    env = gym.make(env_id)
+    env = FilterObservation(env, filter_keys=['chassis_position', 'wheels_speed'])
+    env = Monitor(env, 'ppo_position_speed', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_position_speed")
+
+
+# Position + on_ground
+def exp_obs_pos_ground():
+    env = gym.make(env_id)
+    env = FilterObservation(env, filter_keys=['chassis_position', 'on_ground'])
+    env = Monitor(env, 'ppo_position_ground', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_position_ground")
+
+
+# Position + angle + speed
+def exp_obs_pos_angle_speed():
+    env = gym.make(env_id)
+    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle', 'wheels_speed'])
+    env = Monitor(env, 'ppo_position_angle_speed', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_position_angle_speed")
 
 
 #######################################################################################################################
@@ -84,9 +114,8 @@ def exp_action_discrete():
 
 
 if __name__ == "__main__":
-    exp_base()
-    exp_obs_position()
-    exp_obs_angle()
-    exp_obs_speed()
-    exp_obs_on_ground()
+    exp_obs_pos_angle()
+    exp_obs_pos_speed()
+    exp_obs_pos_ground()
+    exp_obs_pos_angle_speed()
     # model = PPO.load("baseline_models/ppo_base_1000k")
