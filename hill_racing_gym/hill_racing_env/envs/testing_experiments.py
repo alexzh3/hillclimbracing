@@ -8,9 +8,30 @@ from stable_baselines3.common.logger import configure
 from stable_baselines3.common.monitor import load_results, Monitor
 from gymnasium.wrappers import FilterObservation
 import pandas as pd
+import numpy as np
 import gymnasium as gym
 
 env_id = 'hill_racing_env/HillRacing-v0'
+
+
+class RemoveIdleAction(gym.ActionWrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        # Set the new action space to be discrete(2) with options 1 and 2
+        self.action_space = gym.spaces.Discrete(n=2, start=1)
+
+    def action(self, action):
+        return action
+
+
+class ChangeActionSpace(gym.ActionWrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        # Set the new action space to be discrete(2) with options 1 and 2
+        self.action_space = gym.spaces.Box(low=-13, high=13, shape=(1,), dtype=np.float32)
+
+    def action(self, action):
+        return action
 
 
 # Function to test environments
@@ -41,7 +62,7 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human")
+    env = gym.make(env_id, render_mode="human", action_space_type="continuous")
     # test_env(env)
-    model = PPO.load("baseline_models/ppo_base", env=env)
+    model = PPO.load("baseline_models/ppo_action_continuous", env=env)
     test_model(model)

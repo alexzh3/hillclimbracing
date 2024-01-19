@@ -109,13 +109,27 @@ def exp_obs_pos_angle_speed():
 
 #######################################################################################################################
 # Action input experiments
-def exp_action_discrete():
-    ...
+
+# Only gas and reverse actions, all observations
+def exp_action_discrete_2():
+    env = gym.make(env_id, action_space_type="discrete_2")
+    env = Monitor(env, 'ppo_action_discrete_2', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_action_discrete_2")
+
+
+# Continuous motor speed as actions, all observations
+def exp_action_continuous():
+    env = gym.make(env_id, action_space_type="continuous")
+    env = Monitor(env, 'ppo_action_continuous', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_action_continuous")
 
 
 if __name__ == "__main__":
     exp_obs_pos_angle()
-    exp_obs_pos_speed()
-    exp_obs_pos_ground()
-    exp_obs_pos_angle_speed()
+    # exp_action_continuous()
+    # exp_base()
     # model = PPO.load("baseline_models/ppo_base_1000k")

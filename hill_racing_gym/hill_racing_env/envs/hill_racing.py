@@ -1,4 +1,5 @@
 from gymnasium.error import DependencyNotInstalled
+
 try:
     from Box2D import *
 except ImportError:
@@ -42,6 +43,7 @@ WHEEL_SIZE = 35
 HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
+MAX_UPDATE_COUNTER = 1000  # Amount of updates allowed without any significant distance improvement
 HUMAN_PLAYING = False
 
 # Load in pictures/sprites
@@ -133,6 +135,10 @@ def human_play():
         draw(current_ground, current_agent)
         # Box2D simulation
         current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
+        # Print for debugging
+        # print(
+        #     f"position: {current_agent.car.chassis_body.position.x},"
+        #     f"timestep_counter: {current_agent.car.update_counter}")
         # Update Agent
         current_agent.update()
         # Update render screen and fps
@@ -183,12 +189,20 @@ class HillRacingEnv(gym.Env):
         "render_fps": FPS
     }
 
-    def __init__(self, render_mode: Optional[str] = None):
+    def __init__(self, render_mode: Optional[str] = None, action_space_type: str = "discrete_3"):
         self.world = b2World(gravity=(0, GRAVITY), doSleep=True)
         self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
         self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
         self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
-        self.action_space = spaces.Discrete(3)  # 2 do-able actions: gas, reverse, 3rd action is idling
+        self.action_space_type = action_space_type
+        match self.action_space_type:  # For experiments
+            case "discrete_3":
+                self.action_space = spaces.Discrete(n=3,
+                                                    start=0)  # 3 do-able actions: gas, reverse, 3rd action is idling
+            case "discrete_2":
+                self.action_space = spaces.Discrete(n=2, start=1)  # 2 do-able actions: gas, reverse
+            case "continuous":  # Continuous motor wheel speeds
+                self.action_space = gym.spaces.Box(low=-13, high=13, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Dict(
             {
                 # x coordinate from 0 to 1000 and y from 0 to 700.
@@ -268,25 +282,39 @@ class HillRacingEnv(gym.Env):
 
         return observations, info
 
-    def step(self, action: int):
+    def step(self, action: int | np.float32):
         terminated = False
+        truncated = False
         reward = 0  # initial reward of -1, if the agent does completely nothing
         info = {}
 
-        match action:
-            case 0:  # Idle
-                self.agent.car.motor_off()
-            case 1:  # Gas
-                self.agent.car.motor_on(forward=True)
-            case 2:  # Reverse
-                self.agent.car.motor_on(forward=False)
+        match self.action_space_type:  # Check which action space type we have
+            case "discrete_3":
+                match action:
+                    case 0:  # Idle
+                        self.agent.car.motor_off()
+                    case 1:  # Gas
+                        self.agent.car.motor_on(forward=True)
+                    case 2:  # Reverse
+                        self.agent.car.motor_on(forward=False)
+            case "discrete_2":
+                match action:
+                    case 1:  # Gas
+                        self.agent.car.motor_on(forward=True)
+                    case 2:  # Reverse
+                        self.agent.car.motor_on(forward=False)
+            case "continuous":  # Continuous motor wheel speeds
+                self.agent.car.set_motor_wheel_speed(action[0])
 
         # Step forward in the world
         self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30,
                         positionIterations=2 * 30)
         # Update agent status
         self.agent.update()
-
+        # Check if agent is stuck
+        if self.agent.stuck:
+            truncated = True
+            reward = -100
         # Dying is termination
         if self.agent.dead:
             terminated = True
@@ -313,7 +341,7 @@ class HillRacingEnv(gym.Env):
             "score": self.agent.score
         }
 
-        return observation, reward, terminated, False, info
+        return observation, reward, terminated, truncated, info
 
     def render(self):
         if self.render_mode is None:
