@@ -66,3 +66,4 @@ if __name__ == "__main__":
     # test_env(env)
     model = PPO.load("baseline_models/ppo_action_continuous", env=env)
     test_model(model)
+

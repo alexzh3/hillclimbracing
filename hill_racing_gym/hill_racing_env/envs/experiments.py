@@ -129,7 +129,23 @@ def exp_action_continuous():
 
 
 if __name__ == "__main__":
+    # base
+    exp_base()
+    # discrete
+    exp_obs_position()
+    exp_obs_angle()
+    exp_obs_speed()
+    exp_obs_on_ground()
+    # multi input
     exp_obs_pos_angle()
+    exp_obs_pos_speed()
+    exp_obs_pos_ground()
+    exp_obs_pos_angle_speed()
+    # Action input all observations
+    exp_action_discrete_2()
+    exp_action_continuous()
+    # Action input best observations
+
     # exp_action_continuous()
     # exp_base()
     # model = PPO.load("baseline_models/ppo_base_1000k")

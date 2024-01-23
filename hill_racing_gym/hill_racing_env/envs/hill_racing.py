@@ -136,6 +136,7 @@ def human_play():
         # Box2D simulation
         current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
         # Print for debugging
+        print( np.array([int(current_agent.car.wheels[0].on_ground), int(current_agent.car.wheels[1].on_ground)]))
         # print(
         #     f"position: {current_agent.car.chassis_body.position.x},"
         #     f"timestep_counter: {current_agent.car.update_counter}")
@@ -213,7 +214,7 @@ class HillRacingEnv(gym.Env):
                 # Wheels speed, back and front wheel have same speed limits, add 0.1 to avoid precision errors
                 "wheels_speed": spaces.Box(low=-13 * math.pi + 0.1, high=13 * math.pi + 0.1, shape=(2,),
                                            dtype=np.float32),
-                # If one of the wheels is touching the ground or not, 0 is left/back wheel, 1 is right/front wheel
+                # When one of the wheels is makes contact with the ground, 0 means no contact and 1 means contact
                 "on_ground": spaces.MultiBinary(n=2)
             }
         )
