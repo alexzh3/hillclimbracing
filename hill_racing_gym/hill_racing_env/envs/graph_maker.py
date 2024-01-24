@@ -56,8 +56,9 @@ def plot_single_graph(title, df, label_name, variable_type, y_label, window=50, 
     return plt
 
 
-def plot_multiple_graph(monitor_type, variables, variable_type='r', x_label="timesteps", y_label="Rewards",
-                        window=50, poly=1, title="Learning curve of ?"):
+def plot_multiple_graph(monitor_type, variables, x_lim, y_lim, leg_loc, title, variable_type='r', x_label="timesteps",
+                        y_label="Rewards",
+                        window=50, poly=1):
     # Load in results in df
     df = {}
     df["baseline"] = load_results("monitors/base")
@@ -78,8 +79,14 @@ def plot_multiple_graph(monitor_type, variables, variable_type='r', x_label="tim
     plt.ylabel(y_label)
     for obs in df:
         plt.plot(x[obs], y[obs], label=obs.capitalize())
-    plt.legend(loc='lower right', fontsize="8.3")
-    plt.ylim(-1000, 2750)
+    if leg_loc:
+        plt.legend(loc=leg_loc, fontsize="8.3")
+    else:
+        plt.legend(loc='lower right', fontsize="8.3")
+    if y_lim:
+        plt.ylim(y_lim[0], y_lim[1])
+    if x_lim:
+        plt.xlim(x_lim[0], x_lim[1])
     return plt
 
 
@@ -90,10 +97,79 @@ if __name__ == "__main__":
     # single_observations = plot_multiple_graph(title="Learning curve of single observations smoothed",
     #     window=200, poly=1, monitor_type="single_obs", variables=["angle", "ground", "position", "speed"])
 
-    multiple_observations = (
-        plot_multiple_graph(title="Learning curve of multiple observations smoothed",
-                            window=200, poly=1,
-                            monitor_type="multi_obs",
-                            variables=["position_angle", "position_angle_speed", "position_ground", "position_speed"]))
-    multiple_observations.show()
-    # plt.savefig("filename", dpi=300)
+    # single_observations = (
+    #     plot_multiple_graph(title="Learning curve of single observations",
+    #                         window=200, poly=1,
+    #                         monitor_type="single_obs",
+    #                         y_label="Average rewards",
+    #                         leg_loc="lower right",
+    #                         y_lim=[-1000, 2750],
+    #                         variable_type="r",
+    #                         variables=["angle", "ground", "position", "speed"]))
+
+    # multiple_observations = (
+    #     plot_multiple_graph(title="Learning curve of multiple observations",
+    #                         window=50, poly=1,
+    #                         monitor_type="multi_obs",
+    #                         x_label="timesteps",
+    #                         y_label="Average reward",
+    #                         leg_loc="",
+    #                         x_lim=[],
+    #                         y_lim=[-2100, 2900],
+    #                         variable_type="r",
+    #                         variables=["position_angle", "position_ground", "position_speed", "position_angle_speed"]))
+    # multiple_observations.show()
+    # plt.savefig("multiple_observations_rewards", dpi=300)
+
+    # action_spaces_rewards = (
+    #     plot_multiple_graph(title="Learning curve of action spaces with all observations",
+    #                         window=50, poly=1,
+    #                         monitor_type="action_spaces",
+    #                         x_label="timesteps",
+    #                         y_label="Average reward",
+    #                         leg_loc="",
+    #                         x_lim=[],
+    #                         y_lim=[],
+    #                         variable_type="r",
+    #                         variables=["continuous", "discrete_2"]))
+    # action_spaces_rewards.show()
+    # plt.savefig("action_spaces_rewards", dpi=300)
+
+    # action_spaces_score = (
+    #     plot_multiple_graph(title="Average episode score of action spaces with all observations",
+    #                         window=50, poly=1,
+    #                         monitor_type="action_spaces",
+    #                         x_label="timesteps",
+    #                         y_label="Average score",
+    #                         leg_loc="upper left",
+    #                         x_lim=[],
+    #                         y_lim=[-20, 580],
+    #                         variable_type="score",
+    #                         variables=["continuous", "discrete_2"]))
+    # plt.savefig("action_spaces_score", dpi=300)
+
+    # action_spaces_best_rewards = (
+    #     plot_multiple_graph(title="Learning curve of action spaces with position_angle observations",
+    #                         window=50, poly=1,
+    #                         monitor_type="action_spaces_best",
+    #                         x_label="timesteps",
+    #                         y_label="Average reward",
+    #                         leg_loc="",
+    #                         x_lim=[],
+    #                         y_lim=[],
+    #                         variable_type="r",
+    #                         variables=["continuous_position_angle", "discrete_2_position_angle"]))
+    # plt.savefig("action_spaces_position_angle_rewards", dpi=300)
+
+    action_spaces_best_score = (
+        plot_multiple_graph(title="Average episode score of action spaces with position_angle observations",
+                            window=50, poly=1,
+                            monitor_type="action_spaces_best",
+                            x_label="timesteps",
+                            y_label="Average score",
+                            leg_loc="upper left",
+                            x_lim=[],
+                            y_lim=[-20, 580],
+                            variable_type="score",
+                            variables=["continuous_position_angle", "discrete_2_position_angle"]))
+    plt.savefig("action_spaces_position_angle_score", dpi=300)

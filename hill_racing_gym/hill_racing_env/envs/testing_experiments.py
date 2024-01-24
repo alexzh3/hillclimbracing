@@ -62,8 +62,8 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space_type="continuous")
+    env = gym.make(env_id, render_mode="human")
     # test_env(env)
-    model = PPO.load("baseline_models/ppo_action_continuous", env=env)
+    model = PPO.load("baseline_models/ppo_base", env=env)
     test_model(model)
 

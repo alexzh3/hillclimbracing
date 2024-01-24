@@ -128,24 +128,45 @@ def exp_action_continuous():
     model.save("baseline_models/ppo_action_continuous")
 
 
-if __name__ == "__main__":
-    # base
-    exp_base()
-    # discrete
-    exp_obs_position()
-    exp_obs_angle()
-    exp_obs_speed()
-    exp_obs_on_ground()
-    # multi input
-    exp_obs_pos_angle()
-    exp_obs_pos_speed()
-    exp_obs_pos_ground()
-    exp_obs_pos_angle_speed()
-    # Action input all observations
-    exp_action_discrete_2()
-    exp_action_continuous()
-    # Action input best observations
+# Only gas and reverse actions, all observations
+def exp_action_discrete_2_best():
+    env = gym.make(env_id, action_space_type="discrete_2")
+    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
+    env = Monitor(env, 'ppo_action_discrete_2_best', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_action_discrete_2_best")
 
+
+# Continuous motor speed as actions, all observations
+def exp_action_continuous_best():
+    env = gym.make(env_id, action_space_type="continuous")
+    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
+    env = Monitor(env, 'ppo_action_continuous_best', info_keywords=("score",))
+    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+    model.learn(total_timesteps=1_000_000)
+    model.save("baseline_models/ppo_action_continuous_best")
+
+
+if __name__ == "__main__":
+    # # base
+    # exp_base()
+    # # discrete
+    # exp_obs_position()
+    # exp_obs_angle()
+    # exp_obs_speed()
+    # exp_obs_on_ground()
+    # # multi input
+    # exp_obs_pos_angle()
+    # exp_obs_pos_speed()
+    # exp_obs_pos_ground()
+    # exp_obs_pos_angle_speed()
+    # # Action input all observations
+    # exp_action_discrete_2()
+    exp_action_continuous()
+    # Action input best observations (minimal): Position + angle
+    # exp_action_discrete_2_best()
+    # exp_action_continuous_best()
     # exp_action_continuous()
     # exp_base()
     # model = PPO.load("baseline_models/ppo_base_1000k")
