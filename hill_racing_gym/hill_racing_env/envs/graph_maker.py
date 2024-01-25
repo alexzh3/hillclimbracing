@@ -107,32 +107,32 @@ if __name__ == "__main__":
     #                         variable_type="r",
     #                         variables=["angle", "ground", "position", "speed"]))
 
-    # multiple_observations = (
-    #     plot_multiple_graph(title="Learning curve of multiple observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="multi_obs",
-    #                         x_label="timesteps",
-    #                         y_label="Average reward",
-    #                         leg_loc="",
-    #                         x_lim=[],
-    #                         y_lim=[-2100, 2900],
-    #                         variable_type="r",
-    #                         variables=["position_angle", "position_ground", "position_speed", "position_angle_speed"]))
-    # multiple_observations.show()
+    multiple_observations = (
+        plot_multiple_graph(title="Learning curve of multiple observations",
+                            window=50, poly=1,
+                            monitor_type="multi_obs",
+                            x_label="timesteps",
+                            y_label="Average reward",
+                            leg_loc="",
+                            x_lim=[],
+                            y_lim=[-2100, 2900],
+                            variable_type="r",
+                            variables=["position_angle", "position_ground", "position_speed", "position_angle_speed"]))
+    multiple_observations.show()
     # plt.savefig("multiple_observations_rewards", dpi=300)
 
-    # action_spaces_rewards = (
-    #     plot_multiple_graph(title="Learning curve of action spaces with all observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="action_spaces",
-    #                         x_label="timesteps",
-    #                         y_label="Average reward",
-    #                         leg_loc="",
-    #                         x_lim=[],
-    #                         y_lim=[],
-    #                         variable_type="r",
-    #                         variables=["continuous", "discrete_2"]))
-    # action_spaces_rewards.show()
+    action_spaces_rewards = (
+        plot_multiple_graph(title="Learning curve of action spaces with all observations",
+                            window=50, poly=1,
+                            monitor_type="action_spaces",
+                            x_label="timesteps",
+                            y_label="Average reward",
+                            leg_loc="",
+                            x_lim=[],
+                            y_lim=[],
+                            variable_type="r",
+                            variables=["continuous", "discrete_2"]))
+    action_spaces_rewards.show()
     # plt.savefig("action_spaces_rewards", dpi=300)
 
     # action_spaces_score = (
