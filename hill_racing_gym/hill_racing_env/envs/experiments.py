@@ -13,98 +13,34 @@ import pandas as pd
 env_id = 'hill_racing_env/HillRacing-v0'
 
 
-# The base environment case, all observations and all discrete actions (0,1,2), 1000k timesteps, ppo
-def exp_base():
-    env = gym.make(env_id)
-    env = Monitor(env, 'ppo_base', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_base")
+# The base environment case, all observations and all discrete actions (0,1,2),reward type distance
+def exp_base(runs):
+    for i in range(runs):
+        env = gym.make(env_id)
+        env = Monitor(env, f'ppo_base_{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_base_{i}")
 
 
-#######################################################################################################################
-# Discrete experiments, actions are all (0,1,2)
-# Only chassis_position experiment
-def exp_obs_position():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['chassis_position'])
-    env = Monitor(env, 'ppo_position', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_position")
+# The base environment case, all observations and all discrete actions (0,1,2), reward type action
+def exp_base_reward_action(runs):
+    for i in range(runs):
+        env = gym.make(env_id, reward_type="action")
+        env = Monitor(env, f'ppo_base_action{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_base_action{i}")
 
 
-# Only angle experiment
-def exp_obs_angle():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['chassis_angle'])
-    env = Monitor(env, 'ppo_angle', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_angle")
-
-
-# Only wheel_speed experiment
-def exp_obs_speed():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['wheels_speed'])
-    env = Monitor(env, 'ppo_speed', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_speed")
-
-
-# Only on ground experiment
-def exp_obs_on_ground():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['on_ground'])
-    env = Monitor(env, 'ppo_on_ground', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_on_ground")
-
-
-#######################################################################################################################
-# Multi observation input experiments
-
-# Position + angle
-def exp_obs_pos_angle():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
-    env = Monitor(env, 'ppo_position_angle', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_position_angle")
-
-
-# Position + wheel speed
-def exp_obs_pos_speed():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['chassis_position', 'wheels_speed'])
-    env = Monitor(env, 'ppo_position_speed', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_position_speed")
-
-
-# Position + on_ground
-def exp_obs_pos_ground():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['chassis_position', 'on_ground'])
-    env = Monitor(env, 'ppo_position_ground', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_position_ground")
-
-
-# Position + angle + speed
-def exp_obs_pos_angle_speed():
-    env = gym.make(env_id)
-    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle', 'wheels_speed'])
-    env = Monitor(env, 'ppo_position_angle_speed', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_position_angle_speed")
+# The base environment case, all observations and all discrete actions (0,1,2), reward type wheel speed
+def exp_base_reward_wheel_speed(runs):
+    for i in range(runs):
+        env = gym.make(env_id, reward_type="wheel_speed")
+        env = Monitor(env, f'ppo_base_wheel_speed{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_base_wheel_speed{i}")
 
 
 #######################################################################################################################
@@ -128,45 +64,10 @@ def exp_action_continuous():
     model.save("baseline_models/ppo_action_continuous")
 
 
-# Only gas and reverse actions, all observations
-def exp_action_discrete_2_best():
-    env = gym.make(env_id, action_space_type="discrete_2")
-    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
-    env = Monitor(env, 'ppo_action_discrete_2_best', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_action_discrete_2_best")
-
-
-# Continuous motor speed as actions, all observations
-def exp_action_continuous_best():
-    env = gym.make(env_id, action_space_type="continuous")
-    env = FilterObservation(env, filter_keys=['chassis_position', 'chassis_angle'])
-    env = Monitor(env, 'ppo_action_continuous_best', info_keywords=("score",))
-    model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
-    model.learn(total_timesteps=1_000_000)
-    model.save("baseline_models/ppo_action_continuous_best")
-
-
+#######################################################################################################################
 if __name__ == "__main__":
-    # # base
-    # exp_base()
-    # # discrete
-    # exp_obs_position()
-    # exp_obs_angle()
-    # exp_obs_speed()
-    # exp_obs_on_ground()
-    # # multi input
-    # exp_obs_pos_angle()
-    # exp_obs_pos_speed()
-    # exp_obs_pos_ground()
-    # exp_obs_pos_angle_speed()
-    # # Action input all observations
-    # exp_action_discrete_2()
-    exp_action_continuous()
-    # Action input best observations (minimal): Position + angle
-    # exp_action_discrete_2_best()
-    # exp_action_continuous_best()
-    # exp_action_continuous()
-    # exp_base()
+    # base do 5 runs
+    # exp_base(5)
+    exp_base_reward_action(5)
+    # exp_base_reward_wheel_speed(5)
     # model = PPO.load("baseline_models/ppo_base_1000k")

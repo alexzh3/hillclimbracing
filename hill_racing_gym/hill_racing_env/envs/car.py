@@ -27,7 +27,6 @@ class Car:
         self.motor_state = 0
         self.rotation_torque = 2
         self.motor_speed = 13
-        self.update_counter = 0
 
         # vertices for car chassis
         vectors = []
@@ -167,16 +166,11 @@ class Car:
     def update_status(self):
         pos_x = self.chassis_body.position.x
         pos_y = self.chassis_body.position.y
-        self.update_counter += 1
+
         # Check whether we are moving forward with the car
         if pos_x > self.max_distance:
             self.prev_max_distance = self.max_distance
             self.max_distance = pos_x
-            if math.floor(self.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
-                self.update_counter = 0
-        else:  # When no significant distance has been made for a long time we set agent status to dead
-            if self.update_counter > hill_racing.MAX_UPDATE_COUNTER:
-                self.agent.stuck = True
 
         # When agent is out of the screen height, we set status to dead
         if not self.dead and pos_y > hill_racing.SCREEN_HEIGHT:

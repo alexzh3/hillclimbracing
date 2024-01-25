@@ -43,8 +43,7 @@ WHEEL_SIZE = 35
 HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
-MAX_UPDATE_COUNTER = 1000  # Amount of updates allowed without any significant distance improvement
-HUMAN_PLAYING = False
+HUMAN_PLAYING = True
 
 # Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -136,10 +135,9 @@ def human_play():
         # Box2D simulation
         current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
         # Print for debugging
-        print( np.array([int(current_agent.car.wheels[0].on_ground), int(current_agent.car.wheels[1].on_ground)]))
-        # print(
-        #     f"position: {current_agent.car.chassis_body.position.x},"
-        #     f"timestep_counter: {current_agent.car.update_counter}")
+        print(
+            f"position: {current_agent.car.chassis_body.position.x},"
+            f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed}")
         # Update Agent
         current_agent.update()
         # Update render screen and fps
@@ -190,12 +188,24 @@ class HillRacingEnv(gym.Env):
         "render_fps": FPS
     }
 
-    def __init__(self, render_mode: Optional[str] = None, action_space_type: str = "discrete_3"):
+    def __init__(
+            self,
+            render_mode: Optional[str] = None,
+            action_space: str = "discrete_3",
+            reward_type: str = "distance",
+            max_steps: int = metadata["render_fps"] * 20,
+    ):
         self.world = b2World(gravity=(0, GRAVITY), doSleep=True)
         self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
         self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
         self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
-        self.action_space_type = action_space_type
+        self.action_space_type = action_space  # What type of action space do we choose? (Discrete or continuous?)
+        self.reward_type = reward_type  # Type of reward, distance-based vs action based vs wheel speed
+        self.step_counter = None  # Counter to memorize the amount of steps done
+        self.max_steps = max_steps  # Amount of maximum timesteps done without significant
+        # progress, will be 20 seconds
+
+        # Define action spaces
         match self.action_space_type:  # For experiments
             case "discrete_3":
                 self.action_space = spaces.Discrete(n=3,
@@ -204,6 +214,7 @@ class HillRacingEnv(gym.Env):
                 self.action_space = spaces.Discrete(n=2, start=1)  # 2 do-able actions: gas, reverse
             case "continuous":  # Continuous motor wheel speeds
                 self.action_space = gym.spaces.Box(low=-13, high=13, shape=(1,), dtype=np.float32)
+        # Define the observation space
         self.observation_space = spaces.Dict(
             {
                 # x coordinate from 0 to 1000 and y from 0 to 700.
@@ -218,6 +229,7 @@ class HillRacingEnv(gym.Env):
                 "on_ground": spaces.MultiBinary(n=2)
             }
         )
+
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
         self.screen: Optional[pygame.Surface] = None
@@ -256,6 +268,62 @@ class HillRacingEnv(gym.Env):
         self.agent = agent.Agent(real_world=self.world)
         self.agent.add_to_world()
 
+    # Function that executes an action based on the given action_space_type
+    def _execute_action(self, action):
+        match self.action_space_type:  # Check which action space type we have
+            case "discrete_3":
+                match action:
+                    case 0:  # Idle
+                        self.agent.car.motor_off()
+                    case 1:  # Gas
+                        self.agent.car.motor_on(forward=True)
+                    case 2:  # Reverse
+                        self.agent.car.motor_on(forward=False)
+            case "discrete_2":
+                match action:
+                    case 1:  # Gas
+                        self.agent.car.motor_on(forward=True)
+                    case 2:  # Reverse
+                        self.agent.car.motor_on(forward=False)
+            case "continuous":  # Continuous motor wheel speeds
+                self.agent.car.set_motor_wheel_speed(action[0])
+
+    # Function that calculates the reward for a given timestep based on the reward_type
+    def _get_reward(self, action):
+        reward = 0
+        match self.reward_type:
+            case "distance":
+                # Reward is equal to -1 + current_distance - max_distance
+                if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
+                    reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                # Reward -1 if agent is at or around same position as last step
+                elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
+                    reward = -0.5
+                # Reward is equal to 1 + current_position - max_distance
+                elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
+                    reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+            case "action":
+                if action == 0:  # Idle
+                    reward = -0.5
+                elif action == 1:  # Gas
+                    reward = 1
+                elif action == 2:  # Reverse
+                    reward = -1
+            case "wheel_speed":
+                wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
+                # When wheel speeds are at a nearly idle state
+                if all(-1 <= speed <= 1 for speed in wheel_speeds):
+                    reward = -0.5
+                # When we have wheel speeds that bring the car forward (negative wheel speed = forward)
+                elif all(speed < 0 for speed in wheel_speeds):
+                    reward = 1
+                # When we have wheel speeds that bring the car backwards
+                elif all(speed > 0 for speed in wheel_speeds):
+                    reward = -1
+                else:
+                    reward = 0
+        return reward
+
     def _get_obs(self):
         return {
             "chassis_position": np.array(
@@ -275,6 +343,7 @@ class HillRacingEnv(gym.Env):
         self.world.contactListener = ContactListener()
         self._generate_ground(seed=seed)
         self._generate_agent()
+        self.step_counter = 0  # Set step counter to 0
         # Get the initial observations
         observations = self._get_obs()
         # Render mode
@@ -286,60 +355,44 @@ class HillRacingEnv(gym.Env):
     def step(self, action: int | np.float32):
         terminated = False
         truncated = False
+        stuck = False
         reward = 0  # initial reward of -1, if the agent does completely nothing
         info = {}
 
-        match self.action_space_type:  # Check which action space type we have
-            case "discrete_3":
-                match action:
-                    case 0:  # Idle
-                        self.agent.car.motor_off()
-                    case 1:  # Gas
-                        self.agent.car.motor_on(forward=True)
-                    case 2:  # Reverse
-                        self.agent.car.motor_on(forward=False)
-            case "discrete_2":
-                match action:
-                    case 1:  # Gas
-                        self.agent.car.motor_on(forward=True)
-                    case 2:  # Reverse
-                        self.agent.car.motor_on(forward=False)
-            case "continuous":  # Continuous motor wheel speeds
-                self.agent.car.set_motor_wheel_speed(action[0])
-
+        # Execute action
+        self._execute_action(action)
         # Step forward in the world
         self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30,
                         positionIterations=2 * 30)
         # Update agent status
         self.agent.update()
+        # Update timestep counter
+        self.step_counter += 1
         # Check if agent is stuck
-        if self.agent.stuck:
+        if math.floor(self.agent.car.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
+            self.step_counter = 0
+        else:  # When no significant distance has been made for a long time, the agent must be stuck
+            if self.step_counter > self.max_steps:
+                stuck = True
+
+        # Reward shaping if agent is still alive or not stuck
+        if not truncated and not terminated:
+            reward = self._get_reward(action)
+        # If agent is dead or stuck
+        if stuck:
             truncated = True
             reward = -100
-        # Dying is termination
-        if self.agent.dead:
+        elif self.agent.dead:
             terminated = True
             reward = -100
-        # When agent reaches the end, meaning 1000 meters
-        elif self.agent.car.chassis_body.position.x >= 999:
-            terminated = True
-            reward = 100
-        # Reward is equal to -1 + current_distance - max_distance
-        elif self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
-            reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
-        # Reward -1 if agent is at or around same position as last step
-        elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
-            reward = -0.5
-        # Reward is equal to 1 + current_position - max_distance
-        elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
-            reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
 
         # Get the current step observation and info for debugging
         observation = self._get_obs()
         info = {
             "car_position": self.agent.car.chassis_body.position.x,
             "prev_max_distance": self.agent.car.prev_max_distance,
-            "score": self.agent.score
+            "score": self.agent.score,
+            "steps": self.step_counter,
         }
 
         return observation, reward, terminated, truncated, info

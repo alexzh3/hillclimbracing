@@ -6,7 +6,6 @@ from Box2D import *
 class Agent:
     def __init__(self, real_world):
         self.dead = False  # Whether the agent is dead
-        self.stuck = False
         self.score = 0
         self.world = real_world
         self.last_grounded = 0

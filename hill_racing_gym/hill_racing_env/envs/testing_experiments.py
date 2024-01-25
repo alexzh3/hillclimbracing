@@ -41,12 +41,13 @@ def test_env(env):
     for episode in range(1, episodes + 1):
         state = env.reset(seed=1)
         done = False
+        truncated = False
         score = 0
-        while not done:
+        while not done and not truncated:
             env.render()
-            action = env.action_space.sample()
+            action = 0
             obs, reward, done, truncated, info = env.step(action)
-            print(info, obs)
+            print(info, score)
             score += reward
 
 
@@ -62,8 +63,7 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human")
+    env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="distance")
     # test_env(env)
-    model = PPO.load("baseline_models/ppo_base", env=env)
+    model = PPO.load("baseline_models/ppo_base_0", env=env)
     test_model(model)
-
