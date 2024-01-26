@@ -18,7 +18,7 @@ def exp_base(runs):
     for i in range(runs):
         env = gym.make(env_id)
         env = Monitor(env, f'ppo_base_{i}', info_keywords=("score",))
-        model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
         model.save(f"baseline_models/ppo_base_{i}")
 
@@ -28,9 +28,18 @@ def exp_base_reward_action(runs):
     for i in range(runs):
         env = gym.make(env_id, reward_type="action")
         env = Monitor(env, f'ppo_base_action{i}', info_keywords=("score",))
-        model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
         model.save(f"baseline_models/ppo_base_action{i}")
+
+
+def exp_base_reward_action_test(runs):
+    for i in range(runs):
+        env = gym.make(env_id, reward_type="action")
+        env = Monitor(env, f'ppo_base_action_test{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
+        model.learn(total_timesteps=100_000)
+        model.save(f"baseline_models/ppo_base_action_test{i}")
 
 
 # The base environment case, all observations and all discrete actions (0,1,2), reward type wheel speed
@@ -38,7 +47,7 @@ def exp_base_reward_wheel_speed(runs):
     for i in range(runs):
         env = gym.make(env_id, reward_type="wheel_speed")
         env = Monitor(env, f'ppo_base_wheel_speed{i}', info_keywords=("score",))
-        model = PPO("MultiInputPolicy", env, verbose=1, seed=1)
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
         model.save(f"baseline_models/ppo_base_wheel_speed{i}")
 
@@ -68,6 +77,6 @@ def exp_action_continuous():
 if __name__ == "__main__":
     # base do 5 runs
     # exp_base(5)
-    exp_base_reward_action(5)
+    exp_base(5)
     # exp_base_reward_wheel_speed(5)
     # model = PPO.load("baseline_models/ppo_base_1000k")

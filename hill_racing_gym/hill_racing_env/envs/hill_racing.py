@@ -308,7 +308,7 @@ class HillRacingEnv(gym.Env):
                 elif action == 1:  # Gas
                     reward = 1
                 elif action == 2:  # Reverse
-                    reward = -1
+                    reward = -0.1
             case "wheel_speed":
                 wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
                 # When wheel speeds are at a nearly idle state
