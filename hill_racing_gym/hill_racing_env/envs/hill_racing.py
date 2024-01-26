@@ -293,10 +293,10 @@ class HillRacingEnv(gym.Env):
         reward = 0
         match self.reward_type:
             case "distance":
-                # Reward is equal to -1 + current_distance - max_distance
+                # Reward is equal to -1 + current_distance - max_distance vs less aggressive -0.1
                 if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
                     reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
-                # Reward -1 if agent is at or around same position as last step
+                # Reward -1 if agent is at or around same position as last step vs less aggressive -0.1
                 elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
                     reward = -0.5
                 # Reward is equal to 1 + current_position - max_distance
@@ -308,7 +308,7 @@ class HillRacingEnv(gym.Env):
                 elif action == 1:  # Gas
                     reward = 1
                 elif action == 2:  # Reverse
-                    reward = -0.1
+                    reward = -1
             case "wheel_speed":
                 wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
                 # When wheel speeds are at a nearly idle state
