@@ -73,7 +73,6 @@ def plot_multiple_graph(monitor_type, variables, x_lim, y_lim, leg_loc, title, v
         y[obs] = smooth_curve(y[obs], window, poly)
 
     # Plot results
-    fig = plt.figure(title)
     plt.title(title)
     plt.xlabel(f"Number of {x_label}")
     plt.ylabel(y_label)
@@ -91,12 +90,6 @@ def plot_multiple_graph(monitor_type, variables, x_lim, y_lim, leg_loc, title, v
 
 
 if __name__ == "__main__":
-    # plt = plot_single_graph(title="Learning curve of baseline method smoothed", label_name="Baseline",
-    #                         df="monitors/base", variable_type='r', y_label="Rewards", window=200)
-
-    # single_observations = plot_multiple_graph(title="Learning curve of single observations smoothed",
-    #     window=200, poly=1, monitor_type="single_obs", variables=["angle", "ground", "position", "speed"])
-
     # single_observations = (
     #     plot_multiple_graph(title="Learning curve of single observations",
     #                         window=200, poly=1,
@@ -173,6 +166,24 @@ if __name__ == "__main__":
     #                         variable_type="score",
     #                         variables=["continuous_position_angle", "discrete_2_position_angle"]))
     # plt.savefig("action_spaces_position_angle_score", dpi=300)
-    df = load_results("base0")
-    plt = plot_single_graph(df="base0", label_name="base", y_label="reward", title="", variable_type="r")
+    merged_x = np.empty(0)
+    merged_y = np.empty(0)
+    for k in range(5):
+        data = load_results(f"monitors/base/soft/{k}")
+        x, y = transfer_to_xy(data, "timesteps", data['r'].values)
+        merged_x = np.concatenate((merged_x, x))
+        merged_y = np.concatenate((merged_y, y))
+    merged_xy = np.column_stack((merged_x, merged_y))
+    sorted_indices = np.argsort(merged_xy[:, 0])
+    merged_xy = merged_xy[sorted_indices]
+    x, y = np.split(merged_xy, 2, axis=1)
+    x = x.flatten()
+    y = y.flatten()
+    y = smooth_curve(y, 100)
+    plt.plot(x, y)
     plt.show()
+    # plt = plot_single_graph(title="", df="monitors/base/soft/", y_label="reward", label_name="soft_base",
+    #                         variable_type='r')
+    # plt.show()
+    # smooth_y = smooth_curve(y, window=200, poly=1)
+    # print(len(smooth_y))

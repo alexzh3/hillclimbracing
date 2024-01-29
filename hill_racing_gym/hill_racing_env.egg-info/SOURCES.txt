@@ -9,6 +9,7 @@ hill_racing_env/envs/__init__.py
 hill_racing_env/envs/agent.py
 hill_racing_env/envs/car.py
 hill_racing_env/envs/experiments.py
+hill_racing_env/envs/experiments_old.py
 hill_racing_env/envs/graph_maker.py
 hill_racing_env/envs/ground.py
 hill_racing_env/envs/hill_racing.py
