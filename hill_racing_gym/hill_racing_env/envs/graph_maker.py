@@ -89,31 +89,41 @@ def plot_multiple_graph(monitor_type, variables, x_lim, y_lim, leg_loc, title, v
     return plt
 
 
-if __name__ == "__main__":
-    # single_observations = (
-    #     plot_multiple_graph(title="Learning curve of single observations",
-    #                         window=200, poly=1,
-    #                         monitor_type="single_obs",
-    #                         y_label="Average rewards",
-    #                         leg_loc="lower right",
-    #                         y_lim=[-1000, 2750],
-    #                         variable_type="r",
-    #                         variables=["angle", "ground", "position", "speed"]))
+def merge_runs_to_xy(path, variable_type):
+    merged_x = np.empty(0)
+    merged_y = np.empty(0)
+    for k in range(5):
+        data = load_results(f"{path}/{k}")
+        x, y = transfer_to_xy(data, "timesteps", data[variable_type].values)
+        merged_x = np.concatenate((merged_x, x))
+        merged_y = np.concatenate((merged_y, y))
+    merged_xy = np.column_stack((merged_x, merged_y))  # Make (x,y) pairs in array
+    sorted_indices = np.argsort(merged_xy[:, 0])  # Get array indices on timesteps from low to high
+    merged_xy = merged_xy[sorted_indices]  # Sort the array on timesteps
+    x, y = np.split(merged_xy, 2, axis=1)  # Split to x and y variables again
+    x = x.flatten()  # Convert to 1D array
+    y = y.flatten()
+    return x, y
 
-    # multiple_observations = (
-    #     plot_multiple_graph(title="Learning curve of multiple observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="multi_obs",
-    #                         x_label="timesteps",
-    #                         y_label="Average reward",
-    #                         leg_loc="",
-    #                         x_lim=[],
-    #                         y_lim=[-2100, 2900],
-    #                         variable_type="r",
-    #                         variables=["position_angle", "position_ground", "position_speed", "position_angle_speed"]))
-    # multiple_observations.show()
-    # # plt.savefig("multiple_observations_rewards", dpi=300)
-    #
+
+def plot_merged_graph(x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2, title, y_label, ylim, legend_loc,
+                      x_label="Timesteps"):
+    plt.title(title)
+    plt.ylabel(y_label)
+    plt.xlabel(x_label)
+    plt.plot(x1, y1_smooth, color='dodgerblue', label="Soft")
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.1, linewidth=1)
+    plt.plot(x2, y2_smooth, color='orangered', label="Aggressive")
+    plt.plot(x2, y2, color='orangered', alpha=0.1, linewidth=1)
+    if legend_loc:
+        plt.legend(loc=legend_loc)
+    if ylim:
+        plt.ylim(ylim[0], ylim[1])
+    plt.grid(True, linewidth=0.6)
+    return plt
+
+
+if __name__ == "__main__":
     # action_spaces_rewards = (
     #     plot_multiple_graph(title="Learning curve of action spaces with all observations",
     #                         window=50, poly=1,
@@ -141,49 +151,26 @@ if __name__ == "__main__":
     #                         variables=["continuous", "discrete_2"]))
     # plt.savefig("action_spaces_score", dpi=300)
 
-    # action_spaces_best_rewards = (
-    #     plot_multiple_graph(title="Learning curve of action spaces with position_angle observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="action_spaces_best",
-    #                         x_label="timesteps",
-    #                         y_label="Average reward",
-    #                         leg_loc="",
-    #                         x_lim=[],
-    #                         y_lim=[],
-    #                         variable_type="r",
-    #                         variables=["continuous_position_angle", "discrete_2_position_angle"]))
-    # plt.savefig("action_spaces_position_angle_rewards", dpi=300)
-
-    # action_spaces_best_score = (
-    #     plot_multiple_graph(title="Average episode score of action spaces with position_angle observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="action_spaces_best",
-    #                         x_label="timesteps",
-    #                         y_label="Average score",
-    #                         leg_loc="upper left",
-    #                         x_lim=[],
-    #                         y_lim=[-20, 580],
-    #                         variable_type="score",
-    #                         variables=["continuous_position_angle", "discrete_2_position_angle"]))
-    # plt.savefig("action_spaces_position_angle_score", dpi=300)
-    merged_x = np.empty(0)
-    merged_y = np.empty(0)
-    for k in range(5):
-        data = load_results(f"monitors/base/soft/{k}")
-        x, y = transfer_to_xy(data, "timesteps", data['r'].values)
-        merged_x = np.concatenate((merged_x, x))
-        merged_y = np.concatenate((merged_y, y))
-    merged_xy = np.column_stack((merged_x, merged_y))
-    sorted_indices = np.argsort(merged_xy[:, 0])
-    merged_xy = merged_xy[sorted_indices]
-    x, y = np.split(merged_xy, 2, axis=1)
-    x = x.flatten()
-    y = y.flatten()
-    y = smooth_curve(y, 100)
-    plt.plot(x, y)
-    plt.show()
-    # plt = plot_single_graph(title="", df="monitors/base/soft/", y_label="reward", label_name="soft_base",
-    #                         variable_type='r')
-    # plt.show()
-    # smooth_y = smooth_curve(y, window=200, poly=1)
-    # print(len(smooth_y))
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/base/soft", 'r')
+    y1_smooth = smooth_curve(y1, 50)
+    x2, y2 = merge_runs_to_xy("monitors/base/aggressive", "r")
+    y2_smooth = smooth_curve(y2, 50)
+    # Learning curve reward
+    # distance_based_reward = plot_merged_graph(
+    #     x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+    #     x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+    #     title="Learning curve using distance-based reward function",
+    #     y_label="Rewards",
+    #     ylim=[-2000, 4000],
+    #     legend_loc="lower right",
+    # )
+    # Score
+    # distance_based_score = plot_merged_graph(
+    #     x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+    #     x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+    #     title="Episode score using distance-based reward function",
+    #     y_label="Score",
+    #     ylim=[-50, 1200],
+    #     legend_loc="upper left",
+    # )
