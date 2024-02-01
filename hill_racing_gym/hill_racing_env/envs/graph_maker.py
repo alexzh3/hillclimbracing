@@ -106,71 +106,191 @@ def merge_runs_to_xy(path, variable_type):
     return x, y
 
 
-def plot_merged_graph(x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2, title, y_label, ylim, legend_loc,
+def plot_merged_graph(x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2, title, y_label, ylim=[], legend_loc=[],
                       x_label="Timesteps"):
     plt.title(title)
     plt.ylabel(y_label)
     plt.xlabel(x_label)
     plt.plot(x1, y1_smooth, color='dodgerblue', label="Soft")
-    plt.plot(x1, y1, color='dodgerblue', alpha=0.1, linewidth=1)
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
     plt.plot(x2, y2_smooth, color='orangered', label="Aggressive")
-    plt.plot(x2, y2, color='orangered', alpha=0.1, linewidth=1)
+    plt.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
     if legend_loc:
-        plt.legend(loc=legend_loc)
+        plt.legend(loc=legend_loc, framealpha=0.6)
+    else:
+        plt.legend()
     if ylim:
         plt.ylim(ylim[0], ylim[1])
     plt.grid(True, linewidth=0.6)
     return plt
 
 
-if __name__ == "__main__":
-    # action_spaces_rewards = (
-    #     plot_multiple_graph(title="Learning curve of action spaces with all observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="action_spaces",
-    #                         x_label="timesteps",
-    #                         y_label="Average reward",
-    #                         leg_loc="",
-    #                         x_lim=[],
-    #                         y_lim=[],
-    #                         variable_type="r",
-    #                         variables=["continuous", "discrete_2"]))
-    # action_spaces_rewards.show()
-    # plt.savefig("action_spaces_rewards", dpi=300)
+def make_graph_rewards_shaping_distance(variable_type):
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/base/soft", variable_type)
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/base/aggressive", variable_type)
+    y2_smooth = smooth_curve(y2, 100)
 
-    # action_spaces_score = (
-    #     plot_multiple_graph(title="Average episode score of action spaces with all observations",
-    #                         window=50, poly=1,
-    #                         monitor_type="action_spaces",
-    #                         x_label="timesteps",
-    #                         y_label="Average score",
-    #                         leg_loc="upper left",
-    #                         x_lim=[],
-    #                         y_lim=[-20, 580],
-    #                         variable_type="score",
-    #                         variables=["continuous", "discrete_2"]))
-    # plt.savefig("action_spaces_score", dpi=300)
+    # Learning curve reward
+    if variable_type == "r":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Learning curve using distance-based reward function",
+            y_label="Rewards",
+            ylim=[-2000, 4000],
+            legend_loc="upper left",
+        )
+        return plot
+    # Score
+    elif variable_type == "score":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Episode score using distance-based reward function",
+            y_label="Score",
+            ylim=[-50, 1200],
+            legend_loc="upper left",
+        )
+        return plot
 
+
+def make_graph_reward_shaping_action(variable_type):
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/reward_type/action/soft", variable_type)
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/aggressive", variable_type)
+    y2_smooth = smooth_curve(y2, 100)
+
+    # Learning curve reward
+    if variable_type == "r":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Learning curve using action-based reward function",
+            y_label="Rewards",
+            ylim=[-300, 3000],
+            legend_loc="upper left",
+        )
+        return plot
+    # Score
+    elif variable_type == "score":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Episode score using action-based reward function",
+            y_label="Score",
+            ylim=[-50, 1000],
+            legend_loc="upper left",
+        )
+        return plot
+
+
+def make_graph_reward_shaping_wheel_speed(variable_type):
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", variable_type)
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/wheel_speed/aggressive", variable_type)
+    y2_smooth = smooth_curve(y2, 100)
+
+    # Learning curve reward
+    if variable_type == "r":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Learning curve using wheel speed-based reward function",
+            y_label="Rewards",
+            ylim=[-500, 6000],
+            legend_loc="upper left",
+        )
+        return plot
+    # Score
+    elif variable_type == "score":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Episode score using wheel speed-based reward function",
+            y_label="Score",
+            ylim=[-50, 1000],
+            legend_loc="upper left",
+        )
+        return plot
+
+
+def make_graph_reward_shaping_rewards():
     # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/base/soft", 'r')
-    y1_smooth = smooth_curve(y1, 50)
-    x2, y2 = merge_runs_to_xy("monitors/base/aggressive", "r")
-    y2_smooth = smooth_curve(y2, 50)
-    # Learning curve reward
-    # distance_based_reward = plot_merged_graph(
-    #     x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
-    #     x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
-    #     title="Learning curve using distance-based reward function",
-    #     y_label="Rewards",
-    #     ylim=[-2000, 4000],
-    #     legend_loc="lower right",
-    # )
-    # Score
-    # distance_based_score = plot_merged_graph(
-    #     x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
-    #     x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
-    #     title="Episode score using distance-based reward function",
-    #     y_label="Score",
-    #     ylim=[-50, 1200],
-    #     legend_loc="upper left",
-    # )
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'r')
+    y2_smooth = smooth_curve(y2, 100)
+    x3, y3 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'r')
+    y3_smooth = smooth_curve(y3, 100)
+
+    plt.title("Learning curve of different reward functions")
+    plt.ylabel("Reward")
+    plt.xlabel("Timesteps")
+
+    plt.plot(x1, y1_smooth, color='dodgerblue', label="Distance-based")
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    plt.plot(x2, y2_smooth, color='orangered', label="Action-based")
+    plt.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    plt.plot(x3, y3_smooth, color='darkviolet', label="Speed-based")
+    plt.plot(x3, y3, color='darkviolet', alpha=0.15, linewidth=1)
+    plt.legend(framealpha=0.6, loc='upper left')
+    plt.ylim(-2000, 6000)
+    plt.grid(True, linewidth=0.6)
+    return plt
+
+
+def make_graph_reward_shaping_score():
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/base/soft", 'score')
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'score')
+    y2_smooth = smooth_curve(y2, 100)
+    x3, y3 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'score')
+    y3_smooth = smooth_curve(y3, 100)
+
+    plt.title("Episode score of different reward functions")
+    plt.ylabel("Score")
+    plt.xlabel("Timesteps")
+
+    plt.plot(x1, y1_smooth, color='dodgerblue', label="Distance-based")
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    plt.plot(x2, y2_smooth, color='orangered', label="Action-based")
+    plt.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    plt.plot(x3, y3_smooth, color='purple', label="Speed-based")
+    plt.plot(x3, y3, color='purple', alpha=0.15, linewidth=1)
+    plt.legend(framealpha=0.6)
+    plt.ylim(-50, 1000)
+    plt.grid(True, linewidth=0.6)
+    return plt
+
+
+def make_boxplot_score():
+    # High score boxplot
+    x, y = merge_runs_to_xy("monitors/base/soft", 'score')
+    x, y2 = merge_runs_to_xy("monitors/base/aggressive", 'score')
+    x, y3 = merge_runs_to_xy("monitors/reward_type/action/soft", 'score')
+    x, y4 = merge_runs_to_xy("monitors/reward_type/action/aggressive", 'score')
+    x, y5 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'score')
+    x, y6 = merge_runs_to_xy("monitors/reward_type/wheel_speed/aggressive", 'score')
+    reward_types = ["Distance soft", "Distance aggressive",
+                    "Action soft", "Action aggressive",
+                    "Speed soft", "Speed aggressive"]
+    data = [y, y2, y3, y4, y5, y6]
+    plt.title("Episode score of different reward functions")
+    plt.xlabel("Score")
+    plot = plt.boxplot(x=data, labels=reward_types, flierprops=dict(alpha=0.5), vert=0, patch_artist=True)
+    # fill with colors
+    colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen']
+    for patch, color in zip(plot['boxes'], colors):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    return plt
+
+
+if __name__ == "__main__":
+    make_boxplot_score()
+    plt.savefig("reward_function_score_comparison_boxplot", dpi=300)
