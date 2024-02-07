@@ -8,6 +8,7 @@ from scipy.signal import savgol_filter
 from typing import Callable, List, Optional, Tuple
 import pandas as pd
 import os
+import cv2
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -142,7 +143,6 @@ def make_graph_rewards_shaping_distance(variable_type):
             ylim=[-2000, 4000],
             legend_loc="upper left",
         )
-        return plot
     # Score
     elif variable_type == "score":
         plot = plot_merged_graph(
@@ -153,7 +153,16 @@ def make_graph_rewards_shaping_distance(variable_type):
             ylim=[-50, 1200],
             legend_loc="upper left",
         )
-        return plot
+    # Score
+    elif variable_type == "l":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Episode length using distance-based reward function",
+            y_label="Episode length (in timesteps)",
+            ylim=[-100, 8000],
+            legend_loc="upper left",
+        )
 
 
 def make_graph_reward_shaping_action(variable_type):
@@ -182,6 +191,17 @@ def make_graph_reward_shaping_action(variable_type):
             title="Episode score using action-based reward function",
             y_label="Score",
             ylim=[-50, 1000],
+            legend_loc="upper left",
+        )
+        return plot
+    # Length
+    elif variable_type == "l":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Episode length using action-based reward function",
+            y_label="Episode length (in timesteps)",
+            ylim=[-100, 6000],
             legend_loc="upper left",
         )
         return plot
@@ -216,9 +236,20 @@ def make_graph_reward_shaping_wheel_speed(variable_type):
             legend_loc="upper left",
         )
         return plot
+    # Episode length
+    elif variable_type == "l":
+        plot = plot_merged_graph(
+            x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+            x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+            title="Episode length using wheel speed-based reward function",
+            y_label="Episode length (in timesteps)",
+            ylim=[-100, 10000],
+            legend_loc="upper left",
+        )
+        return plot
 
 
-def make_graph_reward_shaping_rewards():
+def shaping_comparison_reward():
     # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/base/soft", 'r')
     y1_smooth = smooth_curve(y1, 100)
@@ -243,7 +274,7 @@ def make_graph_reward_shaping_rewards():
     return plt
 
 
-def make_graph_reward_shaping_score():
+def shaping_comparison_score():
     # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/base/soft", 'score')
     y1_smooth = smooth_curve(y1, 100)
@@ -264,6 +295,30 @@ def make_graph_reward_shaping_score():
     plt.plot(x3, y3, color='purple', alpha=0.15, linewidth=1)
     plt.legend(framealpha=0.6)
     plt.ylim(-50, 1000)
+    plt.grid(True, linewidth=0.6)
+    return plt
+
+def shaping_comparison_length():
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/base/soft", 'l')
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'l')
+    y2_smooth = smooth_curve(y2, 100)
+    x3, y3 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'l')
+    y3_smooth = smooth_curve(y3, 100)
+
+    plt.title("Episode length of different reward functions")
+    plt.ylabel("Episode length (in timesteps)")
+    plt.xlabel("Timesteps")
+
+    plt.plot(x1, y1_smooth, color='dodgerblue', label="Distance-based")
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    plt.plot(x2, y2_smooth, color='orangered', label="Action-based")
+    plt.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    plt.plot(x3, y3_smooth, color='purple', label="Speed-based")
+    plt.plot(x3, y3, color='purple', alpha=0.15, linewidth=1)
+    plt.legend(framealpha=0.6)
+    plt.ylim(-100, 8200)
     plt.grid(True, linewidth=0.6)
     return plt
 
@@ -292,5 +347,6 @@ def make_boxplot_score():
 
 
 if __name__ == "__main__":
-    make_boxplot_score()
-    plt.savefig("reward_function_score_comparison_boxplot", dpi=300)
+    shaping_comparison_length()
+    # plt.show()
+    plt.savefig("episode_length_comparison", dpi=300)

@@ -34,7 +34,8 @@ SCALE = 30  # Pixels per meter / Scale, Box2D counts in meters, pygame counts in
 FPS = 60  # frames per second
 SPAWNING_Y = 0
 SPAWNING_X = 200  # Spawn coordinate in pixels
-GROUND_DISTANCE = int(1000 * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
+MAX_SCORE = 300  # Max score achievable (-/+ 10)
+GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -100  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 panX = 0
 panY = 0
@@ -43,7 +44,7 @@ WHEEL_SIZE = 35
 HEAD_SIZE = 40
 PERSON_WIDTH = 20
 PERSON_HEIGHT = 40
-HUMAN_PLAYING = True
+HUMAN_PLAYING = False
 
 # Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -136,7 +137,7 @@ def human_play():
         current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
         # Print for debugging
         print(
-            f"position: {current_agent.car.chassis_body.position.x},"
+            f"position: {current_agent.car.chassis_body.position.x, current_agent.car.chassis_body.position.y},"
             f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed}")
         # Update Agent
         current_agent.update()
@@ -375,9 +376,6 @@ class HillRacingEnv(gym.Env):
             if self.step_counter > self.max_steps:
                 stuck = True
 
-        # Reward shaping if agent is still alive or not stuck
-        if not truncated and not terminated:
-            reward = self._get_reward(action)
         # If agent is dead or stuck
         if stuck:
             truncated = True
@@ -385,6 +383,12 @@ class HillRacingEnv(gym.Env):
         elif self.agent.dead:
             terminated = True
             reward = -100
+        elif self.agent.score > MAX_SCORE:    # If max score is achieved
+            terminated = True
+
+        # Reward shaping if agent is still alive or not stuck
+        if not truncated and not terminated:
+            reward = self._get_reward(action)
 
         # Get the current step observation and info for debugging
         observation = self._get_obs()

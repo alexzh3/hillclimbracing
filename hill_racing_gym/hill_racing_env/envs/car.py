@@ -172,8 +172,8 @@ class Car:
             self.prev_max_distance = self.max_distance
             self.max_distance = pos_x
 
-        # When agent is out of the screen height, we set status to dead
-        if not self.dead and pos_y > hill_racing.SCREEN_HEIGHT:
+        # When agent falls out of screen, we set status to dead
+        if not self.dead and (pos_y * hill_racing.SCALE > hill_racing.SCREEN_HEIGHT):
             self.dead = True
             self.agent.dead = True
 
