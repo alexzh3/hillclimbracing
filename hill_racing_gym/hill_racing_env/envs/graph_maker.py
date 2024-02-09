@@ -1,14 +1,10 @@
-from stable_baselines3.common.logger import configure
-from stable_baselines3.common.monitor import load_results, Monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy
-from stable_baselines3.common import results_plotter
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 from typing import Callable, List, Optional, Tuple
 import pandas as pd
 import os
-import cv2
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -126,11 +122,11 @@ def plot_merged_graph(x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2, ti
     return plt
 
 
-def make_graph_rewards_shaping_distance(variable_type):
+def graph_rewards_distance(variable_type):
     # Distance-based reward function
-    x1, y1 = merge_runs_to_xy("monitors/base/soft", variable_type)
+    x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/distance/soft", variable_type)
     y1_smooth = smooth_curve(y1, 100)
-    x2, y2 = merge_runs_to_xy("monitors/base/aggressive", variable_type)
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/distance/aggressive", variable_type)
     y2_smooth = smooth_curve(y2, 100)
 
     # Learning curve reward
@@ -153,7 +149,7 @@ def make_graph_rewards_shaping_distance(variable_type):
             ylim=[-50, 1000],
             legend_loc="upper left",
         )
-    # Score
+    # length
     elif variable_type == "l":
         plot = plot_merged_graph(
             x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
@@ -165,7 +161,7 @@ def make_graph_rewards_shaping_distance(variable_type):
         )
 
 
-def make_graph_reward_shaping_action(variable_type):
+def graph_rewards_action(variable_type):
     # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/reward_type/action/soft", variable_type)
     y1_smooth = smooth_curve(y1, 100)
@@ -207,7 +203,7 @@ def make_graph_reward_shaping_action(variable_type):
         return plot
 
 
-def make_graph_reward_shaping_wheel_speed(variable_type):
+def graph_rewards_wheel_speed(variable_type):
     # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", variable_type)
     y1_smooth = smooth_curve(y1, 100)
@@ -251,11 +247,11 @@ def make_graph_reward_shaping_wheel_speed(variable_type):
 
 def shaping_comparison_reward():
     # Distance-based reward function
-    x1, y1 = merge_runs_to_xy("monitors/base/soft", 'r')
+    x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/distance/soft", 'r')
     y1_smooth = smooth_curve(y1, 100)
-    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'r')
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/action/soft", 'r')
     y2_smooth = smooth_curve(y2, 100)
-    x3, y3 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'r')
+    x3, y3 = merge_runs_to_xy("monitors/reward_type/1000/wheel_speed/soft", 'r')
     y3_smooth = smooth_curve(y3, 100)
 
     plt.title("Learning curve of different reward functions")
@@ -275,11 +271,11 @@ def shaping_comparison_reward():
 
 
 def shaping_comparison_score():
-    x1, y1 = merge_runs_to_xy("monitors/base/soft", 'score')
+    x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/distance/soft", 'score')
     y1_smooth = smooth_curve(y1, 100)
-    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'score')
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/action/soft", 'score')
     y2_smooth = smooth_curve(y2, 100)
-    x3, y3 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'score')
+    x3, y3 = merge_runs_to_xy("monitors/reward_type/1000/wheel_speed/soft", 'score')
     y3_smooth = smooth_curve(y3, 100)
 
     plt.title("Episode score of different reward functions")
@@ -299,11 +295,11 @@ def shaping_comparison_score():
 
 
 def shaping_comparison_length():
-    x1, y1 = merge_runs_to_xy("monitors/base/soft", 'l')
+    x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/distance/soft", 'l')
     y1_smooth = smooth_curve(y1, 100)
-    x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'l')
+    x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/action/soft", 'l')
     y2_smooth = smooth_curve(y2, 100)
-    x3, y3 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'l')
+    x3, y3 = merge_runs_to_xy("monitors/reward_type/1000/wheel_speed/soft", 'l')
     y3_smooth = smooth_curve(y3, 100)
 
     plt.title("Episode length of different reward functions")
@@ -324,12 +320,12 @@ def shaping_comparison_length():
 
 def make_boxplot_score():
     # High score boxplot
-    x, y = merge_runs_to_xy("monitors/base/soft", 'score')
-    x, y2 = merge_runs_to_xy("monitors/base/aggressive", 'score')
-    x, y3 = merge_runs_to_xy("monitors/reward_type/action/soft", 'score')
-    x, y4 = merge_runs_to_xy("monitors/reward_type/action/aggressive", 'score')
-    x, y5 = merge_runs_to_xy("monitors/reward_type/wheel_speed/soft", 'score')
-    x, y6 = merge_runs_to_xy("monitors/reward_type/wheel_speed/aggressive", 'score')
+    x, y = merge_runs_to_xy("monitors/reward_type/1000/distance/soft", 'score')
+    x, y2 = merge_runs_to_xy("monitors/reward_type/1000/distance/aggressive", 'score')
+    x, y3 = merge_runs_to_xy("monitors/reward_type/1000/action/soft", 'score')
+    x, y4 = merge_runs_to_xy("monitors/reward_type/1000/action/aggressive", 'score')
+    x, y5 = merge_runs_to_xy("monitors/reward_type/1000/wheel_speed/soft", 'score')
+    x, y6 = merge_runs_to_xy("monitors/reward_type/1000/wheel_speed/aggressive", 'score')
     reward_types = ["Distance soft", "Distance aggressive",
                     "Action soft", "Action aggressive",
                     "Speed soft", "Speed aggressive"]
@@ -347,6 +343,5 @@ def make_boxplot_score():
 
 
 if __name__ == "__main__":
-    make_graph_rewards_shaping_distance('score')
-    # plt.show()
-    plt.savefig("distance_based_score", dpi=300)
+    make_boxplot_score()
+    # plt.savefig("score_comparison_boxplot", dpi=300)

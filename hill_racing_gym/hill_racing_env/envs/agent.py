@@ -1,7 +1,6 @@
-import math
 import car
 import hill_racing
-from Box2D import *
+
 
 class Agent:
     def __init__(self, real_world):
@@ -34,7 +33,7 @@ class Agent:
             self.car.update_status()
 
         # Calculate and update score, score is equal to at least 0 or current max distance - spawn position
-        self.score = max(0, int((self.car.max_distance - (self.spawning_x/hill_racing.SCALE))))
+        self.score = max(0, int((self.car.max_distance - (self.spawning_x / hill_racing.SCALE))))
 
     # Function that removes body from world
     def remove_agent_from_world(self):
@@ -56,4 +55,3 @@ class Agent:
         # self.world.DestroyJoint(self.car.person.dist_joint_head_torso)
         # self.world.DestroyJoint(self.car.rev_joint_torso_chassis)
         # self.world.DestroyJoint(self.car.person.rev_joint_head_torso)
-

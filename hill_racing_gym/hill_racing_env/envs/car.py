@@ -1,6 +1,5 @@
 import math
 import pygame
-import random
 import hill_racing
 import person
 import wheels
