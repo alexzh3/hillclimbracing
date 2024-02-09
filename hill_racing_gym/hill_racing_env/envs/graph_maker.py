@@ -150,7 +150,7 @@ def make_graph_rewards_shaping_distance(variable_type):
             x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
             title="Episode score using distance-based reward function",
             y_label="Score",
-            ylim=[-50, 1200],
+            ylim=[-50, 1000],
             legend_loc="upper left",
         )
     # Score
@@ -275,7 +275,6 @@ def shaping_comparison_reward():
 
 
 def shaping_comparison_score():
-    # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/base/soft", 'score')
     y1_smooth = smooth_curve(y1, 100)
     x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'score')
@@ -298,8 +297,8 @@ def shaping_comparison_score():
     plt.grid(True, linewidth=0.6)
     return plt
 
+
 def shaping_comparison_length():
-    # Distance-based reward function
     x1, y1 = merge_runs_to_xy("monitors/base/soft", 'l')
     y1_smooth = smooth_curve(y1, 100)
     x2, y2 = merge_runs_to_xy("monitors/reward_type/action/soft", 'l')
@@ -342,11 +341,12 @@ def make_boxplot_score():
     colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen']
     for patch, color in zip(plot['boxes'], colors):
         patch.set_facecolor(color)
+    plt.xlim(-50, 1000)
     plt.tight_layout()
     return plt
 
 
 if __name__ == "__main__":
-    shaping_comparison_length()
+    make_graph_rewards_shaping_distance('score')
     # plt.show()
-    plt.savefig("episode_length_comparison", dpi=300)
+    plt.savefig("distance_based_score", dpi=300)
