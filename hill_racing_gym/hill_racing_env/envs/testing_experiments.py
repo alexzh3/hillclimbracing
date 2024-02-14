@@ -63,8 +63,8 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="action")
+    env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="distance")
     # test_env(env)
-    model = PPO.load("baseline_models/ppo_base_action_2", env=env,
+    model = PPO.load("baseline_models/ppo_base_0.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
     test_model(model)

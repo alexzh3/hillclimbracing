@@ -13,8 +13,10 @@ import pandas as pd
 env_id = 'hill_racing_env/HillRacing-v0'
 
 
+# Different reward functions tested with observations with discrete actions (0,1,2) (base)
+
 # The base environment case, all observations and all discrete actions (0,1,2),reward type distance
-def exp_base(runs):
+def exp_base_reward_distance(runs):
     for i in range(runs):
         env = gym.make(env_id)
         env = Monitor(env, f'ppo_base_300_{i}', info_keywords=("score",))
@@ -44,6 +46,30 @@ def exp_base_reward_wheel_speed(runs):
 
 
 #######################################################################################################################
+
+# Different reward functions tested with observations with continuous actions (0,1,2) (cont)
+
+# Continuous, all observations and all discrete actions (0,1,2),reward type distance
+def exp_cont_reward_distance(runs):
+    for i in range(runs):
+        env = gym.make(env_id, action_space="continuous")
+        env = Monitor(env, f'ppo_cont_300_{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_cont_300_{i}")
+
+
+# Continuous, all observations and all discrete actions (0,1,2), reward type wheel speed
+def exp_cont_reward_wheel_speed(runs):
+    for i in range(runs):
+        env = gym.make(env_id, reward_type="wheel_speed", action_space="continuous")
+        env = Monitor(env, f'ppo_cont_wheel_speed_300_{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_cont_wheel_speed_300_{i}")
+
+
+#######################################################################################################################
 # Action input experiments
 
 # Only gas and reverse actions, all observations
@@ -65,12 +91,14 @@ def exp_action_continuous():
 
 
 #######################################################################################################################
+
+
 if __name__ == "__main__":
-    # base do 5 runs
-    exp_base(5)
-    exp_base_reward_action(5)
-    exp_base_reward_wheel_speed(5)
-    # model = PPO.load("baseline_models/ppo_base_1000k")
-
-    
-
+    # Discrete(3)/base experiments
+    # exp_base_reward_distance(5)
+    # exp_base_reward_action(5)
+    # exp_base_reward_wheel_speed(5)
+    # Continuous experiments
+    exp_cont_reward_distance(5)
+    exp_cont_reward_wheel_speed(5)
+    # TBD WITH SOFT ^
