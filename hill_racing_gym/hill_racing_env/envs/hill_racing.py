@@ -40,12 +40,12 @@ panX = 0
 panY = 0
 
 # Gameplay variables
-HUMAN_PLAYING = False
+HUMAN_PLAYING = True
 SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 1000  # Max score achievable (-/+ 10)
+MAX_SCORE = 300  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
-DIFFICULTY = -100  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
+DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 
 # Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")

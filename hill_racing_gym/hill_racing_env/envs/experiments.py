@@ -19,30 +19,30 @@ env_id = 'hill_racing_env/HillRacing-v0'
 def exp_base_reward_distance(runs):
     for i in range(runs):
         env = gym.make(env_id)
-        env = Monitor(env, f'ppo_base_300_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_base_soft_300_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_base_300_{i}")
+        model.save(f"baseline_models/ppo_base_soft_300_{i}")
 
 
 # The base environment case, all observations and all discrete actions (0,1,2), reward type action
 def exp_base_reward_action(runs):
     for i in range(runs):
         env = gym.make(env_id, reward_type="action")
-        env = Monitor(env, f'ppo_base_action_300_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_base_action_soft_300_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_base_action_300_{i}")
+        model.save(f"baseline_models/ppo_base_action_soft_300_{i}")
 
 
 # The base environment case, all observations and all discrete actions (0,1,2), reward type wheel speed
 def exp_base_reward_wheel_speed(runs):
     for i in range(runs):
         env = gym.make(env_id, reward_type="wheel_speed")
-        env = Monitor(env, f'ppo_base_wheel_speed_300_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_base_wheel_speed_soft_300_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_base_wheel_speed_300_{i}")
+        model.save(f"baseline_models/ppo_base_wheel_speed_soft_300_{i}")
 
 
 #######################################################################################################################
@@ -53,20 +53,20 @@ def exp_base_reward_wheel_speed(runs):
 def exp_cont_reward_distance(runs):
     for i in range(runs):
         env = gym.make(env_id, action_space="continuous")
-        env = Monitor(env, f'ppo_cont_300_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_cont_soft_300_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_cont_300_{i}")
+        model.save(f"baseline_models/ppo_cont_soft_300_{i}")
 
 
 # Continuous, all observations and all discrete actions (0,1,2), reward type wheel speed
 def exp_cont_reward_wheel_speed(runs):
     for i in range(runs):
         env = gym.make(env_id, reward_type="wheel_speed", action_space="continuous")
-        env = Monitor(env, f'ppo_cont_wheel_speed_300_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_cont_wheel_speed_soft_300_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_cont_wheel_speed_300_{i}")
+        model.save(f"baseline_models/ppo_cont_wheel_speed_soft_300_{i}")
 
 
 #######################################################################################################################
@@ -101,4 +101,7 @@ if __name__ == "__main__":
     # Continuous experiments
     exp_cont_reward_distance(5)
     exp_cont_reward_wheel_speed(5)
-    # TBD WITH SOFT ^
+    # TBD experiment with 1000 for wheel speed soft to check whether the soft vs aggressive curve in 300 is correct
+    # exp_base_reward_wheel_speed(5)
+
+
