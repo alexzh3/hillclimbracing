@@ -43,7 +43,7 @@ panY = 0
 HUMAN_PLAYING = True
 SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 300  # Max score achievable (-/+ 10)
+MAX_SCORE = 1000  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 
@@ -306,22 +306,22 @@ class HillRacingEnv(gym.Env):
                     reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
             case "action":
                 if action == 0:  # Idle
-                    reward = -0.1
+                    reward = -0.5
                 elif action == 1:  # Gas
                     reward = 1
                 elif action == 2:  # Reverse
-                    reward = -0.2
+                    reward = -1
             case "wheel_speed":
                 wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
                 # When wheel speeds are at a nearly idle state
                 if all(-1 <= speed <= 1 for speed in wheel_speeds):
-                    reward = -0.1
+                    reward = -0.5
                 # When we have wheel speeds that bring the car forward (negative wheel speed = forward)
                 elif all(speed < 0 for speed in wheel_speeds):
                     reward = 1
                 # When we have wheel speeds that bring the car backwards
                 elif all(speed > 0 for speed in wheel_speeds):
-                    reward = -0.2
+                    reward = -1
                 else:
                     reward = 0
         return reward
