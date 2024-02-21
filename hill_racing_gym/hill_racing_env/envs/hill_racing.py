@@ -43,7 +43,7 @@ panY = 0
 HUMAN_PLAYING = True
 SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 300  # Max score achievable (-/+ 10)
+MAX_SCORE = 1000  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 
