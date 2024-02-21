@@ -43,7 +43,7 @@ panY = 0
 HUMAN_PLAYING = True
 SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 1000  # Max score achievable (-/+ 10)
+MAX_SCORE = 300  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 
@@ -297,10 +297,10 @@ class HillRacingEnv(gym.Env):
             case "distance":
                 # Reward is equal to -1 + current_distance - max_distance vs less aggressive -0.2
                 if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
-                    reward = -0.2 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
-                # Reward -1 if agent is at or around same position as last step vs less aggressive -0.1
+                    reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                # Reward -0.5 if agent is at or around same position as last step vs less aggressive -0.1
                 elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
-                    reward = -0.1
+                    reward = -0.5
                 # Reward is equal to 1 + current_position - max_distance
                 elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
                     reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)

@@ -10,6 +10,8 @@ from gymnasium.wrappers import FilterObservation
 import pandas as pd
 import numpy as np
 import gymnasium as gym
+import noise
+import random
 
 env_id = 'hill_racing_env/HillRacing-v0'
 
@@ -63,8 +65,18 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="distance")
-    # test_env(env)
-    model = PPO.load("baseline_models/ppo_base_0.zip", env=env,
-                     custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
-    test_model(model)
+    # env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="distance")
+    # # test_env(env)
+    # model = PPO.load("baseline_models/ppo_base_0.zip", env=env,
+    #                  custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
+    # test_model(model)
+    flatLength = 500
+    distance = 100_000
+    ground_seed = random.uniform(0, 100000)  # Generates a random seed that will define the terrain
+    for i in range(0, distance, 15):
+        steepness_Level = np.interp(i, [0, distance], [130, 250])
+        noise_value = ground_seed + (i - flatLength) / (700 - steepness_Level)
+        noisedY = noise.pnoise1(ground_seed + (i - flatLength) / (700 - steepness_Level), octaves=4,
+                                lacunarity=2)
+        maxHeight = -150 + np.interp(steepness_Level, [0, 200], [0, 320])
+        print(f"i: {i}, steepness_Level: {steepness_Level}, noisedY:{noisedY}, maxHeight: {maxHeight}")

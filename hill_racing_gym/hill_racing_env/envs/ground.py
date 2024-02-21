@@ -38,7 +38,8 @@ class Ground:
             # Calculate the steepness level using linear interpolation between 130 and 250
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
-            noisedY = abs(noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
+            noisedY = abs(
+                noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level
             maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             minHeight = 30
