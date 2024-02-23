@@ -1,4 +1,5 @@
 from gymnasium.error import DependencyNotInstalled
+
 try:
     from Box2D import *
 except ImportError:
@@ -40,10 +41,10 @@ panX = 0
 panY = 0
 
 # Gameplay variables
-HUMAN_PLAYING = True
+HUMAN_PLAYING = False
 SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 1000  # Max score achievable (-/+ 10)
+MAX_SCORE = 300  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 
@@ -139,7 +140,8 @@ def human_play():
         # Print for debugging
         print(
             f"position: {current_agent.car.chassis_body.position.x, current_agent.car.chassis_body.position.y},"
-            f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed}")
+            f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed},"
+            f"FPS: {clock.get_fps()}")
         # Update Agent
         current_agent.update()
         # Update render screen and fps
@@ -174,7 +176,6 @@ def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
 
 
 def draw(render_ground, render_agent) -> None:
-    # Fill screen with sky colour
     screen.fill((135, 206, 235))
     # Draw the ground to screen
     render_ground.draw_ground(screen)
@@ -295,10 +296,10 @@ class HillRacingEnv(gym.Env):
         reward = 0
         match self.reward_type:
             case "distance":
-                # Reward is equal to -1 + current_distance - max_distance vs less aggressive -0.2
+                # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
                 if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
                     reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
-                # Reward -0.5 if agent is at or around same position as last step vs less aggressive -0.1
+                # Reward -0.5 if agent is at or around same position as last step vs soft-0.1
                 elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
                     reward = -0.5
                 # Reward is equal to 1 + current_position - max_distance
@@ -371,20 +372,19 @@ class HillRacingEnv(gym.Env):
         # Update timestep counter
         self.step_counter += 1
         # Check if agent is stuck
-        if math.floor(self.agent.car.max_distance) % 50 == 0:  # when we made more than 50 metres distance reset count
+        if math.floor(self.agent.car.chassis_body.position.x) % 20 == 0:  # when we made more than 10 metres distance
+            # reset count
             self.step_counter = 0
         else:  # When no significant distance has been made for a long time, the agent must be stuck
             if self.step_counter > self.max_steps:
-                stuck = True
+                terminated = True
+                reward = -100
 
-        # If agent is dead or stuck
-        if stuck:
-            truncated = True
-            reward = -100
-        elif self.agent.dead:
+        # If agent is dead
+        if self.agent.dead:
             terminated = True
             reward = -100
-        elif self.agent.score > MAX_SCORE:  # If max score is achieved
+        if self.agent.score >= MAX_SCORE:  # If max score is achieved
             terminated = True
 
         # Reward shaping if agent is still alive or not stuck
@@ -421,7 +421,6 @@ class HillRacingEnv(gym.Env):
             pygame.display.set_caption("Hill climb RL")
         if self.clock is None and self.render_mode == "human":
             self.clock = pygame.time.Clock()
-            self.clock.tick(self.metadata["render_fps"])
 
         assert self.screen is not None
         assert self.clock is not None
@@ -433,6 +432,7 @@ class HillRacingEnv(gym.Env):
         self.agent.draw_agent(self.screen)
         # Update the screen
         pygame.display.flip()
+        self.clock.tick(self.metadata["render_fps"])
 
     def close(self):
         if self.screen is not None:

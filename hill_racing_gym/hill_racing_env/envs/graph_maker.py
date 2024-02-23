@@ -92,7 +92,7 @@ def merge_runs_to_xy(path, variable_type):
     for k in range(5):
         data = load_results(f"{path}/{k}")
         print(f'{path}/{k}')
-        print(data['r'].nsmallest(5))
+        print(data['r'].nlargest(5))
         x, y = transfer_to_xy(data, "timesteps", data[variable_type].values)
         merged_x = np.concatenate((merged_x, x))
         merged_y = np.concatenate((merged_y, y))
@@ -347,6 +347,6 @@ def make_boxplot_score():
 
 
 if __name__ == "__main__":
-    graph_rewards_distance()
-    plt.savefig("300_cont_distance_merged", dpi=300)
+    graph_rewards_wheel_speed()
+    plt.savefig("300_cont_wheel_speed_merged", dpi=300)
     plt.show()
