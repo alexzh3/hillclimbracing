@@ -65,11 +65,10 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="distance")
-    test_env(env)
-    model = PPO.load("baseline_models/ppo_base_300_3.zip", env=env,
+    env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="wheel_speed")
+    model = PPO.load("baseline_models/ppo_cont_wheel_speed_300_4.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
-    # test_model(model)
+    test_model(model)
     # flatLength = 500
     # distance = 100_000
     # ground_seed = random.uniform(0, 100000)  # Generates a random seed that will define the terrain

@@ -13,6 +13,8 @@ hill_racing_env/envs/experiments_old.py
 hill_racing_env/envs/graph_maker.py
 hill_racing_env/envs/ground.py
 hill_racing_env/envs/hill_racing.py
+hill_racing_env/envs/hill_racing_combined.py
+hill_racing_env/envs/hill_racing_human.py
 hill_racing_env/envs/person.py
 hill_racing_env/envs/testing_experiments.py
 hill_racing_env/envs/wheels.py

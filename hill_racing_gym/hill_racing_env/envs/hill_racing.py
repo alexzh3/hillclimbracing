@@ -41,10 +41,9 @@ panX = 0
 panY = 0
 
 # Gameplay variables
-HUMAN_PLAYING = False
 SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 300  # Max score achievable (-/+ 10)
+MAX_SCORE = 1000  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
 DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
 
@@ -92,99 +91,6 @@ class ContactListener(b2ContactListener):
             contact.fixtureB.body.userData.on_ground = False
 
 
-# Key events handler when human is playing
-def handle_key_events(human_event: pygame.event, human_agent: 'agent.Agent',
-                      human_right_down: bool, human_left_down: bool) -> None:
-    if human_event.type == pygame.KEYDOWN:
-        if human_event.key in (pygame.K_d, pygame.K_RIGHT):
-            human_agent.car.motor_on(forward=True)
-            human_right_down = True
-        elif human_event.key in (pygame.K_a, pygame.K_LEFT):
-            human_agent.car.motor_on(forward=False)
-            human_left_down = True
-
-    elif human_event.type == pygame.KEYUP:
-        if human_event.key in (pygame.K_d, pygame.K_RIGHT):
-            human_right_down = False
-            if human_left_down:
-                human_agent.car.motor_on(forward=False)
-            else:
-                human_agent.car.motor_off()
-        elif human_event.key in (pygame.K_a, pygame.K_LEFT):
-            human_left_down = False
-            if human_right_down:
-                human_agent.car.motor_on(forward=True)
-            else:
-                human_agent.car.motor_off()
-
-
-def human_play():
-    # Initialize world
-    current_ground, current_agent, current_world = setup_world()
-    # Initialize key variables for when human plays
-    right_key_down = False
-    left_key_down = False
-    while not current_agent.dead:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Escape to quit game
-                print("Escape was pressed, quiting the game...")
-                pygame.quit()
-            handle_key_events(event, current_agent, right_key_down, left_key_down)
-
-        # Call the draw function
-        draw(current_ground, current_agent)
-        # Box2D simulation
-        current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
-        # Print for debugging
-        print(
-            f"position: {current_agent.car.chassis_body.position.x, current_agent.car.chassis_body.position.y},"
-            f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed},"
-            f"FPS: {clock.get_fps()}")
-        # Update Agent
-        current_agent.update()
-        # Update render screen and fps
-        pygame.display.flip()
-        clock.tick(FPS)
-    # Print final distance
-    print(f"Final score: {current_agent.score}")
-    # Quit the game
-    pygame.quit()
-
-
-def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
-    # Variables
-    main_world = b2World(contactListener=ContactListener(), gravity=b2Vec2(0, GRAVITY), doSleep=True)
-    ground_template = ground.Ground()  # Template to store the ground vectors
-    ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
-
-    # Generate until we find ground that is not too steep
-    while ground_template.groundTooSteep():
-        ground_template = ground.Ground()
-        ground_template.randomizeGround()
-
-    # Set up the ground
-    main_ground = ground.Ground(main_world)
-    main_ground.cloneFrom(ground_template)
-    main_ground.setBodies(main_world)
-
-    # Set up the world and agent
-    human_agent = agent.Agent(real_world=main_world)
-    human_agent.add_to_world()
-    return main_ground, human_agent, main_world
-
-
-def draw(render_ground, render_agent) -> None:
-    screen.fill((135, 206, 235))
-    # Draw the ground to screen
-    render_ground.draw_ground(screen)
-    # Draw the agent
-    render_agent.draw_agent(screen)
-    # Update the screen
-    pygame.display.flip()
-
-
 class HillRacingEnv(gym.Env):
     metadata = {
         "render_modes": ["human"],
@@ -195,7 +101,8 @@ class HillRacingEnv(gym.Env):
             self,
             render_mode: Optional[str] = None,
             action_space: str = "discrete_3",
-            reward_type: str = "distance",
+            reward_function: str = "distance",
+            reward_type: str = "aggressive",
             max_steps: int = metadata["render_fps"] * 20,
     ):
         self.world = b2World(gravity=(0, GRAVITY), doSleep=True)
@@ -203,9 +110,11 @@ class HillRacingEnv(gym.Env):
         self.agent: Optional[agent.Agent] = None  # The agent class contains the car, wheels and person
         self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
         self.action_space_type = action_space  # What type of action space do we choose? (Discrete or continuous?)
-        self.reward_type = reward_type  # Type of reward, distance-based vs action based vs wheel speed
+        self.reward_function = reward_function  # Type of reward, distance-based vs action based vs wheel speed
         self.step_counter = None  # Counter to memorize the amount of steps done
         self.max_steps = max_steps  # Amount of maximum timesteps done without significant
+        self.previous_stuck_pos = None  # Position of the agent last time the agent was stuck
+        self.reward_type = reward_type
         # progress, will be 20 seconds
 
         # Define action spaces
@@ -293,36 +202,43 @@ class HillRacingEnv(gym.Env):
 
     # Function that calculates the reward for a given timestep based on the reward_type
     def _get_reward(self, action):
-        reward = 0
-        match self.reward_type:
+        reverse_reward = 0
+        idle_reward = 0
+        if self.reward_type == "aggressive":
+            idle_reward = -0.5
+            reverse_reward = -1
+        elif self.reward_type == "soft":
+            idle_reward = -0.1
+            reverse_reward = -0.2
+        match self.reward_function:
             case "distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
                 if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
-                    reward = -1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                    reward = reverse_reward + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
                 # Reward -0.5 if agent is at or around same position as last step vs soft-0.1
                 elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
-                    reward = -0.5
+                    reward = idle_reward
                 # Reward is equal to 1 + current_position - max_distance
                 elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
                     reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
             case "action":
                 if action == 0:  # Idle
-                    reward = -0.5
+                    reward = idle_reward
                 elif action == 1:  # Gas
                     reward = 1
                 elif action == 2:  # Reverse
-                    reward = -1
+                    reward = reverse_reward
             case "wheel_speed":
                 wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
                 # When wheel speeds are at a nearly idle state
                 if all(-1 <= speed <= 1 for speed in wheel_speeds):
-                    reward = -0.5
+                    reward = idle_reward
                 # When we have wheel speeds that bring the car forward (negative wheel speed = forward)
                 elif all(speed < 0 for speed in wheel_speeds):
                     reward = 1
                 # When we have wheel speeds that bring the car backwards
                 elif all(speed > 0 for speed in wheel_speeds):
-                    reward = -1
+                    reward = reverse_reward
                 else:
                     reward = 0
         return reward
@@ -358,33 +274,34 @@ class HillRacingEnv(gym.Env):
     def step(self, action: int | np.float32):
         terminated = False
         truncated = False
-        stuck = False
         reward = 0  # initial reward of -1, if the agent does completely nothing
-        info = {}
 
         # Execute action
         self._execute_action(action)
         # Step forward in the world
         self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30,
                         positionIterations=2 * 30)
+        # Increase step counter
+        self.step_counter += 1
         # Update agent status
         self.agent.update()
-        # Update timestep counter
-        self.step_counter += 1
+
         # Check if agent is stuck
-        if math.floor(self.agent.car.chassis_body.position.x) % 20 == 0:  # when we made more than 10 metres distance
-            # reset count
+        if (math.floor(self.agent.car.chassis_body.position.x) % 20 == 0 and self.previous_stuck_pos !=
+                math.floor(self.agent.car.chassis_body.position.x)):  # when we made more
+            # than 20 metres distance reset count, and we are not at the same position we were stuck in
             self.step_counter = 0
+            self.previous_stuck_pos = math.floor(self.agent.car.chassis_body.position.x)
         else:  # When no significant distance has been made for a long time, the agent must be stuck
             if self.step_counter > self.max_steps:
-                terminated = True
+                truncated = True
                 reward = -100
 
         # If agent is dead
         if self.agent.dead:
             terminated = True
             reward = -100
-        if self.agent.score >= MAX_SCORE:  # If max score is achieved
+        elif self.agent.score >= MAX_SCORE:  # If max score is achieved
             terminated = True
 
         # Reward shaping if agent is still alive or not stuck
@@ -393,13 +310,15 @@ class HillRacingEnv(gym.Env):
 
         # Get the current step observation and info for debugging
         observation = self._get_obs()
+
         info = {
             "car_position": self.agent.car.chassis_body.position.x,
             "prev_max_distance": self.agent.car.prev_max_distance,
             "score": self.agent.score,
+            "dead": self.agent.car.dead,
             "steps": self.step_counter,
         }
-
+        # print(reward, info, observation, action)  # For debugging purposes
         return observation, reward, terminated, truncated, info
 
     def render(self):
@@ -438,13 +357,3 @@ class HillRacingEnv(gym.Env):
         if self.screen is not None:
             pygame.display.quit()
             pygame.quit()
-
-
-if __name__ == "__main__":
-    if HUMAN_PLAYING:
-        # Initialize Pygame
-        pygame.init()
-        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Hill climb")
-        clock = pygame.time.Clock()
-        human_play()

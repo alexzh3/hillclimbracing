@@ -52,45 +52,12 @@ def plot_single_graph(title, df, label_name, variable_type, y_label, window=50, 
     plt.legend(loc='lower right')
     return plt
 
-
-def plot_multiple_graph(monitor_type, variables, x_lim, y_lim, leg_loc, title, variable_type='r', x_label="timesteps",
-                        y_label="Rewards",
-                        window=50, poly=1):
-    # Load in results in df
-    df = {}
-    df["baseline"] = load_results("monitors/base")
-    for obs in variables:
-        df[obs] = load_results(f"monitors/{monitor_type}/{obs}")
-
-    # Transfer results to x and y
-    x = {}
-    y = {}
-    for obs in df:
-        x[obs], y[obs] = transfer_to_xy(df[obs], x_label, df[obs][variable_type].values)
-        y[obs] = smooth_curve(y[obs], window, poly)
-
-    # Plot results
-    plt.title(title)
-    plt.xlabel(f"Number of {x_label}")
-    plt.ylabel(y_label)
-    for obs in df:
-        plt.plot(x[obs], y[obs], label=obs.capitalize())
-    if leg_loc:
-        plt.legend(loc=leg_loc, fontsize="8.3")
-    else:
-        plt.legend(loc='lower right', fontsize="8.3")
-    if y_lim:
-        plt.ylim(y_lim[0], y_lim[1])
-    if x_lim:
-        plt.xlim(x_lim[0], x_lim[1])
-    return plt
-
-
 def merge_runs_to_xy(path, variable_type):
     merged_x = np.empty(0)
     merged_y = np.empty(0)
     for k in range(5):
-        data = load_results(f"{path}/{k}")
+        data = pd.read_csv(f"{path}_{k}.monitor.csv", header=1)
+        # data = load_results(f"{path}/{k}")
         print(f'{path}/{k}')
         print(data['r'].nlargest(5))
         x, y = transfer_to_xy(data, "timesteps", data[variable_type].values)
@@ -132,9 +99,9 @@ def graph_rewards_distance():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust wspace as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/distance", variable_type)
+        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/distance/ppo_cont_soft_300", variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/distance", variable_type)
+        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/distance/ppo_cont_300", variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
         if variable_type == "r":
@@ -212,26 +179,28 @@ def graph_rewards_wheel_speed():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust figsize as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/wheel_speed", variable_type)
+        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/wheel_speed/ppo_cont_wheel_speed_soft_300",
+                                  variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/wheel_speed", variable_type)
+        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/wheel_speed/ppo_cont_wheel_speed_300",
+                                  variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
         if variable_type == "r":
             plot_merged_graph(
                 ax=axes[i],
-                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Aggressive",
-                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Soft",
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
                 title="Learning curve using wheel speed-based reward function",
                 y_label="Rewards",
-                ylim=[-200, 8000],
+                # ylim=[-200, 8000],
                 legend_loc="upper left"
             )
         elif variable_type == "score":
             plot_merged_graph(
                 ax=axes[i],
-                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Aggressive",
-                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Soft",
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
                 title="Episode score using wheel speed-based reward function",
                 y_label="Score",
                 legend_loc="upper left"
@@ -239,11 +208,11 @@ def graph_rewards_wheel_speed():
         elif variable_type == "l":
             plot_merged_graph(
                 ax=axes[i],
-                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Aggressive",
-                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Soft",
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
                 title="Episode length using wheel speed-based reward function",
                 y_label="Episode length (in timesteps)",
-                ylim=[-100, 5000],
+                # ylim=[-100, 5000],
                 legend_loc="upper left"
             )
     fig.tight_layout(pad=2)
@@ -324,29 +293,34 @@ def shaping_comparison_length():
 
 def make_boxplot_score():
     # High score boxplot
-    x, y = merge_runs_to_xy("monitors/reward_type/300/soft/distance", 'score')
-    x, y2 = merge_runs_to_xy("monitors/reward_type/300/aggressive/distance", 'score')
-    x, y3 = merge_runs_to_xy("monitors/reward_type/300/soft/action", 'score')
-    x, y4 = merge_runs_to_xy("monitors/reward_type/300/aggressive/action", 'score')
-    x, y5 = merge_runs_to_xy("monitors/reward_type/300/soft/wheel_speed", 'score')
-    x, y6 = merge_runs_to_xy("monitors/reward_type/300/aggressive/wheel_speed", 'score')
+    x, y = merge_runs_to_xy("monitors/cont_reward_type/300/soft/distance/ppo_cont_soft_300", 'score')
+    x, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/distance/ppo_cont_300", 'score')
+    # x, y3 = merge_runs_to_xy("monitors/reward_type/300/soft/action", 'score')
+    # x, y4 = merge_runs_to_xy("monitors/reward_type/300/aggressive/action", 'score')
+    x, y5 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/wheel_speed/ppo_cont_wheel_speed_soft_300", 'score')
+    x, y6 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/wheel_speed/ppo_cont_wheel_speed_300", 'score')
     reward_types = ["Distance soft", "Distance aggressive",
-                    "Action soft", "Action aggressive",
                     "Speed soft", "Speed aggressive"]
-    data = [y, y2, y3, y4, y5, y6]
-    plt.title("Episode score of different reward functions")
+    data = [y, y2, y5, y6]
+    plt.title("Episode score of different reward functions (continuous)")
     plt.xlabel("Score")
     plot = plt.boxplot(x=data, labels=reward_types, flierprops=dict(alpha=0.5), vert=0, patch_artist=True)
     # fill with colors
     colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen']
     for patch, color in zip(plot['boxes'], colors):
         patch.set_facecolor(color)
-    plt.xlim(-50, 1000)
+    # plt.xlim(-10, 310)
     plt.tight_layout()
     return plt
 
 
 if __name__ == "__main__":
-    graph_rewards_wheel_speed()
-    plt.savefig("300_cont_wheel_speed_merged", dpi=300)
+    # graph_rewards_wheel_speed()
+    # plt.savefig("300_cont_wheel_speed_merged", dpi=300)
+    make_boxplot_score()
+    plt.savefig("300_cont_score_comparison", dpi=300)
     plt.show()
+    # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
+    # print(df)
+    # data = load_results("monitors/reward_type/300/aggressive/distance/0")
+    # print(data)
