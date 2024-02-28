@@ -65,7 +65,8 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="wheel_speed")
+    env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="soft",
+                   reward_function="wheel_speed")
     model = PPO.load("baseline_models/ppo_cont_wheel_speed_300_4.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
     test_model(model)

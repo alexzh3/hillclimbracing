@@ -100,9 +100,11 @@ if __name__ == "__main__":
     # exp_base_reward_wheel_speed(5)
     # Rerun of base distance 1000 soft & aggressive
     # exp_base_reward_distance(5, reward_type="soft")
-    exp_base_reward_distance(5, reward_type="aggressive")
+    exp_cont_reward_distance(5, reward_type="aggressive")
+    exp_cont_reward_distance(5, reward_type="soft")
     # Continuous experiments 1000 soft
-    # exp_cont_reward_distance(5, reward_type="soft")
+    exp_cont_reward_wheel_speed(5, reward_type="aggressive")
+    exp_cont_reward_wheel_speed(5, reward_type="soft")
     # exp_cont_reward_wheel_speed(5, reward_type="soft")
     # TBD continuous aggressive 1000 with distance and wheel speed:
     # exp_cont_reward_distance(5, reward_type="aggressive")

@@ -99,9 +99,9 @@ def graph_rewards_distance():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust wspace as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/distance/ppo_cont_soft_300", variable_type)
+        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/1000/soft/distance/ppo_cont_soft_1000", variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/distance/ppo_cont_300", variable_type)
+        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/1000/aggressive/distance/ppo_cont_aggressive_1000", variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
         if variable_type == "r":
@@ -179,10 +179,12 @@ def graph_rewards_wheel_speed():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust figsize as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/wheel_speed/ppo_cont_wheel_speed_soft_300",
+        x1, y1 = merge_runs_to_xy("monitors/cont_reward_type/1000/soft/wheel_speed"
+                                  "/ppo_cont_wheel_speed_soft_1000",
                                   variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/wheel_speed/ppo_cont_wheel_speed_300",
+        x2, y2 = merge_runs_to_xy("monitors/cont_reward_type/1000/aggressive/wheel_speed"
+                                  "/ppo_cont_wheel_speed_aggressive_1000",
                                   variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
@@ -293,12 +295,13 @@ def shaping_comparison_length():
 
 def make_boxplot_score():
     # High score boxplot
-    x, y = merge_runs_to_xy("monitors/cont_reward_type/300/soft/distance/ppo_cont_soft_300", 'score')
-    x, y2 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/distance/ppo_cont_300", 'score')
-    # x, y3 = merge_runs_to_xy("monitors/reward_type/300/soft/action", 'score')
-    # x, y4 = merge_runs_to_xy("monitors/reward_type/300/aggressive/action", 'score')
-    x, y5 = merge_runs_to_xy("monitors/cont_reward_type/300/soft/wheel_speed/ppo_cont_wheel_speed_soft_300", 'score')
-    x, y6 = merge_runs_to_xy("monitors/cont_reward_type/300/aggressive/wheel_speed/ppo_cont_wheel_speed_300", 'score')
+    x, y = merge_runs_to_xy("monitors/cont_reward_type/1000/soft/distance/ppo_cont_soft_1000", 'score')
+    x, y2 = merge_runs_to_xy("monitors/cont_reward_type/1000/aggressive/distance/ppo_cont_aggressive_1000", 'score')
+    # x, y3 = merge_runs_to_xy("monitors/cont_reward_type/1000/soft/action", 'score')
+    # x, y4 = merge_runs_to_xy("monitors/cont_reward_type/1000/aggressive/action", 'score')
+    x, y5 = merge_runs_to_xy("monitors/cont_reward_type/1000/soft/wheel_speed/ppo_cont_wheel_speed_soft_1000", 'score')
+    x, y6 = merge_runs_to_xy("monitors/cont_reward_type/1000/aggressive/wheel_speed"
+                             "/ppo_cont_wheel_speed_aggressive_1000", 'score')
     reward_types = ["Distance soft", "Distance aggressive",
                     "Speed soft", "Speed aggressive"]
     data = [y, y2, y5, y6]
@@ -316,9 +319,11 @@ def make_boxplot_score():
 
 if __name__ == "__main__":
     # graph_rewards_wheel_speed()
-    # plt.savefig("300_cont_wheel_speed_merged", dpi=300)
+    # plt.savefig("1000_cont_wheel_speed_merged", dpi=300)
+    # graph_rewards_distance()
+    # plt.savefig("1000_cont_distance_merged", dpi=300)
     make_boxplot_score()
-    plt.savefig("300_cont_score_comparison", dpi=300)
+    plt.savefig("1000_cont_score_comparison", dpi=300)
     plt.show()
     # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
     # print(df)
