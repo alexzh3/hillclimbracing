@@ -29,20 +29,20 @@ def exp_base_reward_distance(runs, reward_type):
 def exp_base_reward_action(runs, reward_type):
     for i in range(runs):
         env = gym.make(env_id, reward_function="action", reward_type=reward_type)
-        env = Monitor(env, f'ppo_base_action_soft_300_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_base_action_{reward_type}_1000_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_base_action_soft_300_{i}")
+        model.save(f"baseline_models/ppo_base_action_{reward_type}_1000_{i}")
 
 
 # The base environment case, all observations and all discrete actions (0,1,2), reward type wheel speed
 def exp_base_reward_wheel_speed(runs, reward_type):
     for i in range(runs):
         env = gym.make(env_id, reward_function="wheel_speed", reward_type=reward_type)
-        env = Monitor(env, f'ppo_base_wheel_speed_soft_1000_{i}', info_keywords=("score",))
+        env = Monitor(env, f'ppo_base_wheel_speed_{reward_type}_1000_{i}', info_keywords=("score",))
         model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
         model.learn(total_timesteps=1_000_000)
-        model.save(f"baseline_models/ppo_base_wheel_speed_soft_1000_{i}")
+        model.save(f"baseline_models/ppo_base_wheel_speed_{reward_type}_1000_{i}")
 
 
 #######################################################################################################################
@@ -95,18 +95,13 @@ def exp_action_continuous():
 
 if __name__ == "__main__":
     # Discrete(3)/base experiments
-    # exp_base_reward_distance(5)
-    # exp_base_reward_action(5)
-    # exp_base_reward_wheel_speed(5)
-    # Rerun of base distance 1000 soft & aggressive
-    # exp_base_reward_distance(5, reward_type="soft")
-    exp_cont_reward_distance(5, reward_type="aggressive")
-    exp_cont_reward_distance(5, reward_type="soft")
+    exp_base_reward_distance(5, reward_type="aggressive")
+    exp_base_reward_distance(5, reward_type="soft")
+    exp_base_reward_action(5, reward_type="aggressive")
+    exp_base_reward_action(5, reward_type="soft")
+    exp_base_reward_wheel_speed(5, reward_type="aggressive")
+    exp_base_reward_wheel_speed(5, reward_type="soft")
     # Continuous experiments 1000 soft
-    exp_cont_reward_wheel_speed(5, reward_type="aggressive")
-    exp_cont_reward_wheel_speed(5, reward_type="soft")
-    # exp_cont_reward_wheel_speed(5, reward_type="soft")
-    # TBD continuous aggressive 1000 with distance and wheel speed:
-    # exp_cont_reward_distance(5, reward_type="aggressive")
-    # exp_cont_reward_wheel_speed(5, reward_type="aggressive")
+
+
 
