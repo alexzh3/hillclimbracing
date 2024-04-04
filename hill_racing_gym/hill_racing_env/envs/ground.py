@@ -36,13 +36,17 @@ class Ground:
             flatLength = 500
             # Initialize a variable to store the additional height to be added for the flat section of the ground vector
             heightAddition = 0
-            # Calculate the steepness level using linear interpolation between 130 and 250
+            # Calculate the steepness level by remapping the current distance to a height between 130 and 250 by using
+            # linear interpolation
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
             noisedY = abs(
                 noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
-            # Determine the maximum and minimum heights for the ground vector based on the steepness level
+            # Determine the maximum and minimum heights for the ground vector based on the steepness level. At 80%
+            # (200/250) it stops the difficulty increase.
             maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
+            # Difficulty increase till the end
+            maxHeight_increase = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 320])
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition
@@ -53,7 +57,7 @@ class Ground:
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
             self.ground_vectors.append(
                 b2Vec2(i, hill_racing.SCREEN_HEIGHT - np.interp(noisedY, [0, 1],
-                                                                [minHeight, maxHeight]) + heightAddition))
+                                                                [minHeight, maxHeight_increase]) + heightAddition))
             # Calculate the absolute difference between the previous and current y-values and add it to the total
             # difference
             if i > 0:

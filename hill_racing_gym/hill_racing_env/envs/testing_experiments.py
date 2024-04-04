@@ -67,7 +67,7 @@ def test_model(model):
 if __name__ == "__main__":
     env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="soft",
                    reward_function="wheel_speed")
-    model = PPO.load("baseline_models/ppo_cont_wheel_speed_300_4.zip", env=env,
+    model = PPO.load("baseline_models/ppo_cont_wheel_speed_aggressive_1000_4.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
     test_model(model)
     # flatLength = 500
@@ -75,7 +75,8 @@ if __name__ == "__main__":
     # ground_seed = random.uniform(0, 100000)  # Generates a random seed that will define the terrain
     # for i in range(0, distance, 15):
     #     steepness_Level = np.interp(i, [0, distance], [130, 250])
-    #     noise_value = ground_seed + (i - flatLength) / (700 - steepness_Level)
+    #     noise_value = ground_seed + (i - flatLength) / (700 - steepne
+    #     ss_Level)
     #     noisedY = noise.pnoise1(ground_seed + (i - flatLength) / (700 - steepness_Level), octaves=4,
     #                             lacunarity=2)
     #     maxHeight = -150 + np.interp(steepness_Level, [0, 200], [0, 320])
