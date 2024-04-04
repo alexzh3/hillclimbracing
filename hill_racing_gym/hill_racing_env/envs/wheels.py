@@ -36,7 +36,7 @@ class Wheel:
         self.rim_body.userData = self
 
         if chassis_body is not None:
-            # Create wheel (revolute) joint for inner rim and wheel outer
+            # Create wheel (revolute) joint for inner rim and car chassis body
             rev_joint_def = b2RevoluteJointDef()
             rev_joint_def.Initialize(
                 bodyA=self.body, bodyB=self.rim_body, anchor=self.body.position
@@ -51,7 +51,7 @@ class Wheel:
                 axis=b2Vec2(0, -1),
             )
             self.pris_joint = self.world.CreateJoint(pris_joint_def)
-            # Create distance joint between wheel and char
+            # Create distance joint between wheel and car
             dist_joint_def = b2DistanceJointDef()
             anchor_wheel = b2Vec2(x / hill_racing.SCALE, y / hill_racing.SCALE)
             anchor_car = b2Vec2(x / hill_racing.SCALE, (y - r * 3) / hill_racing.SCALE)
@@ -64,6 +64,7 @@ class Wheel:
             dist_joint_def.frequencyHz = 70
             dist_joint_def.dampingRatio = 25
             self.dist_joint = self.world.CreateJoint(dist_joint_def)
+
         self.body.angularDamping = 1.8
 
     def create_wheel(self):

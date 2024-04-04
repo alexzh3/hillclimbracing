@@ -60,7 +60,7 @@ def test_model(model):
     while True:
         action, _states = model.predict(obs)
         obs, rewards, dones, info = vec_env.step(action)
-        print(rewards, info)
+        print(obs)
         vec_env.render("human")
 
 

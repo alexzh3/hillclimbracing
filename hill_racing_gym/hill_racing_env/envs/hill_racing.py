@@ -242,6 +242,19 @@ class HillRacingEnv(gym.Env):
                     reward = reverse_reward
                 else:
                     reward = 0
+            case "air_time_speed":
+                wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
+                # When wheel speeds are at a nearly idle state
+                if all(-1 <= speed <= 1 for speed in wheel_speeds):
+                    reward = idle_reward
+                # When we have wheel speeds that bring the car forward (negative wheel speed = forward)
+                elif all(speed < 0 for speed in wheel_speeds):
+                    reward = 1
+                # When we have wheel speeds that bring the car backwards
+                elif all(speed > 0 for speed in wheel_speeds):
+                    reward = reverse_reward
+                else:
+                    reward = 0
         return reward
 
     def _get_obs(self):

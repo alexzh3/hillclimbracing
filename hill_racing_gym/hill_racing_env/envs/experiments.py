@@ -94,7 +94,7 @@ def exp_action_continuous():
 
 
 if __name__ == "__main__":
-    # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -180 difficulty
+    # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
     exp_cont_reward_wheel_speed(5, "aggressive")
-    # Discrete action space with distance-based rewards, 1000 soft, increasing difficulty, -180 difficulty
+    # Discrete action space with distance-based rewards, 1000 soft, increasing difficulty, -184 difficulty
     exp_base_reward_distance(5, "soft")

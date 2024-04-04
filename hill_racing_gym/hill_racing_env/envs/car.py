@@ -111,7 +111,6 @@ class Car:
             wheels.Wheel(x + self.chassis_width / 2 - self.wheel_size * 1.2, y + self.chassis_height / 2 +
                          self.wheel_size / 4, self.wheel_size, self.chassis_body, self.world)
         )
-
         # Create the person/character
         self.person = person.Person(x=x, y=y, person_width=hill_racing.PERSON_WIDTH,
                                     person_height=hill_racing.PERSON_HEIGHT, world=self.world)
