@@ -44,9 +44,9 @@ class Ground:
                 noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level. At 80%
             # (200/250) it stops the difficulty increase.
-            maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
+            # maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             # Difficulty increases till the end
-            maxHeight_increase = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 354])
+            maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 320])
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition
@@ -57,7 +57,7 @@ class Ground:
             # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
             self.ground_vectors.append(
                 b2Vec2(i, hill_racing.SCREEN_HEIGHT - np.interp(noisedY, [0, 1],
-                                                                [minHeight, maxHeight_increase]) + heightAddition))
+                                                                [minHeight, maxHeight]) + heightAddition))
             # Calculate the absolute difference between the previous and current y-values and add it to the total
             # difference
             if i > 0:
