@@ -13,45 +13,12 @@ import math
 import ground
 import agent
 
-# collisionCategories represented in bits
-WHEEL_CATEGORY = 0x0001
-CHASSIS_CATEGORY = 0x0002
-GRASS_CATEGORY = 0x0004
-DIRT_CATEGORY = 0x0008
-PERSON_CATEGORY = 0x0010
-
-# collisionMasks, which category it collides with
-WHEEL_MASK = GRASS_CATEGORY
-CHASSIS_MASK = DIRT_CATEGORY
-GRASS_MASK = (WHEEL_CATEGORY | PERSON_CATEGORY)
-DIRT_MASK = CHASSIS_CATEGORY
-PERSON_MASK = GRASS_CATEGORY
-
+# CHANGE GAMEPLAY AND OTHER VARIABLES IN "hill.racing.py"
 # Fundamental constants (not recommended to change)
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-SCALE = 30  # Pixels per meter / Scale, Box2D counts in meters, pygame counts in pixels.
 FPS = 60  # frames per second
 GRAVITY = 10
-WHEEL_SIZE = 35
-HEAD_SIZE = 40
-PERSON_WIDTH = 20
-PERSON_HEIGHT = 40
-panX = 0
-panY = 0
-
-# Gameplay variables
-SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
-SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
-MAX_SCORE = 1000  # Max score achievable (-/+ 10)
-GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
-DIFFICULTY = -184  # Difficulty of terrain, max 30, min 230 (almost flat terrain)
-
-# Load in pictures/sprites
-wheel_sprite = pygame.image.load("pictures/wheel.png")
-head_sprite = pygame.image.load("pictures/headLarge2.png")
-car_sprite = pygame.image.load("pictures/car.png")
-torso_sprite = pygame.image.load("pictures/torsoLarge.png")
 
 
 # Contact listener for head and ground (Bad code)
