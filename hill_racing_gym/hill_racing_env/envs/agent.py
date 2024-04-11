@@ -12,6 +12,7 @@ class Agent:
         self.motor_state = 2
         self.spawning_x = hill_racing.SPAWNING_X  # Spawn location
         self.spawning_y = hill_racing.SPAWNING_Y
+        self.steps_in_air = 0
 
     def add_to_world(self):
         self.car = car.Car(x=self.spawning_x, y=self.spawning_y, world=self.world, agent=self)
@@ -34,6 +35,9 @@ class Agent:
 
         # Calculate and update score, score is equal to at least 0 or current max distance - spawn position
         self.score = max(0, int((self.car.max_distance - (self.spawning_x / hill_racing.SCALE))))
+        # Count number of steps where agent is in the air
+        if not self.car.wheels[0].on_ground and not self.car.wheels[1].on_ground:
+            self.steps_in_air += 1
 
     # Function that removes body from world
     def remove_agent_from_world(self):

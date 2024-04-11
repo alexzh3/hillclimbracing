@@ -60,14 +60,14 @@ def test_model(model):
     while True:
         action, _states = model.predict(obs)
         obs, rewards, dones, info = vec_env.step(action)
-        print(obs)
+        print(info)
         vec_env.render("human")
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="soft",
+    env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="aggressive",
                    reward_function="wheel_speed")
-    model = PPO.load("baseline_models/ppo_cont_wheel_speed_aggressive_1000_4.zip", env=env,
+    model = PPO.load("baseline_models/ppo_cont_wheel_speed_airtime_aggressive_1000_0.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
     test_model(model)
     # flatLength = 500

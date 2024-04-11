@@ -214,15 +214,15 @@ class HillRacingEnv(gym.Env):
         match self.reward_function:
             case "distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
-                if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
+                if self.agent.car.pos_x < self.agent.car.prev_max_distance:
                     reward = reverse_reward + (
-                                self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                            self.agent.car.pos_x - self.agent.car.prev_max_distance)
                 # Reward -0.5 if agent is at or around same position as last step vs soft-0.1
-                elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
+                elif self.agent.car.pos_x - self.agent.car.prev_max_distance < 0.001:
                     reward = idle_reward
                 # Reward is equal to 1 + current_position - max_distance
-                elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
-                    reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                elif self.agent.car.pos_x > self.agent.car.prev_max_distance:
+                    reward = 1 + (self.agent.car.pos_x - self.agent.car.prev_max_distance)
             case "action":
                 if action == 0:  # Idle
                     reward = idle_reward
@@ -259,32 +259,46 @@ class HillRacingEnv(gym.Env):
 
                 # If both the wheels are not in contact with the ground, the car is in the air
                 if not self.agent.car.wheels[0].on_ground and not self.agent.car.wheels[1].on_ground:
-                    reward = reward + 0.5  # We add 0.5 reward
+                    reward = reward + 1  # We add 0.5 reward
                 else:
-                    reward = reward - 0.2   # Subtract reward because car is still in contact with the ground
+                    reward = reward - 0.5  # Subtract reward because car is still in contact with the ground
+                    
+                # If car is at a higher position than last step
+                if self.agent.car.pos_y < self.agent.car.prev_pos_y:
+                    reward = reward + 1
+                else:
+                    reward = reward - 0.5
+
             case "airtime_distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
-                if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
+                if self.agent.car.pos_x < self.agent.car.prev_max_distance:
                     reward = reverse_reward + (
-                            self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                            self.agent.car.pos_x - self.agent.car.prev_max_distance)
                 # Reward -0.5 if agent is at or around same position as last step vs soft-0.1
-                elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
+                elif self.agent.car.pos_x - self.agent.car.prev_max_distance < 0.001:
                     reward = idle_reward
                 # Reward is equal to 1 + current_position - max_distance
-                elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
-                    reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                elif self.agent.car.pos_x > self.agent.car.prev_max_distance:
+                    reward = 1 + (self.agent.car.pos_x - self.agent.car.prev_max_distance)
 
                 # If both the wheels are not in contact with the ground, the car is in the air
                 if not self.agent.car.wheels[0].on_ground and not self.agent.car.wheels[1].on_ground:
-                    reward = reward + 0.5  # We add 0.5 reward
+                    reward = reward + 1  # We add 1 reward
                 else:
-                    reward = reward - 0.2   # Subtract reward because car is still in contact with the ground
+                    reward = reward - 0.5  # Subtract reward because car is still in contact with the ground
+
+                # If car is at a higher position than last step
+                if self.agent.car.pos_y < self.agent.car.prev_pos_y:
+                    reward = reward + 1
+                else:
+                    reward = reward - 0.5
+
         return reward
 
     def _get_obs(self):
         return {
             "chassis_position": np.array(
-                [self.agent.car.chassis_body.position.x, self.agent.car.chassis_body.position.y], dtype=np.float32),
+                [self.agent.car.pos_x, self.agent.car.pos_y], dtype=np.float32),
             "chassis_angle": np.array([(math.degrees(-self.agent.car.chassis_body.angle) % 360)], dtype=np.float32),
             "wheels_speed": np.array([self.agent.car.wheels[0].joint.speed, self.agent.car.wheels[1].joint.speed],
                                      dtype=np.float32),
@@ -325,11 +339,11 @@ class HillRacingEnv(gym.Env):
         self.agent.update()
 
         # Check if agent is stuck
-        if (math.floor(self.agent.car.chassis_body.position.x) % 20 == 0 and self.previous_stuck_pos !=
-                math.floor(self.agent.car.chassis_body.position.x)):  # when we made more
+        if (math.floor(self.agent.car.pos_x) % 20 == 0 and self.previous_stuck_pos !=
+                math.floor(self.agent.car.pos_x)):  # when we made more
             # than 20 metres distance reset count, and we are not at the same position we were stuck in
             self.step_counter = 0
-            self.previous_stuck_pos = math.floor(self.agent.car.chassis_body.position.x)
+            self.previous_stuck_pos = math.floor(self.agent.car.pos_x)
         else:  # When no significant distance has been made for a long time, the agent must be stuck
             if self.step_counter > self.max_steps:
                 truncated = True
@@ -350,11 +364,12 @@ class HillRacingEnv(gym.Env):
         observation = self._get_obs()
 
         info = {
-            "car_position": self.agent.car.chassis_body.position.x,
+            "car_position": (self.agent.car.pos_x, self.agent.car.pos_y),
             "prev_max_distance": self.agent.car.prev_max_distance,
             "score": self.agent.score,
             "dead": self.agent.car.dead,
             "steps": self.step_counter,
+            "steps_in_air": self.agent.steps_in_air,
         }
         # print(reward, info, observation, action)  # For debugging purposes
         return observation, reward, terminated, truncated, info

@@ -21,8 +21,11 @@ class Car:
         self.shapes = []
         self.car_density = 1
         self.car_restitution = 0.01
+        self.pos_x = x / hill_racing.SCALE
+        self.pos_y = y / hill_racing.SCALE
         self.max_distance = x / hill_racing.SCALE
         self.prev_max_distance = x / hill_racing.SCALE
+        self.prev_pos_y = y / hill_racing.SCALE
         self.motor_state = 0
         self.rotation_torque = 2
         self.motor_speed = 13
@@ -139,7 +142,7 @@ class Car:
 
     # Function that draws/renders the person, wheels and the car on the screen
     def draw_person_car(self, surface_screen):
-        # Get position and angle of the car chassis
+        # Get position and angle of the car chassis in pygame numbers
         pos_x = self.chassis_body.position.x * hill_racing.SCALE
         pos_y = self.chassis_body.position.y * hill_racing.SCALE
         angle_degree = math.degrees(-self.chassis_body.angle) % 360  # Pygame uses absolute degree, Box2D uses radians
@@ -162,16 +165,17 @@ class Car:
 
     # A function that updates whether the agent status is alive or death
     def update_status(self):
-        pos_x = self.chassis_body.position.x
-        pos_y = self.chassis_body.position.y
+        self.prev_pos_y = self.pos_y
+        self.pos_x = self.chassis_body.position.x
+        self.pos_y = self.chassis_body.position.y
 
         # Check whether we are moving forward with the car
-        if pos_x > self.max_distance:
+        if self.pos_x > self.max_distance:
             self.prev_max_distance = self.max_distance
-            self.max_distance = pos_x
+            self.max_distance = self.pos_x
 
         # When agent falls out of screen, we set status to dead
-        if not self.dead and (pos_y * hill_racing.SCALE > hill_racing.SCREEN_HEIGHT + 10):
+        if not self.dead and (self.pos_y * hill_racing.SCALE > hill_racing.SCREEN_HEIGHT + 10):
             self.dead = True
             self.agent.dead = True
 
