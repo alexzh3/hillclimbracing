@@ -92,14 +92,54 @@ def exp_action_continuous():
 
 #######################################################################################################################
 
+# Airtime rewards
+
+# Continuous distance
+def exp_cont_reward_airtime_distance(runs, reward_type):
+    for i in range(runs):
+        env = gym.make(env_id, reward_function="airtime_distance", reward_type=reward_type, action_space="continuous")
+        env = Monitor(env, f'ppo_cont_airtime_{reward_type}_1000_{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_cont_airtime_{reward_type}_1000_{i}")
+
+
+# Continuous wheel speed
+def exp_cont_reward_airtime_wheel_speed(runs, reward_type):
+    for i in range(runs):
+        env = gym.make(env_id, reward_function="airtime_wheel_speed", reward_type=reward_type,
+                       action_space="continuous")
+        env = Monitor(env, f'ppo_cont_wheel_speed_airtime_{reward_type}_1000_{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_cont_wheel_speed_airtime_{reward_type}_1000_{i}")
+
+
+# Discrete distance
+def exp_base_reward_airtime_distance(runs, reward_type):
+    for i in range(runs):
+        env = gym.make(env_id, reward_function="airtime_distance", reward_type=reward_type)
+        env = Monitor(env, f'ppo_base_airtime_{reward_type}_1000_{i}', info_keywords=("score",))
+        model = PPO("MultiInputPolicy", env, verbose=1, seed=i)
+        model.learn(total_timesteps=1_000_000)
+        model.save(f"baseline_models/ppo_base_airtime_{reward_type}_1000_{i}")
+
+
+#######################################################################################################################
 
 if __name__ == "__main__":
-    # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
-    exp_cont_reward_wheel_speed(5, "aggressive")
-    # Continuous action space with distance-based rewards 1000 soft, increasing difficulty, -184 difficulty
-    exp_cont_reward_distance(5, "soft")
-    # Discrete action space with distance-based rewards, 1000 soft, increasing difficulty, -184 difficulty
-    exp_base_reward_distance(5, "soft")
-    # Discrete action space with action-based rewards, 1000 soft, increasing difficulty, -184 difficulty
-    exp_base_reward_action(5, "soft")
+    # # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
+    # exp_cont_reward_wheel_speed(5, "aggressive")
+    # # Continuous action space with distance-based rewards 1000 soft, increasing difficulty, -184 difficulty
+    # exp_cont_reward_distance(5, "soft")
+    # # Discrete action space with distance-based rewards, 1000 soft, increasing difficulty, -184 difficulty
+    # exp_base_reward_distance(5, "soft")
+    # # Discrete action space with action-based rewards, 1000 soft, increasing difficulty, -184 difficulty
+    # exp_base_reward_action(5, "soft")
 
+    # Continuous action space with wheel speed based and airtime rewards 1000 aggressive -150 difficulty
+    exp_cont_reward_airtime_wheel_speed(5, "aggressive")
+    # Continuous action space with distance-based and airtime rewards 1000 soft -150 difficulty
+    exp_cont_reward_airtime_distance(5, "soft")
+    # Discrete action space with distance-based and airtime rewards 1000 soft -150 difficulty
+    exp_base_reward_airtime_distance(5, "soft")

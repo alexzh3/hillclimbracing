@@ -44,9 +44,9 @@ class Ground:
                 noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level. At 80%
             # (200/250) it stops the difficulty increase.
-            # maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
+            maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             # Difficulty increases till the end
-            maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 320])
+            # maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 320])
             minHeight = 30
             # If the current iteration value is less than the flat section length, recalculate noisedY and
             # heightAddition

@@ -45,7 +45,7 @@ SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
 MAX_SCORE = 1000  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
-DIFFICULTY = -184  # Difficulty of terrain, max 30, min 230 (almost flat terrain), -150 is normal difficulty
+DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain), -150 is normal difficulty
 # With the 20% decrease this will be: -184
 
 # Load in pictures/sprites
@@ -215,7 +215,8 @@ class HillRacingEnv(gym.Env):
             case "distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
                 if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
-                    reward = reverse_reward + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                    reward = reverse_reward + (
+                                self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
                 # Reward -0.5 if agent is at or around same position as last step vs soft-0.1
                 elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
                     reward = idle_reward
@@ -242,7 +243,7 @@ class HillRacingEnv(gym.Env):
                     reward = reverse_reward
                 else:
                     reward = 0
-            case "air_time_speed":
+            case "airtime_wheel_speed":
                 wheel_speeds = [wheel.joint.speed for wheel in self.agent.car.wheels]
                 # When wheel speeds are at a nearly idle state
                 if all(-1 <= speed <= 1 for speed in wheel_speeds):
@@ -255,6 +256,29 @@ class HillRacingEnv(gym.Env):
                     reward = reverse_reward
                 else:
                     reward = 0
+
+                # If both the wheels are not in contact with the ground, the car is in the air
+                if not self.agent.car.wheels[0].on_ground and not self.agent.car.wheels[1].on_ground:
+                    reward = reward + 0.5  # We add 0.5 reward
+                else:
+                    reward = reward - 0.2   # Subtract reward because car is still in contact with the ground
+            case "airtime_distance":
+                # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
+                if self.agent.car.chassis_body.position.x < self.agent.car.prev_max_distance:
+                    reward = reverse_reward + (
+                            self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+                # Reward -0.5 if agent is at or around same position as last step vs soft-0.1
+                elif self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance < 0.001:
+                    reward = idle_reward
+                # Reward is equal to 1 + current_position - max_distance
+                elif self.agent.car.chassis_body.position.x > self.agent.car.prev_max_distance:
+                    reward = 1 + (self.agent.car.chassis_body.position.x - self.agent.car.prev_max_distance)
+
+                # If both the wheels are not in contact with the ground, the car is in the air
+                if not self.agent.car.wheels[0].on_ground and not self.agent.car.wheels[1].on_ground:
+                    reward = reward + 0.5  # We add 0.5 reward
+                else:
+                    reward = reward - 0.2   # Subtract reward because car is still in contact with the ground
         return reward
 
     def _get_obs(self):
