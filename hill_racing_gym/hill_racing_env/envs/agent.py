@@ -7,12 +7,13 @@ class Agent:
         self.dead = False  # Whether the agent is dead
         self.score = 0
         self.world = real_world
-        self.last_grounded = 0
         self.car = None
         self.motor_state = 2
         self.spawning_x = hill_racing.SPAWNING_X  # Spawn location
         self.spawning_y = hill_racing.SPAWNING_Y
         self.steps_in_air = 0
+        self.airtime_counter = 0
+        self.total_airtime = 0
 
     def add_to_world(self):
         self.car = car.Car(x=self.spawning_x, y=self.spawning_y, world=self.world, agent=self)
@@ -37,7 +38,15 @@ class Agent:
         self.score = max(0, int((self.car.max_distance - (self.spawning_x / hill_racing.SCALE))))
         # Count number of steps where agent is in the air
         if not self.car.wheels[0].on_ground and not self.car.wheels[1].on_ground:
+            self.total_airtime = 0
             self.steps_in_air += 1
+            if self.steps_in_air >= 30:  # Start counting airtime when we have more than 30 frames in air
+                self.airtime_counter += 1
+                self.steps_in_air = 0
+        else:
+            self.total_airtime = self.airtime_counter   # How much airtime we end with when touching ground
+            self.airtime_counter = 0
+            self.steps_in_air = 0
 
     # Function that removes body from world
     def remove_agent_from_world(self):

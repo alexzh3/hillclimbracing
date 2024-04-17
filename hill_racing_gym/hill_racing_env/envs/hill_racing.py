@@ -115,6 +115,7 @@ class HillRacingEnv(gym.Env):
         self.step_counter = None  # Counter to memorize the amount of steps done
         self.max_steps = max_steps  # Amount of maximum timesteps done without significant
         self.previous_stuck_pos = None  # Position of the agent last time the agent was stuck
+        self.total_airtime_counter = None  # Counts the total amount of airtime
         self.reward_type = reward_type
         # progress, will be 20 seconds
 
@@ -257,17 +258,11 @@ class HillRacingEnv(gym.Env):
                 else:
                     reward = 0
 
-                # If both the wheels are not in contact with the ground, the car is in the air
-                if not self.agent.car.wheels[0].on_ground and not self.agent.car.wheels[1].on_ground:
-                    reward = reward + 1  # We add 0.5 reward
+                # When airtime counter is bigger than 1
+                if self.agent.airtime_counter > 0:
+                    reward = reward + self.agent.airtime_counter
                 else:
-                    reward = reward - 0.5  # Subtract reward because car is still in contact with the ground
-                    
-                # If car is at a higher position than last step
-                if self.agent.car.pos_y < self.agent.car.prev_pos_y:
-                    reward = reward + 1
-                else:
-                    reward = reward - 0.5
+                    reward = reward - -0.5
 
             case "airtime_distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
@@ -281,17 +276,11 @@ class HillRacingEnv(gym.Env):
                 elif self.agent.car.pos_x > self.agent.car.prev_max_distance:
                     reward = 1 + (self.agent.car.pos_x - self.agent.car.prev_max_distance)
 
-                # If both the wheels are not in contact with the ground, the car is in the air
-                if not self.agent.car.wheels[0].on_ground and not self.agent.car.wheels[1].on_ground:
-                    reward = reward + 1  # We add 1 reward
+                # When airtime counter is bigger than 1
+                if self.agent.airtime_counter > 0:
+                    reward = reward + self.agent.airtime_counter
                 else:
-                    reward = reward - 0.5  # Subtract reward because car is still in contact with the ground
-
-                # If car is at a higher position than last step
-                if self.agent.car.pos_y < self.agent.car.prev_pos_y:
-                    reward = reward + 1
-                else:
-                    reward = reward - 0.5
+                    reward = reward - -0.5
 
         return reward
 
@@ -315,6 +304,7 @@ class HillRacingEnv(gym.Env):
         self._generate_ground(seed=seed)
         self._generate_agent()
         self.step_counter = 0  # Set step counter to 0
+        self.total_airtime_counter = 0
         # Get the initial observations
         observations = self._get_obs()
         # Render mode
@@ -335,6 +325,9 @@ class HillRacingEnv(gym.Env):
                         positionIterations=2 * 30)
         # Increase step counter
         self.step_counter += 1
+        # Increase airtime counter
+        if self.agent.total_airtime > 0:
+            self.total_airtime_counter += self.agent.total_airtime
         # Update agent status
         self.agent.update()
 
@@ -369,7 +362,9 @@ class HillRacingEnv(gym.Env):
             "score": self.agent.score,
             "dead": self.agent.car.dead,
             "steps": self.step_counter,
-            "steps_in_air": self.agent.steps_in_air,
+            "airtime_counter": self.agent.airtime_counter,
+            "total_airtime": self.total_airtime_counter,
+            "on_ground": (self.agent.car.wheels[0].on_ground, self.agent.car.wheels[1].on_ground)
         }
         # print(reward, info, observation, action)  # For debugging purposes
         return observation, reward, terminated, truncated, info

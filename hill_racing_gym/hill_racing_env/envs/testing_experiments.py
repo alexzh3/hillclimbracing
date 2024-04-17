@@ -65,9 +65,9 @@ def test_model(model):
 
 
 if __name__ == "__main__":
-    env = gym.make(env_id, render_mode="human", action_space="continuous", reward_type="aggressive",
-                   reward_function="wheel_speed")
-    model = PPO.load("baseline_models/ppo_cont_wheel_speed_airtime_aggressive_1000_0.zip", env=env,
+    env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="soft",
+                   reward_function="distance")
+    model = PPO.load("baseline_models/ppo_base_airtime_soft_1000_0.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
     test_model(model)
     # flatLength = 500
