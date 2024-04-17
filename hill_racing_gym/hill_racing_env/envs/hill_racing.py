@@ -112,10 +112,12 @@ class HillRacingEnv(gym.Env):
         self.difficulty = DIFFICULTY  # Difficulty of the env, scales from -250 to 80 (easiest to hardest)
         self.action_space_type = action_space  # What type of action space do we choose? (Discrete or continuous?)
         self.reward_function = reward_function  # Type of reward, distance-based vs action based vs wheel speed
-        self.step_counter = None  # Counter to memorize the amount of steps done
+        self.step_stuck_counter = None  # Counter to memorize the amount of steps done for when the agent is stuck
+        self.step_counter = None  # Actual step counter
         self.max_steps = max_steps  # Amount of maximum timesteps done without significant
         self.previous_stuck_pos = None  # Position of the agent last time the agent was stuck
         self.total_airtime_counter = None  # Counts the total amount of airtime
+        self.position_list = []  # List of all positions in a list
         self.reward_type = reward_type
         # progress, will be 20 seconds
 
@@ -303,7 +305,9 @@ class HillRacingEnv(gym.Env):
         self.world.contactListener = ContactListener()
         self._generate_ground(seed=seed)
         self._generate_agent()
-        self.step_counter = 0  # Set step counter to 0
+        self.step_stuck_counter = 0  # Set step counter to 0
+        self.step_counter = 0
+        self.position_list.clear()  # Empty list
         self.total_airtime_counter = 0
         # Get the initial observations
         observations = self._get_obs()
@@ -324,10 +328,13 @@ class HillRacingEnv(gym.Env):
         self.world.Step(timeStep=1.0 / self.metadata["render_fps"], velocityIterations=6 * 30,
                         positionIterations=2 * 30)
         # Increase step counter
+        self.step_stuck_counter += 1
         self.step_counter += 1
         # Increase airtime counter
         if self.agent.total_airtime > 0:
             self.total_airtime_counter += self.agent.total_airtime
+        # Update position
+        self.position_list.append((int(self.agent.car.pos_x), self.step_counter))
         # Update agent status
         self.agent.update()
 
@@ -335,10 +342,10 @@ class HillRacingEnv(gym.Env):
         if (math.floor(self.agent.car.pos_x) % 20 == 0 and self.previous_stuck_pos !=
                 math.floor(self.agent.car.pos_x)):  # when we made more
             # than 20 metres distance reset count, and we are not at the same position we were stuck in
-            self.step_counter = 0
+            self.step_stuck_counter = 0
             self.previous_stuck_pos = math.floor(self.agent.car.pos_x)
         else:  # When no significant distance has been made for a long time, the agent must be stuck
-            if self.step_counter > self.max_steps:
+            if self.step_stuck_counter > self.max_steps:
                 truncated = True
                 reward = -100
 
@@ -361,10 +368,11 @@ class HillRacingEnv(gym.Env):
             "prev_max_distance": self.agent.car.prev_max_distance,
             "score": self.agent.score,
             "dead": self.agent.car.dead,
-            "steps": self.step_counter,
+            "steps_stuck": self.step_stuck_counter,
             "airtime_counter": self.agent.airtime_counter,
             "total_airtime": self.total_airtime_counter,
-            "on_ground": (self.agent.car.wheels[0].on_ground, self.agent.car.wheels[1].on_ground)
+            "on_ground": (self.agent.car.wheels[0].on_ground, self.agent.car.wheels[1].on_ground),
+            "position_list": self.position_list
         }
         # print(reward, info, observation, action)  # For debugging purposes
         return observation, reward, terminated, truncated, info

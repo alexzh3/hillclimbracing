@@ -5,6 +5,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
+from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import load_results, Monitor
 from gymnasium.wrappers import FilterObservation
 import pandas as pd
@@ -67,9 +68,11 @@ def test_model(model):
 if __name__ == "__main__":
     env = gym.make(env_id, render_mode="human", action_space="discrete_3", reward_type="soft",
                    reward_function="distance")
+    # env = Monitor(env, 'testing', info_keywords=("score", "total_airtime", "position_list"))
     model = PPO.load("baseline_models/ppo_base_airtime_soft_1000_0.zip", env=env,
                      custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
-    test_model(model)
+    # evaluate_policy(model=model, env=env, n_eval_episodes=1000)
+    # test_model(model)
     # flatLength = 500
     # distance = 100_000
     # ground_seed = random.uniform(0, 100000)  # Generates a random seed that will define the terrain
