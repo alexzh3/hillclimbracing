@@ -93,6 +93,29 @@ def plot_merged_graph(ax, x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2
     return ax
 
 
+def plot_merged_graph_4(ax, x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2, x3, y3, y3_smooth, label_3,
+                        x4, y4, y4_smooth, label_4, title, y_label, ylim=[], legend_loc=[], x_label="Timesteps"):
+    ax.set_title(title)
+    ax.set_ylabel(y_label)
+    ax.set_xlabel(x_label)
+    ax.plot(x1, y1_smooth, color='dodgerblue', label=label_1)
+    ax.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    ax.plot(x2, y2_smooth, color='orangered', label=label_2)
+    ax.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    ax.plot(x3, y3_smooth, color='lime', label=label_3)
+    ax.plot(x3, y3, color='lime', alpha=0.15, linewidth=1)
+    ax.plot(x4, y4_smooth, color='magenta', label=label_4)
+    ax.plot(x4, y4, color='magenta', alpha=0.15, linewidth=1)
+    # if legend_loc:
+    #     ax.legend(loc=legend_loc, framealpha=0.6)
+    # else:
+    #     ax.legend()
+    if ylim:
+        ax.set_ylim(ylim[0], ylim[1])
+    ax.grid(True, linewidth=0.6)
+    return ax
+
+
 def graph_rewards_distance():
     # Distance-based reward function
     # x1, y1 = merge_runs_to_xy("monitors/reward_type/300/soft/distance", variable_type)
@@ -322,13 +345,74 @@ def make_boxplot_score():
     return plt
 
 
+# Graph for increasing difficulty experiments
+def graph_increasing_difficulty():
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust figsize as needed
+
+    for i, variable_type in enumerate(['r', 'l', 'score']):
+        x1, y1 = merge_runs_to_xy("monitors/increasing_difficulty/action/ppo_base_action_diff_increasing_soft_1000",
+                                  variable_type)
+        y1_smooth = smooth_curve(y1, 100)
+        x2, y2 = merge_runs_to_xy("monitors/increasing_difficulty/distance_discrete/ppo_base_diff_increasing_soft_1000",
+                                  variable_type)
+        y2_smooth = smooth_curve(y2, 100)
+        x3, y3 = merge_runs_to_xy("monitors/increasing_difficulty/distance_continuous"
+                                  "/ppo_cont_diff_increasing_soft_1000", variable_type)
+        y3_smooth = smooth_curve(y3, 100)
+        x4, y4 = merge_runs_to_xy("monitors/increasing_difficulty/wheel_speed"
+                                  "/ppo_cont_wheel_speed_diff_increasing_aggressive_1000", variable_type)
+        y4_smooth = smooth_curve(y4, 100)
+
+        if variable_type == "r":
+            plot_merged_graph_4(
+                ax=axes[i],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Action discrete (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Distance continuous (soft)",
+                x4=x4, y4=y4, y4_smooth=y4_smooth, label_4="Wheel speed continuous (aggressive)",
+                title="Learning curve of different reward functions",
+                y_label="Rewards",
+                ylim=[-5000, 20000],
+                legend_loc="lower right"
+            )
+        elif variable_type == "score":
+            plot_merged_graph_4(
+                ax=axes[i],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Action discrete (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Distance continuous (soft)",
+                x4=x4, y4=y4, y4_smooth=y4_smooth, label_4="Wheel speed continuous (aggressive)",
+                title="Episode score of different reward functions",
+                y_label="Score",
+                legend_loc="lower right"
+            )
+        elif variable_type == "l":
+            plot_merged_graph_4(
+                ax=axes[i],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Action discrete (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Distance continuous (soft)",
+                x4=x4, y4=y4, y4_smooth=y4_smooth, label_4="Wheel speed continuous (aggressive)",
+                title="Episode length of different reward functions",
+                y_label="Episode length (in timesteps)",
+                # ylim=[-100, 5000],
+                legend_loc="upper left"
+            )
+    fig.tight_layout(pad=2)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', ncols=2)
+    fig.subplots_adjust(bottom=0.2)
+
+
 if __name__ == "__main__":
     # graph_rewards_wheel_speed()
     # plt.savefig("1000_cont_wheel_speed_merged", dpi=300)
     # graph_rewards_distance()
     # plt.savefig("1000_cont_distance_merged", dpi=300)
-    make_boxplot_score()
-    plt.savefig("score_comparison_boxplot", dpi=300)
+    # make_boxplot_score()
+    # plt.savefig("score_comparison_boxplot", dpi=300)
+    graph_increasing_difficulty()
+    plt.savefig("difficulty_increase_graph", dpi=300)
     plt.show()
     # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
     # print(df)

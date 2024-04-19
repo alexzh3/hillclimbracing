@@ -8,10 +8,11 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import load_results, Monitor
+from stable_baselines3.common.vec_env import VecExtractDictObs, VecMonitor
+
 from gymnasium.wrappers import FilterObservation
 import pandas as pd
 from stable_baselines3.common.callbacks import ProgressBarCallback
-
 
 env_id = 'hill_racing_env/HillRacing-v0'
 
@@ -132,12 +133,21 @@ def exp_base_reward_airtime_distance(runs, reward_type):
 #######################################################################################################################
 # Evaluation of best models
 def eval_model(model_path, monitor_name, action_space, reward_type, reward_function, episodes):
-    env = gym.make(env_id, action_space=action_space, reward_type=reward_type,
-                   reward_function=reward_function)
-    env = Monitor(env, monitor_name, info_keywords=("score", "position_list"))
-    model = PPO.load(model_path, env=env,
-                     custom_objects={'observation_space': env.observation_space, 'action_space': env.action_space})
-    evaluate_policy(model=model, env=env, n_eval_episodes=episodes)
+    # env = gym.make(env_id, action_space=action_space, reward_type=reward_type,
+    #                reward_function=reward_function)
+    vec_env = make_vec_env(env_id, n_envs=20, seed=0, monitor_dir=monitor_name, vec_env_cls=SubprocVecEnv,
+                           env_kwargs={'render_mode': None,
+                                       'action_space': action_space,
+                                       'reward_type': reward_type,
+                                       'reward_function': reward_function},
+                           monitor_kwargs={'info_keywords': ("score", "position_list")})
+    # vec_env = VecMonitor(venv=vec_env, filename=monitor_name, info_keywords=("score",))
+    # env = Monitor(env, monitor_name, info_keywords=("score", ))
+    model = PPO.load(model_path, env=vec_env,
+                     custom_objects={'observation_space': vec_env.observation_space,
+                                     'action_space': vec_env.action_space})
+    evaluate_policy(model=model, env=vec_env, n_eval_episodes=episodes)
+
 
 #######################################################################################################################
 
@@ -149,11 +159,11 @@ if __name__ == "__main__":
     # eval_model(model_path="baseline_models/ppo_cont_wheel_speed_aggressive_1000_0.zip",
     #            monitor_name="eval_ppo_cont_wheel_speed_aggressive_1000", action_space="continuous",
     #            reward_type="aggressive", reward_function="wheel_speed", episodes=100)
-    
+
     # Evaluation of Continuous action space with wheel speed based 1000 soft -150 difficulty
     eval_model(model_path="baseline_models/ppo_cont_wheel_speed_soft_1000_0.zip",
-               monitor_name="eval_ppo_cont_wheel_speed_soft_1000", action_space="continuous",
-               reward_type="soft", reward_function="wheel_speed", episodes=100)
+               monitor_name="eval_ppo_cont_wheel_speed_noposition_soft_1000", action_space="continuous",
+               reward_type="soft", reward_function="wheel_speed", episodes=1000)
 
     # # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
     # exp_cont_reward_wheel_speed(5, "aggressive")
