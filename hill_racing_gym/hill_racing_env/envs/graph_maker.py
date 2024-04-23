@@ -102,10 +102,31 @@ def plot_merged_graph_4(ax, x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label
     ax.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
     ax.plot(x2, y2_smooth, color='orangered', label=label_2)
     ax.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
-    ax.plot(x3, y3_smooth, color='lime', label=label_3)
-    ax.plot(x3, y3, color='lime', alpha=0.15, linewidth=1)
-    ax.plot(x4, y4_smooth, color='magenta', label=label_4)
-    ax.plot(x4, y4, color='magenta', alpha=0.15, linewidth=1)
+    ax.plot(x3, y3_smooth, color='purple', label=label_3)
+    ax.plot(x3, y3, color='purple', alpha=0.15, linewidth=1)
+    ax.plot(x4, y4_smooth, color='lime', label=label_4)
+    ax.plot(x4, y4, color='lime', alpha=0.15, linewidth=1)
+    # if legend_loc:
+    #     ax.legend(loc=legend_loc, framealpha=0.6)
+    # else:
+    #     ax.legend()
+    if ylim:
+        ax.set_ylim(ylim[0], ylim[1])
+    ax.grid(True, linewidth=0.6)
+    return ax
+
+
+def plot_merged_graph_3(ax, x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label_2, x3, y3, y3_smooth, label_3, title,
+                        y_label, ylim=[], legend_loc=[], x_label="Timesteps"):
+    ax.set_title(title)
+    ax.set_ylabel(y_label)
+    ax.set_xlabel(x_label)
+    ax.plot(x1, y1_smooth, color='dodgerblue', label=label_1)
+    ax.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    ax.plot(x2, y2_smooth, color='orangered', label=label_2)
+    ax.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    ax.plot(x3, y3_smooth, color='purple', label=label_3)
+    ax.plot(x3, y3, color='purple', alpha=0.15, linewidth=1)
     # if legend_loc:
     #     ax.legend(loc=legend_loc, framealpha=0.6)
     # else:
@@ -322,22 +343,26 @@ def shaping_comparison_length():
 
 def make_boxplot_score():
     # High score boxplot
-    x, y = merge_runs_to_xy("monitors/reward_type/1000/soft/distance/ppo_base_soft_1000", 'score')
-    x, y2 = merge_runs_to_xy("monitors/reward_type/1000/aggressive/distance/ppo_base_aggressive_1000", 'score')
-    x, y3 = merge_runs_to_xy("monitors/reward_type/1000/soft/action/ppo_base_action_soft_1000", 'score')
-    x, y4 = merge_runs_to_xy("monitors/reward_type/1000/aggressive/action/ppo_base_action_aggressive_1000", 'score')
-    x, y5 = merge_runs_to_xy("monitors/reward_type/1000/soft/wheel_speed/ppo_base_wheel_speed_soft_1000", 'score')
-    x, y6 = merge_runs_to_xy("monitors/reward_type/1000/aggressive/wheel_speed"
-                             "/ppo_base_wheel_speed_aggressive_1000", 'score')
-    reward_types = ["Distance soft", "Distance aggressive",
-                    "Action soft", "Action aggressive",
-                    "Speed soft", "Speed aggressive"]
-    data = [y, y2, y3, y4, y5, y6]
-    plt.title("Episode score of different reward functions (discrete)")
+    x, y = merge_runs_to_xy("monitors/increasing_difficulty/action/ppo_base_action_diff_increasing_soft_1000", 'score')
+    x, y2 = merge_runs_to_xy("monitors/reward_type/1000/soft/action/ppo_base_action_soft_1000", "score")
+    x, y3 = merge_runs_to_xy("monitors/increasing_difficulty/distance_continuous/ppo_cont_diff_increasing_soft_1000",
+                             'score')
+    x, y4 = merge_runs_to_xy("monitors/cont_reward_type/1000/soft/distance/ppo_cont_soft_1000", "score")
+    x, y5 = merge_runs_to_xy("monitors/increasing_difficulty/distance_discrete/ppo_base_diff_increasing_soft_1000",
+                             'score')
+    x, y6 = merge_runs_to_xy("monitors/reward_type/1000/soft/distance/ppo_base_soft_1000", "score")
+    x, y7 = merge_runs_to_xy("monitors/increasing_difficulty/wheel_speed"
+                             "/ppo_cont_wheel_speed_diff_increasing_aggressive_1000", 'score')
+    x, y8 = merge_runs_to_xy("monitors/cont_reward_type/1000/aggressive/wheel_speed"
+                             "/ppo_cont_wheel_speed_aggressive_1000", "score")
+    reward_types = ["Action", "Action (original)", "Distance cont", "Distance cont (original)", "Distance discrete",
+                    "Distance discrete (original)", "Wheel speed", "Wheel speed (original)"]
+    data = [y, y2, y3, y4, y5, y6, y7, y8]
+    plt.title("Episode score, original vs. increasing difficulty")
     plt.xlabel("Score")
     plot = plt.boxplot(x=data, labels=reward_types, flierprops=dict(alpha=0.5), vert=0, patch_artist=True)
     # fill with colors
-    colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen']
+    colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen', 'lightsalmon', 'lightsalmon']
     for patch, color in zip(plot['boxes'], colors):
         patch.set_facecolor(color)
     # plt.xlim(-10, 310)
@@ -404,15 +429,99 @@ def graph_increasing_difficulty():
     fig.subplots_adjust(bottom=0.2)
 
 
+def airtime_comparison():
+    # Distance-based reward function
+    x1, y1 = merge_runs_to_xy("monitors/airtime/distance_continuous/ppo_cont_airtime_soft_1000", 'total_airtime')
+    y1_smooth = smooth_curve(y1, 100)
+    x2, y2 = merge_runs_to_xy("monitors/airtime/distance_discrete/ppo_base_airtime_soft_1000", 'total_airtime')
+    y2_smooth = smooth_curve(y2, 100)
+    x3, y3 = merge_runs_to_xy("monitors/airtime/wheel_speed/ppo_cont_wheel_speed_airtime_aggressive_1000",
+                              'total_airtime')
+    y3_smooth = smooth_curve(y3, 100)
+
+    plt.title("Airtime curve of different reward functions")
+    plt.ylabel("Airtime")
+    plt.xlabel("Timesteps")
+
+    plt.plot(x1, y1_smooth, color='dodgerblue', label="Distance continuous (soft)")
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    plt.plot(x2, y2_smooth, color='orangered', label="Distance discrete (soft)")
+    plt.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    plt.plot(x3, y3_smooth, color='darkviolet', label="Wheel speed (aggressive)")
+    plt.plot(x3, y3, color='darkviolet', alpha=0.15, linewidth=1)
+    plt.legend(framealpha=0.6, loc='upper left')
+    plt.grid(True, linewidth=0.6)
+    return plt
+
+
+def graph_airtime():
+    fig, axes = plt.subplots(2, 2, figsize=(12, 12))  # Adjust figsize as needed
+
+    for i, variable_type in enumerate(['r', 'l', 'score', 'total_airtime']):
+        x1, y1 = merge_runs_to_xy("monitors/airtime/distance_continuous/ppo_cont_airtime_soft_1000", variable_type)
+        y1_smooth = smooth_curve(y1, 100)
+        x2, y2 = merge_runs_to_xy("monitors/airtime/distance_discrete/ppo_base_airtime_soft_1000", variable_type)
+        y2_smooth = smooth_curve(y2, 100)
+        x3, y3 = merge_runs_to_xy("monitors/airtime/wheel_speed/ppo_cont_wheel_speed_airtime_aggressive_1000",
+                                  variable_type)
+        y3_smooth = smooth_curve(y3, 100)
+
+        if variable_type == "r":
+            plot_merged_graph_3(
+                ax=axes[0, 0],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                title="Learning curve of different reward functions",
+                y_label="Rewards",
+                # ylim=[-5000, 20000],
+                legend_loc="lower right"
+            )
+        elif variable_type == "score":
+            plot_merged_graph_3(
+                ax=axes[0, 1],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                title="Episode score of different reward functions",
+                y_label="Score",
+                legend_loc="lower right"
+            )
+        elif variable_type == "l":
+            plot_merged_graph_3(
+                ax=axes[1, 0],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                title="Episode length of different reward functions",
+                y_label="Episode length (in timesteps)",
+                # ylim=[-100, 5000],
+                legend_loc="upper left"
+            )
+        elif variable_type == "total_airtime":
+            plot_merged_graph_3(
+                ax=axes[1, 1],
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                title="Airtime of different reward functions",
+                y_label="Episode length (in timesteps)",
+                # ylim=[-100, 5000],
+                legend_loc="upper left"
+            )
+    fig.tight_layout(pad=2)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', ncols=2)
+    fig.subplots_adjust(bottom=0.1)
+
+
 if __name__ == "__main__":
     # graph_rewards_wheel_speed()
     # plt.savefig("1000_cont_wheel_speed_merged", dpi=300)
     # graph_rewards_distance()
     # plt.savefig("1000_cont_distance_merged", dpi=300)
-    # make_boxplot_score()
-    # plt.savefig("score_comparison_boxplot", dpi=300)
-    graph_increasing_difficulty()
-    plt.savefig("difficulty_increase_graph", dpi=300)
+    graph_airtime()
+    plt.savefig("airtime_graph", dpi=300)
     plt.show()
     # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
     # print(df)
