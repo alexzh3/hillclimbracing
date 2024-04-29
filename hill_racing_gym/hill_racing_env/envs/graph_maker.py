@@ -1,3 +1,5 @@
+import ast
+
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -59,8 +61,6 @@ def merge_runs_to_xy(path, variable_type):
     for k in range(5):
         data = pd.read_csv(f"{path}_{k}.monitor.csv", header=1)
         # data = load_results(f"{path}/{k}")
-        print(f'{path}/{k}')
-        print(data['r'].nlargest(5))
         x, y = transfer_to_xy(data, "timesteps", data[variable_type].values)
         merged_x = np.concatenate((merged_x, x))
         merged_y = np.concatenate((merged_y, y))
@@ -70,6 +70,22 @@ def merge_runs_to_xy(path, variable_type):
     x, y = np.split(merged_xy, 2, axis=1)  # Split to x and y variables again
     x = x.flatten()  # Convert to 1D array
     y = y.flatten()
+    return x, y
+
+
+def merge_runs_dir_to_xy(path, variable_type):
+    data = load_results(path)
+    if variable_type == "position_list":
+        data[variable_type] = data[variable_type].apply(ast.literal_eval)
+        sorted_list = sorted(data[variable_type].sum(), key=lambda x: x[1])
+        position, timestep = zip(*sorted_list)
+        return position, timestep
+    else:
+        x, y = transfer_to_xy(data, "episodes", data[variable_type].values)
+        merged_xy = np.column_stack((x, y))  # Make (x,y) pairs in array
+        x, y = np.split(merged_xy, 2, axis=1)  # Split to x and y variables again
+        x = x.flatten()  # Convert to 1D array
+        y = y.flatten()
     return x, y
 
 
@@ -515,14 +531,86 @@ def graph_airtime():
     fig.subplots_adjust(bottom=0.1)
 
 
+def position_time_comparison():
+    plt.figure(figsize=(10, 8))
+    # Distance-based reward function
+    y1, x1 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
+                                  variable_type="position_list")
+    y1_smooth = smooth_curve(y1, 500)
+    y2, x2 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_soft_1000",
+                                  variable_type="position_list")
+    y2_smooth = smooth_curve(y2, 500)
+    y3, x3 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_aggressive_1000",
+                                  variable_type="position_list")
+    y3_smooth = smooth_curve(y3, 500)
+    y4, x4 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_distance_soft_1000",
+                                  variable_type="position_list")
+    y4_smooth = smooth_curve(y4, 500)
+    y5, x5 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_base_distance_soft_1000",
+                                  variable_type="position_list")
+    y5_smooth = smooth_curve(y5, 500)
+
+    plt.title("Position of agent during episode evaluation")
+    plt.xlabel("Timesteps")
+    plt.ylabel("Position of agent")
+
+    plt.plot(x1, y1_smooth, color='dodgerblue', label="Action discrete soft")
+    plt.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    plt.plot(x2, y2_smooth, color='orangered', label="Wheel speed continuous soft")
+    plt.plot(x2, y2, color='orangered', alpha=0.15, linewidth=1)
+    plt.plot(x3, y3_smooth, color='purple', label="Wheel speed continuous aggressive")
+    plt.plot(x3, y3, color='purple', alpha=0.15, linewidth=1)
+    plt.plot(x4, y4_smooth, color='lime', label="Distance continuous soft")
+    plt.plot(x4, y4, color='lime', alpha=0.15, linewidth=1)
+    plt.plot(x5, y5_smooth, color='yellow', label="Distance discrete soft")
+    plt.plot(x5, y5, color='yellow', alpha=0.15, linewidth=1)
+    plt.grid(True, linewidth=0.5)
+    plt.legend(framealpha=0.6, loc='lower center', bbox_to_anchor=(0.5, -0.2), ncols=2)
+    plt.tight_layout()
+    # plt.ylim(-6, 1000)
+    return plt
+
+
+def eval_boxplot_score():
+    # Distance-based reward function
+    y1, x1 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
+                                  variable_type="score")
+    y2, x2 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_soft_1000",
+                                  variable_type="score")
+    y3, x3 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_aggressive_1000",
+                                  variable_type="score")
+    y4, x4 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_distance_soft_1000",
+                                  variable_type="score")
+    y5, x5 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_base_distance_soft_1000",
+                                  variable_type="score")
+
+    reward_types = ["Discrete action soft, Continuous wheel speed soft, co"]
+    data = [y1, y2, y3, y4, y5]
+    plt.title("Episode score, original vs. increasing difficulty")
+    plt.xlabel("Score")
+    plot = plt.boxplot(x=data, labels=reward_types, flierprops=dict(alpha=0.5), vert=0, patch_artist=True)
+    # fill with colors
+    colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen', 'lightsalmon', 'lightsalmon']
+    for patch, color in zip(plot['boxes'], colors):
+        patch.set_facecolor(color)
+    # plt.xlim(-10, 310)
+    plt.tight_layout()
+    return plt
+
+
 if __name__ == "__main__":
     # graph_rewards_wheel_speed()
     # plt.savefig("1000_cont_wheel_speed_merged", dpi=300)
     # graph_rewards_distance()
     # plt.savefig("1000_cont_distance_merged", dpi=300)
-    graph_airtime()
-    plt.savefig("airtime_graph", dpi=300)
+    # graph_airtime()
+    # merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
+    #                      variable_type="position_list")
+    # plt.show()
+    eval_boxplot_score()
+    plt.savefig("boxplot_score_evaluations", dpi=300)
     plt.show()
+
     # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
     # print(df)
     # data = load_results("monitors/reward_type/300/aggressive/distance/0")
