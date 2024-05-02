@@ -572,31 +572,58 @@ def position_time_comparison():
 
 
 def eval_boxplot_score():
-    # Distance-based reward function
-    y1, x1 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
+    plt.figure(figsize=(9, 6))
+
+    # Evaluations scores in a boxplot
+    x1, y1 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
                                   variable_type="score")
-    y2, x2 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_soft_1000",
+    x2, y2 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_soft_1000",
                                   variable_type="score")
-    y3, x3 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_aggressive_1000",
+    x3, y3 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_wheel_speed_aggressive_1000",
                                   variable_type="score")
-    y4, x4 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_distance_soft_1000",
+    x4, y4 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_cont_distance_soft_1000",
                                   variable_type="score")
-    y5, x5 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_base_distance_soft_1000",
+    x5, y5 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_base_distance_soft_1000",
                                   variable_type="score")
 
-    reward_types = ["Discrete action soft, Continuous wheel speed soft, co"]
+    reward_types = ["Action discrete soft", "Wheel speed cont soft", "Wheel speed cont aggressive", "Distance cont soft",
+                    "Distance discrete soft"]
     data = [y1, y2, y3, y4, y5]
-    plt.title("Episode score, original vs. increasing difficulty")
+    plt.title("Episode score of evaluated models")
     plt.xlabel("Score")
     plot = plt.boxplot(x=data, labels=reward_types, flierprops=dict(alpha=0.5), vert=0, patch_artist=True)
     # fill with colors
-    colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen', 'lightsalmon', 'lightsalmon']
+    colors = ['pink', 'lightblue', 'lightgreen', 'lightsalmon', 'yellow']
     for patch, color in zip(plot['boxes'], colors):
         patch.set_facecolor(color)
     # plt.xlim(-10, 310)
     plt.tight_layout()
     return plt
 
+
+def make_boxplot_airtime():
+    # High score boxplot
+    x, y = merge_runs_to_xy("monitors/airtime/distance_discrete/ppo_base_airtime_soft_1000", 'score')
+    x, y2 = merge_runs_to_xy("monitors/airtime/distance_discrete_og/ppo_base_2_soft_1000", "score")
+    x, y3 = merge_runs_to_xy("monitors/airtime/distance_continuous/ppo_cont_airtime_soft_1000",
+                             'score')
+    x, y4 = merge_runs_to_xy("monitors/airtime/distance_continuous_og/ppo_cont_2_soft_1000", "score")
+    x, y5 = merge_runs_to_xy("monitors/airtime/wheel_speed/ppo_cont_wheel_speed_airtime_aggressive_1000",
+                             'score')
+    x, y6 = merge_runs_to_xy("monitors/airtime/wheel_speed_og/ppo_cont_wheel_speed_2_aggressive_1000", "score")
+    reward_types = ["Distance discrete", "Distance discrete (original)", "Distance cont", "Distance cont (original)",
+                    "Wheel speed", "Wheel speed (original)"]
+    data = [y, y2, y3, y4, y5, y6]
+    plt.title("Episode score original vs. airtime reward function")
+    plt.xlabel("Score")
+    plot = plt.boxplot(x=data, labels=reward_types, flierprops=dict(alpha=0.5), vert=0, patch_artist=True)
+    # fill with colors
+    colors = ['pink', 'pink', 'lightblue', 'lightblue', 'lightgreen', 'lightgreen']
+    for patch, color in zip(plot['boxes'], colors):
+        patch.set_facecolor(color)
+    # plt.xlim(-10, 310)
+    plt.tight_layout()
+    return plt
 
 if __name__ == "__main__":
     # graph_rewards_wheel_speed()
@@ -607,10 +634,9 @@ if __name__ == "__main__":
     # merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
     #                      variable_type="position_list")
     # plt.show()
-    eval_boxplot_score()
-    plt.savefig("boxplot_score_evaluations", dpi=300)
+    make_boxplot_airtime()
+    plt.savefig("boxplot_airtime_score", dpi=300)
     plt.show()
-
     # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
     # print(df)
     # data = load_results("monitors/reward_type/300/aggressive/distance/0")
