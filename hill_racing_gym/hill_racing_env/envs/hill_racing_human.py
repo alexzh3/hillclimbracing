@@ -124,12 +124,12 @@ def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
     # Variables
     main_world = b2World(contactListener=ContactListener(), gravity=b2Vec2(0, GRAVITY), doSleep=True)
     ground_template = ground.Ground()  # Template to store the ground vectors
-    ground_template.randomizeGround()  # Randomizes the ground using the difficulty and perlin noise
+    ground_template.randomize_ground()  # Randomizes the ground using the difficulty and perlin noise
 
     # Generate until we find ground that is not too steep
     while ground_template.groundTooSteep():
         ground_template = ground.Ground()
-        ground_template.randomizeGround()
+        ground_template.randomize_ground()
 
     # Set up the ground
     main_ground = ground.Ground(main_world)

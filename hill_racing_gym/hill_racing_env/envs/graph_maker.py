@@ -586,7 +586,8 @@ def eval_boxplot_score():
     x5, y5 = merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_base_distance_soft_1000",
                                   variable_type="score")
 
-    reward_types = ["Action discrete soft", "Wheel speed cont soft", "Wheel speed cont aggressive", "Distance cont soft",
+    reward_types = ["Action discrete soft", "Wheel speed cont soft", "Wheel speed cont aggressive",
+                    "Distance cont soft",
                     "Distance discrete soft"]
     data = [y1, y2, y3, y4, y5]
     plt.title("Episode score of evaluated models")
@@ -624,6 +625,7 @@ def make_boxplot_airtime():
     # plt.xlim(-10, 310)
     plt.tight_layout()
     return plt
+
 
 if __name__ == "__main__":
     # graph_rewards_wheel_speed()

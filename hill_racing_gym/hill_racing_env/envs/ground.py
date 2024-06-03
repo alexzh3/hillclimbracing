@@ -24,44 +24,44 @@ class Ground:
         self.estimated_difficulty = 0
         self.scaled_ground_vectors = []
 
-    def randomizeGround(self, seed: Optional[int] = None):
+    def randomize_ground(self, seed: Optional[int] = None):
         if seed is not None:
             random.seed(seed)
         ground_seed = random.uniform(0, 100000)  # Generates a random seed that will define the terrain
-        totalDifference = 0
+        total_difference = 0
 
         # Iterate over a range from 0 to self.distance with a step size of self.smoothness
         for i in range(0, self.distance, self.smoothness):
             # Set the length of the flat section of the ground vector
-            flatLength = 500
+            flat_length = 500
             # Initialize a variable to store the additional height to be added for the flat section of the ground vector
-            heightAddition = 0
+            height_addition = 0
             # Calculate the steepness level by remapping the current distance to a height between 130 and 250 by using
             # linear interpolation
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
-            # Calculate the noisedY value using Perlin noise with the starting point and adjusted i value
-            noisedY = abs(
-                noise.pnoise1(ground_seed + (i - flatLength) / (700 - self.steepness_Level), octaves=4))
+            # Calculate the noised_y value using Perlin noise with the starting point and adjusted i value
+            noised_y = abs(
+                noise.pnoise1(ground_seed + (i - flat_length) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level. At 80%
             # (200/250) it stops the difficulty increase.
-            maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
+            max_height = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             # Difficulty increases till the end
-            # maxHeight = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 320])
-            minHeight = 30
-            # If the current iteration value is less than the flat section length, recalculate noisedY and
-            # heightAddition
-            if i < flatLength:
-                noisedY = abs(noise.pnoise1(ground_seed, octaves=4))
-                heightAddition = (flatLength - i) / 25
+            # max_height = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 250], [0, 320])
+            min_height = 30
+            # If the current iteration value is less than the flat section length, recalculate noised_y and
+            # height_addition
+            if i < flat_length:
+                noised_y = abs(noise.pnoise1(ground_seed, octaves=4))
+                height_addition = (flat_length - i) / 25
 
-            # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noisedY and heightAddition
+            # Create a new Box2D.b2Vec2 object with x-value i and adjusted y-value based on noised_y and height_addition
             self.ground_vectors.append(
-                b2Vec2(i, hill_racing.SCREEN_HEIGHT - np.interp(noisedY, [0, 1],
-                                                                [minHeight, maxHeight]) + heightAddition))
+                b2Vec2(i, hill_racing.SCREEN_HEIGHT - np.interp(noised_y, [0, 1],
+                                                                [min_height, max_height]) + height_addition))
             # Calculate the absolute difference between the previous and current y-values and add it to the total
             # difference
             if i > 0:
-                totalDifference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
+                total_difference += abs(self.ground_vectors[-2].y - self.ground_vectors[-1].y)
 
         self.ground_vectors.append(b2Vec2(self.distance, hill_racing.SCREEN_HEIGHT))  # End point vector
         self.ground_vectors.append(b2Vec2(0, hill_racing.SCREEN_HEIGHT))  # Starting point vector
@@ -75,11 +75,11 @@ class Ground:
     def groundTooSteep(self):
         for vector in self.ground_vectors:
             oi = self.getPositions(vector.x, 10, 1)
-            totalDifference = 0
+            total_difference = 0
             for i in range(1, len(oi)):
-                totalDifference += max(0, oi[i - 1] - oi[i])
-            if totalDifference > 5:
-                print(totalDifference)
+                total_difference += max(0, oi[i - 1] - oi[i])
+            if total_difference > 5:
+                print(total_difference)
                 print("Too Steep, generating new ground!")
                 return True
         return False

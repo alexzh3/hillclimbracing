@@ -168,12 +168,12 @@ class HillRacingEnv(gym.Env):
     def _generate_ground(self, seed: Optional[int] = None):
         # Variables
         ground_template = ground.Ground()  # Template to store the ground vectors
-        ground_template.randomizeGround(seed=seed)  # Randomizes the ground using the difficulty and perlin noise
+        ground_template.randomize_ground(seed=seed)  # Randomizes the ground using the difficulty and perlin noise
 
         # Generate until we find ground that is not too steep
         while ground_template.groundTooSteep():
             ground_template = ground.Ground()
-            ground_template.randomizeGround()
+            ground_template.randomize_ground()
 
         # Add the ground to the world
         self.ground = ground.Ground(self.world)
