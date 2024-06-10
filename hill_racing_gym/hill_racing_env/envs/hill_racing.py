@@ -28,6 +28,7 @@ DIRT_MASK = CHASSIS_CATEGORY
 PERSON_MASK = GRASS_CATEGORY
 
 # Fundamental constants (not recommended to change)
+SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels), is calculated in ground class
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCALE = 30  # Pixels per meter / Scale, Box2D counts in meters, pygame counts in pixels.
@@ -41,7 +42,6 @@ panX = 0
 panY = 0
 
 # Gameplay variables
-SPAWNING_Y = 0  # Spawn location y-coordinate (in pixels)
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
 MAX_SCORE = 1000  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
@@ -168,12 +168,12 @@ class HillRacingEnv(gym.Env):
     def _generate_ground(self, seed: Optional[int] = None):
         # Variables
         ground_template = ground.Ground()  # Template to store the ground vectors
-        ground_template.randomizeGround(seed=seed)  # Randomizes the ground using the difficulty and perlin noise
+        ground_template.randomize_ground(seed=seed)  # Randomizes the ground using the difficulty and perlin noise
 
         # Generate until we find ground that is not too steep
         while ground_template.groundTooSteep():
             ground_template = ground.Ground()
-            ground_template.randomizeGround()
+            ground_template.randomize_ground()
 
         # Add the ground to the world
         self.ground = ground.Ground(self.world)

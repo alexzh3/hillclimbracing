@@ -8,7 +8,6 @@ class Agent:
         self.score = 0
         self.world = real_world
         self.car = None
-        self.motor_state = 2
         self.spawning_x = hill_racing.SPAWNING_X  # Spawn location
         self.spawning_y = hill_racing.SPAWNING_Y
         self.steps_in_air = 0
