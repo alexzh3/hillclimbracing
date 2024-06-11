@@ -187,7 +187,6 @@ if __name__ == "__main__":
     # Continuous action space with wheel-speed based rewards, 1000 aggressive, -150 difficulty
     exp_cont_reward_wheel_speed(5, "aggressive")
 
-
     # # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
     # exp_cont_reward_wheel_speed(5, "aggressive")
     # # Continuous action space with distance-based rewards 1000 soft, increasing difficulty, -184 difficulty

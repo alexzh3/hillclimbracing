@@ -136,10 +136,10 @@ class HillRacingEnv(gym.Env):
                 # x coordinate from 0 to 1000 and y from 0 to 700.
                 "chassis_position": spaces.Box(low=np.array([0, 0]), high=np.array([1000, 700]), shape=(2,),
                                                dtype=np.float32),
-                # Angle in degrees, can be -36000 to 36000.
+                # Angle in degrees, can be -360 to 360.
                 "chassis_angle": spaces.Box(low=0, high=360, shape=(1,), dtype=np.float32),
                 # Wheels speed, back and front wheel have same speed limits, add 0.1 to avoid precision errors
-                "wheels_speed": spaces.Box(low=-13 * math.pi + 0.1, high=13 * math.pi + 0.1, shape=(2,),
+                "wheels_speed": spaces.Box(low=-13 * math.pi - 0.1, high=13 * math.pi + 0.1, shape=(2,),
                                            dtype=np.float32),
                 # When one of the wheels is makes contact with the ground, 0 means no contact and 1 means contact
                 "on_ground": spaces.MultiBinary(n=2)
