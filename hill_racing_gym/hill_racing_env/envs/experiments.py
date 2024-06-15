@@ -185,7 +185,7 @@ if __name__ == "__main__":
     # Discrete action space with distance based rewards, 1000 soft, -150 difficulty
     # exp_base_reward_distance(5, "soft")
     # Continuous action space with wheel-speed based rewards, 1000 aggressive, -150 difficulty
-    exp_cont_reward_wheel_speed(5, "aggressive")
+    # exp_cont_reward_wheel_speed(5, "aggressive")
 
     # # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
     # exp_cont_reward_wheel_speed(5, "aggressive")
@@ -196,9 +196,9 @@ if __name__ == "__main__":
     # # Discrete action space with action-based rewards, 1000 soft, increasing difficulty, -184 difficulty
     # exp_base_reward_action(5, "soft")
 
-    # # Continuous action space with wheel speed based and airtime rewards 1000 aggressive -150 difficulty
-    # exp_cont_reward_airtime_wheel_speed(5, "aggressive")
-    # # Continuous action space with distance-based and airtime rewards 1000 soft -150 difficulty
-    # exp_cont_reward_airtime_distance(5, "soft")
-    # # Discrete action space with distance-based and airtime rewards 1000 soft -150 difficulty
-    # exp_base_reward_airtime_distance(5, "soft")
+    # Continuous action space with wheel speed based and airtime rewards 1000 aggressive -150 difficulty
+    exp_cont_reward_airtime_wheel_speed(5, "aggressive")
+    # Continuous action space with distance-based and airtime rewards 1000 soft -150 difficulty
+    exp_cont_reward_airtime_distance(5, "soft")
+    # Discrete action space with distance-based and airtime rewards 1000 soft -150 difficulty
+    exp_base_reward_airtime_distance(5, "soft")

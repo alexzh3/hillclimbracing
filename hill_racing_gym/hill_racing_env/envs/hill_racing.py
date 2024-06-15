@@ -264,7 +264,7 @@ class HillRacingEnv(gym.Env):
                 if self.agent.airtime_counter > 0:
                     reward = reward + self.agent.airtime_counter
                 else:
-                    reward = reward - -0.5
+                    reward = reward - 0.5
 
             case "airtime_distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
@@ -282,7 +282,7 @@ class HillRacingEnv(gym.Env):
                 if self.agent.airtime_counter > 0:
                     reward = reward + self.agent.airtime_counter
                 else:
-                    reward = reward - -0.5
+                    reward = reward - 0.5
 
         return reward
 
