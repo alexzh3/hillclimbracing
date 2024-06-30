@@ -150,7 +150,29 @@ def eval_model(model_path, monitor_name, action_space, reward_type, reward_funct
 
 
 #######################################################################################################################
+# Random agent experiment (for control)
+def random_model(runs, reward_type):
+    for i in range(runs):
+        env = gym.make(env_id, reward_function="action", action_space="discrete_3", reward_type=reward_type)
+        env = Monitor(env, f'rando\m_agent_{reward_type}_1000_{i}', info_keywords=("score",))
+        # Initialize variables
+        current_timesteps = 0
+        num_timesteps = 1_000_000
+        # Run the random agent
+        while current_timesteps < num_timesteps:
+            obs = env.reset()
+            terminated = False
+            truncated = False
+            while not terminated and not truncated:
+                # Select a random action
+                action = env.action_space.sample()
+                # Take the action in the environment
+                obs, reward, terminated, truncated, info = env.step(action)
+                current_timesteps += 1
+            print(f"Run: {i}, Timesteps: {current_timesteps}")
 
+
+#######################################################################################################################
 
 if __name__ == "__main__":
     # Evaluation experiments
@@ -196,9 +218,11 @@ if __name__ == "__main__":
     # # Discrete action space with action-based rewards, 1000 soft, increasing difficulty, -184 difficulty
     # exp_base_reward_action(5, "soft")
 
-    # Continuous action space with wheel speed based and airtime rewards 1000 aggressive -150 difficulty
-    exp_cont_reward_airtime_wheel_speed(5, "aggressive")
-    # Continuous action space with distance-based and airtime rewards 1000 soft -150 difficulty
-    exp_cont_reward_airtime_distance(5, "soft")
-    # Discrete action space with distance-based and airtime rewards 1000 soft -150 difficulty
-    exp_base_reward_airtime_distance(5, "soft")
+    # # Continuous action space with wheel speed based and airtime rewards 1000 aggressive -150 difficulty
+    # exp_cont_reward_airtime_wheel_speed(5, "aggressive")
+    # # Continuous action space with distance-based and airtime rewards 1000 soft -150 difficulty
+    # exp_cont_reward_airtime_distance(5, "soft")
+    # # Discrete action space with distance-based and airtime rewards 1000 soft -150 difficulty
+    # exp_base_reward_airtime_distance(5, "soft")
+    # random_model(5, "soft")
+    # random_model(5, "aggressive")

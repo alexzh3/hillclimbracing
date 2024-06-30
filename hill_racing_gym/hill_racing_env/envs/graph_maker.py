@@ -153,6 +153,24 @@ def plot_merged_graph_3(ax, x1, y1, y1_smooth, label_1, x2, y2, y2_smooth, label
     return ax
 
 
+def plot_merged_graph_1(ax, x1, y1, y1_smooth, label_1, title, y_label, ylim=[],
+                        legend_loc=[],
+                        x_label="Timesteps"):
+    ax.set_title(title)
+    ax.set_ylabel(y_label)
+    ax.set_xlabel(x_label)
+    ax.plot(x1, y1_smooth, color='dodgerblue', label=label_1)
+    ax.plot(x1, y1, color='dodgerblue', alpha=0.15, linewidth=1)
+    if legend_loc:
+        ax.legend(loc=legend_loc, framealpha=0.6)
+    else:
+        ax.legend()
+    if ylim:
+        ax.set_ylim(ylim[0], ylim[1])
+    ax.grid(True, linewidth=0.6)
+    return ax
+
+
 def graph_rewards_distance():
     # Distance-based reward function
     # x1, y1 = merge_runs_to_xy("monitors/reward_type/300/soft/distance", variable_type)
@@ -160,9 +178,9 @@ def graph_rewards_distance():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust wspace as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/soft/distance/ppo_base_soft_1000", variable_type)
+        x1, y1 = merge_runs_to_xy("monitors/reward_type/300/soft/distance/ppo_base_soft_300", variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/aggressive/distance/ppo_base_aggressive_1000",
+        x2, y2 = merge_runs_to_xy("monitors/reward_type/300/aggressive/distance/ppo_base_300",
                                   variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
@@ -201,9 +219,9 @@ def graph_rewards_action():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust figsize as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/soft/action/ppo_base_action_soft_1000", variable_type)
+        x1, y1 = merge_runs_to_xy("monitors/reward_type/300/soft/action/ppo_base_action_soft_300", variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/aggressive/action/ppo_base_action_aggressive_1000",
+        x2, y2 = merge_runs_to_xy("monitors/reward_type/300/aggressive/action/ppo_base_action_300",
                                   variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
@@ -243,12 +261,11 @@ def graph_rewards_wheel_speed():
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust figsize as needed
 
     for i, variable_type in enumerate(['r', 'l', 'score']):
-        x1, y1 = merge_runs_to_xy("monitors/reward_type/1000/soft/wheel_speed"
-                                  "/ppo_base_wheel_speed_soft_1000",
+        x1, y1 = merge_runs_to_xy("monitors/reward_type/300/soft/wheel_speed/ppo_base_wheel_speed_soft_300",
                                   variable_type)
         y1_smooth = smooth_curve(y1, 100)
-        x2, y2 = merge_runs_to_xy("monitors/reward_type/1000/aggressive/wheel_speed"
-                                  "/ppo_base_wheel_speed_aggressive_1000",
+        x2, y2 = merge_runs_to_xy("monitors/reward_type/300/aggressive/wheel_speed"
+                                  "/ppo_base_wheel_speed_300",
                                   variable_type)
         y2_smooth = smooth_curve(y2, 100)
 
@@ -280,6 +297,50 @@ def graph_rewards_wheel_speed():
                 y_label="Episode length (in timesteps)",
                 # ylim=[-100, 5000],
                 legend_loc="upper left"
+            )
+    fig.tight_layout(pad=2)
+
+
+def graph_rewards_random_agent():
+    # Distance-based reward function
+    # x1, y1 = merge_runs_to_xy("monitors/reward_type/300/soft/distance", variable_type)
+    # y1_smooth = smooth_curve(y1, 100)
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))  # Adjust wspace as needed
+
+    for i, variable_type in enumerate(['r', 'l', 'score']):
+        x1, y1 = merge_runs_to_xy("monitors/random_agent/soft/random_agent_soft_1000", variable_type)
+        y1_smooth = smooth_curve(y1, 100)
+        x2, y2 = merge_runs_to_xy("monitors/random_agent/aggressive/random_agent_aggressive_1000",
+                                  variable_type)
+        y2_smooth = smooth_curve(y2, 100)
+
+        if variable_type == "r":
+            plot_merged_graph(
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+                title="Learning curve using random action-based reward function",
+                y_label="Rewards",
+                legend_loc="upper left",
+                ax=axes[i],
+                # ylim=[-9000, 7600]
+            )
+        elif variable_type == "score":
+            plot_merged_graph(
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+                title="Episode score using random action-based reward function",
+                y_label="Score",
+                legend_loc="upper left",
+                ax=axes[i]
+            )
+        elif variable_type == "l":
+            plot_merged_graph(
+                x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Soft",
+                x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Aggressive",
+                title="Episode length using random action-based reward function",
+                y_label="Episode length (in timesteps)",
+                legend_loc="upper left",
+                ax=axes[i]
             )
     fig.tight_layout(pad=2)
 
@@ -636,8 +697,8 @@ if __name__ == "__main__":
     # merge_runs_dir_to_xy(path="monitors/evaluation/eval_ppo_discrete_action_soft_1000",
     #                      variable_type="position_list")
     # plt.show()
-    make_boxplot_airtime()
-    plt.savefig("boxplot_airtime_score", dpi=300)
+    graph_rewards_wheel_speed()
+    plt.savefig("300_wheel_speed_based_merged", dpi=300)
     plt.show()
     # df = pd.read_csv("ppo_cont_wheel_speed_300_2.monitor.csv", header=1)
     # print(df)

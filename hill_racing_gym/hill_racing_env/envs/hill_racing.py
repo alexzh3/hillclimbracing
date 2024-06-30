@@ -126,8 +126,6 @@ class HillRacingEnv(gym.Env):
             case "discrete_3":
                 self.action_space = spaces.Discrete(n=3,
                                                     start=0)  # 3 do-able actions: gas, reverse, 3rd action is idling
-            case "discrete_2":
-                self.action_space = spaces.Discrete(n=2, start=1)  # 2 do-able actions: gas, reverse
             case "continuous":  # Continuous motor wheel speeds
                 self.action_space = gym.spaces.Box(low=-13, high=13, shape=(1,), dtype=np.float32)
         # Define the observation space
@@ -191,12 +189,6 @@ class HillRacingEnv(gym.Env):
                 match action:
                     case 0:  # Idle
                         self.agent.car.motor_off()
-                    case 1:  # Gas
-                        self.agent.car.motor_on(forward=True)
-                    case 2:  # Reverse
-                        self.agent.car.motor_on(forward=False)
-            case "discrete_2":
-                match action:
                     case 1:  # Gas
                         self.agent.car.motor_on(forward=True)
                     case 2:  # Reverse
