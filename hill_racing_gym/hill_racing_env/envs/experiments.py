@@ -132,7 +132,7 @@ def exp_base_reward_airtime_distance(runs, reward_type):
 
 #######################################################################################################################
 # Evaluation of best models
-def eval_model(model_path, monitor_name, action_space, reward_type, reward_function, episodes):
+def eval_model(model_path, monitor_name, action_space, reward_type, reward_function, episodes, deterministic=True):
     # env = gym.make(env_id, action_space=action_space, reward_type=reward_type,
     #                reward_function=reward_function)
     vec_env = make_vec_env(env_id, n_envs=20, seed=0, monitor_dir=monitor_name, vec_env_cls=SubprocVecEnv,
@@ -146,7 +146,7 @@ def eval_model(model_path, monitor_name, action_space, reward_type, reward_funct
     model = PPO.load(model_path, env=vec_env,
                      custom_objects={'observation_space': vec_env.observation_space,
                                      'action_space': vec_env.action_space})
-    evaluate_policy(model=model, env=vec_env, n_eval_episodes=episodes)
+    evaluate_policy(model=model, env=vec_env, n_eval_episodes=episodes, deterministic=deterministic)
 
 
 #######################################################################################################################
@@ -175,40 +175,38 @@ def random_model(runs, reward_type):
 #######################################################################################################################
 
 if __name__ == "__main__":
+    ################################################################################################################
     # Evaluation experiments
-
     # # Evaluation of Continuous action space with wheel speed based 1000 aggressive -150 difficulty
-    # eval_model(model_path="baseline_models/ppo_cont_wheel_speed_aggressive_1000_0.zip",
-    #            monitor_name="eval_ppo_cont_wheel_speed_aggressive_1000", action_space="continuous",
-    #            reward_type="aggressive", reward_function="wheel_speed", episodes=100)
-    #
+    # eval_model(model_path="baseline_models/ppo_cont_wheel_speed_soft_1000_1.zip",
+    #            monitor_name="eval_ppo_cont_wheel_speed_soft_1000", action_space="continuous",
+    #            reward_type="soft", reward_function="wheel_speed", episodes=1000)
     # # Evaluation of Continuous action space with wheel speed based rewards 1000 aggressive -150 difficulty
     # eval_model(model_path="baseline_models/ppo_cont_wheel_speed_aggressive_1000_0.zip",
     #            monitor_name="eval_ppo_cont_wheel_speed_aggressive_1000", action_space="continuous",
     #            reward_type="aggressive", reward_function="wheel_speed", episodes=1000)
-    #
     # # Evaluation of Continuous action space with distance based rewards 1000 soft -150 difficulty
     # eval_model(model_path="baseline_models/ppo_cont_soft_1000_3.zip",
     #            monitor_name="eval_ppo_cont_distance_soft_1000", action_space="continuous",
     #            reward_type="soft", reward_function="distance", episodes=1000)
-    # # Evaluation of discrete action space with distance based rewards 1000 soft -150 difficulty
-    # eval_model(model_path="baseline_models/ppo_base_soft_1000_4.zip",
-    #            monitor_name="eval_ppo_base_distance_soft_1000", action_space="discrete_3",
-    #            reward_type="soft", reward_function="distance", episodes=1000)
-    #
-    # # Evaluation of discrete action space with action based rewards 1000 soft -150 difficulty
-    # eval_model(model_path="baseline_models/ppo_base_action_soft_1000_4.zip",
-    #            monitor_name="eval_ppo_discrete_action_soft_1000", action_space="discrete_3",
-    #            reward_type="soft", reward_function="action", episodes=1000)
+    # Evaluation of discrete action space with distance based rewards 1000 soft -150 difficulty
+    eval_model(model_path="baseline_models/ppo_base_soft_1000_4.zip",
+               monitor_name="eval_ppo_base_distance_soft_1000", action_space="discrete_3",
+               reward_type="soft", reward_function="distance", episodes=1000, deterministic=False)
+    # Evaluation of discrete action space with action based rewards 1000 soft -150 difficulty
+    eval_model(model_path="baseline_models/ppo_base_action_soft_1000_3.zip",
+               monitor_name="eval_ppo_discrete_action_soft_1000", action_space="discrete_3",
+               reward_type="soft", reward_function="action", episodes=1000, deterministic=False)
 
-    # EXPERIMENTS TBD FOR AIRTIME VS ORIGINAL COMPARISON, THESE ARE ORIGINAL BUT WITH AIRTIME MONITORED
+    ################################################################################################################
+    # EXPERIMENTS FOR AIRTIME VS ORIGINAL COMPARISON, THESE ARE ORIGINAL BUT WITH AIRTIME MONITORED
     # # Continuous action space with distance based rewards, 1000 soft, -150 difficulty
     # exp_cont_reward_distance(5, "soft")
     # Discrete action space with distance based rewards, 1000 soft, -150 difficulty
     # exp_base_reward_distance(5, "soft")
     # Continuous action space with wheel-speed based rewards, 1000 aggressive, -150 difficulty
     # exp_cont_reward_wheel_speed(5, "aggressive")
-
+    ################################################################################################################
     # # Continuous action space with wheel speed based rewards  1000 aggressive, increasing difficulty, -184 difficulty
     # exp_cont_reward_wheel_speed(5, "aggressive")
     # # Continuous action space with distance-based rewards 1000 soft, increasing difficulty, -184 difficulty
@@ -217,12 +215,13 @@ if __name__ == "__main__":
     # exp_base_reward_distance(5, "soft")
     # # Discrete action space with action-based rewards, 1000 soft, increasing difficulty, -184 difficulty
     # exp_base_reward_action(5, "soft")
-
+    ################################################################################################################
     # # Continuous action space with wheel speed based and airtime rewards 1000 aggressive -150 difficulty
     # exp_cont_reward_airtime_wheel_speed(5, "aggressive")
     # # Continuous action space with distance-based and airtime rewards 1000 soft -150 difficulty
     # exp_cont_reward_airtime_distance(5, "soft")
     # # Discrete action space with distance-based and airtime rewards 1000 soft -150 difficulty
     # exp_base_reward_airtime_distance(5, "soft")
+    ################################################################################################################
     # random_model(5, "soft")
     # random_model(5, "aggressive")
