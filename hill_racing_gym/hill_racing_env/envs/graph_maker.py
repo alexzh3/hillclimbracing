@@ -606,7 +606,7 @@ def graph_airtime():
                 ax=axes[0, 0],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Learning curve of different reward functions",
                 y_label="Rewards",
                 # ylim=[-5000, 20000],
@@ -617,7 +617,7 @@ def graph_airtime():
                 ax=axes[0, 1],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Episode score of different reward functions",
                 y_label="Score",
                 legend_loc="lower right"
@@ -627,7 +627,7 @@ def graph_airtime():
                 ax=axes[1, 0],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Episode length of different reward functions",
                 y_label="Episode length (in timesteps)",
                 # ylim=[-100, 5000],
@@ -638,7 +638,7 @@ def graph_airtime():
                 ax=axes[1, 1],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Airtime of different reward functions",
                 y_label="Total airtime",
                 # ylim=[-100, 5000],
@@ -666,7 +666,7 @@ def graph_original_airtime():
                 ax=axes[0, 0],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Learning curve of different reward functions",
                 y_label="Rewards",
                 # ylim=[-5000, 20000],
@@ -677,7 +677,7 @@ def graph_original_airtime():
                 ax=axes[0, 1],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Episode score of different reward functions",
                 y_label="Score",
                 legend_loc="lower right"
@@ -687,7 +687,7 @@ def graph_original_airtime():
                 ax=axes[1, 0],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Episode length of different reward functions",
                 y_label="Episode length (in timesteps)",
                 # ylim=[-100, 5000],
@@ -698,7 +698,7 @@ def graph_original_airtime():
                 ax=axes[1, 1],
                 x1=x1, y1=y1, y1_smooth=y1_smooth, label_1="Distance continuous (soft)",
                 x2=x2, y2=y2, y2_smooth=y2_smooth, label_2="Distance discrete (soft)",
-                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed (aggressive)",
+                x3=x3, y3=y3, y3_smooth=y3_smooth, label_3="Wheel speed cont (aggressive)",
                 title="Airtime of different reward functions",
                 y_label="Total airtime",
                 # ylim=[-100, 5000],
@@ -822,10 +822,35 @@ def table_eval():
         print(f"{data_name} - score: {mean_score}, length: {mean_length}, speed: {mean_speed}")
 
 
+def table_airtime():
+    for k in range(5):
+        airtime_discrete_distance_soft = pd.read_csv(f"monitors/airtime/distance_discrete/"
+                                                     f"ppo_base_airtime_soft_1000_{k}.monitor.csv", header=1)
+        airtime_cont_distance_soft = pd.read_csv(f"monitors/airtime/distance_continuous/"
+                                                 f"ppo_cont_airtime_soft_1000_{k}.monitor.csv", header=1)
+        airtime_cont_speed_agg = pd.read_csv(f"monitors/airtime/wheel_speed/"
+                                             f"ppo_cont_wheel_speed_airtime_aggressive_1000_{k}.monitor.csv", header=1)
+        og_discrete_distance_soft = pd.read_csv(f"monitors/airtime/distance_discrete_og/"
+                                                f"ppo_base_2_soft_1000_{k}.monitor.csv", header=1)
+        og_cont_distance_soft = pd.read_csv(f"monitors/airtime/distance_continuous_og/"
+                                            f"ppo_cont_2_soft_1000_{k}.monitor.csv", header=1)
+        og_cont_speed_agg = pd.read_csv(f"monitors/airtime/wheel_speed_og/"
+                                        f"ppo_cont_wheel_speed_2_aggressive_1000_{k}.monitor.csv", header=1)
+
+    datasets = [airtime_discrete_distance_soft, airtime_cont_distance_soft, airtime_cont_speed_agg,
+                og_discrete_distance_soft, og_cont_distance_soft, og_cont_speed_agg]
+    for data in datasets:
+        data_name = [name for name, value in locals().items() if value is data][0]  # Print variable name
+        mean_score = data["score"].mean()
+        mean_length = data["l"].mean()
+        mean_airtime = data["total_airtime"].mean()
+        timesteps_per_airtime = mean_length / mean_airtime
+        print(f"{data_name} - score: {mean_score}, length: {mean_length}, Timesteps required per airtime: {mean_airtime}, "
+              f"airtime per timestep: {timesteps_per_airtime}")
+
+
 if __name__ == "__main__":
     # position_time_comparison()
     # plt.savefig("position_time_graph", dpi=300)
     # plt.show()
-    graph_original_airtime()
-    plt.savefig("original_airtime_graph", dpi=300)
-    plt.show()
+    table_airtime()git s
