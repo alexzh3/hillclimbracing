@@ -4,11 +4,12 @@ import pygame
 import hill_racing
 import random
 import noise
+import perlin
 from typing import Optional
 
 
 class Ground:
-    def __init__(self, world: b2World = None):
+    def __init__(self, world: b2World = None, original_noise: bool = False):
         self.world = world
         self.id = "ground"
         self.ground_vectors = []
@@ -21,6 +22,7 @@ class Ground:
         self.grass_thickness = 5
         self.steepness_Level = 0
         self.scaled_ground_vectors = []
+        self.original_noise = original_noise
 
     def randomize_ground(self, seed: Optional[int] = None):
         if seed is not None:
@@ -38,8 +40,13 @@ class Ground:
             # Calculate the steepness level by remapping the current distance to a height
             self.steepness_Level = np.interp(i, [0, self.distance], [130, 250])
             # Calculate the noised_y value using Perlin noise with the starting point and adjusted i value
-            noised_y = abs(
-                noise.pnoise1(ground_seed + (i - flat_length) / (700 - self.steepness_Level), octaves=4))
+            if self.original_noise is True:  # Whether to use the original perlin noise (0 to 1)
+                flat_length = 0
+                noised_y = abs(
+                    perlin.original_pnoise(ground_seed + (i - flat_length) / (700 - self.steepness_Level)))
+            else:  # Use perlin noise from -1 to 1
+                noised_y = abs(
+                    noise.pnoise1(ground_seed + (i - flat_length) / (700 - self.steepness_Level), octaves=4))
             # Determine the maximum and minimum heights for the ground vector based on the steepness level.
             max_height = hill_racing.DIFFICULTY + np.interp(self.steepness_Level, [0, 200], [0, 320])
             # Function where difficulty increases till the end
@@ -55,7 +62,7 @@ class Ground:
 
         self.ground_vectors.append(b2Vec2(self.distance, hill_racing.SCREEN_HEIGHT))  # End point vector
         self.ground_vectors.append(b2Vec2(0, hill_racing.SCREEN_HEIGHT))  # Starting point vector
-        hill_racing.SPAWNING_Y = self.ground_vectors[10].y - 100    # Calculate spawn location
+        hill_racing.SPAWNING_Y = self.ground_vectors[10].y - 100  # Calculate spawn location
 
         for vect in self.ground_vectors:
             vect.x /= hill_racing.SCALE

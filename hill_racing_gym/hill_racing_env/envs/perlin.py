@@ -18,7 +18,8 @@ def scaled_cosine(i):
 perlin = [random.random() for _ in range(PERLIN_SIZE + 1)]
 
 
-def noise(x, y=0, z=0):
+# PERLIN NOISE PORTED FROM PROCESSING: https://processingfoundation.org/
+def original_pnoise(x, y=0, z=0):
     if x < 0:
         x = -x
     if y < 0:

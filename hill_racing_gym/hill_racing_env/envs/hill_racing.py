@@ -45,8 +45,7 @@ panY = 0
 SPAWNING_X = 200  # Spawn location x-coordinate (in pixels)
 MAX_SCORE = 1000  # Max score achievable (-/+ 10)
 GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground terrain should in pixel size
-DIFFICULTY = -150  # Difficulty of terrain, max 30, min 230 (almost flat terrain), -150 is normal difficulty
-# With the 20% decrease this will be: -184
+DIFFICULTY = -150  # Difficulty of terrain, max 30, min -230 (almost flat terrain), -150 is normal difficulty
 
 # Load in pictures/sprites
 wheel_sprite = pygame.image.load("pictures/wheel.png")
@@ -105,6 +104,7 @@ class HillRacingEnv(gym.Env):
             reward_function: str = "distance",
             reward_type: str = "aggressive",
             max_steps: int = metadata["render_fps"] * 20,
+            original_noise: bool = False
     ):
         self.world = b2World(gravity=(0, GRAVITY), doSleep=True)
         self.ground: Optional[ground.Ground] = None  # List of ground that needs to be generated
@@ -119,6 +119,7 @@ class HillRacingEnv(gym.Env):
         self.total_airtime_counter = None  # Counts the total amount of airtime
         self.position_list = []  # List of all positions in a list
         self.reward_type = reward_type
+        self.original_noise = original_noise
         # progress, will be 20 seconds
 
         # Define action spaces
@@ -165,13 +166,13 @@ class HillRacingEnv(gym.Env):
 
     def _generate_ground(self, seed: Optional[int] = None):
         # Variables
-        ground_template = ground.Ground()  # Template to store the ground vectors
+        ground_template = ground.Ground(original_noise=self.original_noise)  # Template to store the ground vectors
         ground_template.randomize_ground(seed=seed)  # Randomizes the ground using the difficulty and perlin noise
 
         # Generate until we find ground that is not too steep
         while ground_template.groundTooSteep():
-            ground_template = ground.Ground()
-            ground_template.randomize_ground()
+            ground_template = ground.Ground(original_noise=self.original_noise)
+            ground_template.randomize_ground(seed=seed)
 
         # Add the ground to the world
         self.ground = ground.Ground(self.world)
@@ -251,13 +252,11 @@ class HillRacingEnv(gym.Env):
                     reward = reverse_reward
                 else:
                     reward = 0
-
                 # When airtime counter is bigger than 1
                 if self.agent.airtime_counter > 0:
                     reward = reward + self.agent.airtime_counter
                 else:
                     reward = reward - 0.5
-
             case "airtime_distance":
                 # Reward is equal to -1 + current_distance - max_distance vs soft -0.2
                 if self.agent.car.pos_x < self.agent.car.prev_max_distance:

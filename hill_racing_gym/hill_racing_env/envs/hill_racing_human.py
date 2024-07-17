@@ -19,6 +19,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 FPS = 60  # frames per second
 GRAVITY = 10
+ORIGINAL_NOISE = False
 
 
 # Contact listener for head and ground (Bad code)
@@ -123,7 +124,7 @@ def human_play():
 def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
     # Variables
     main_world = b2World(contactListener=ContactListener(), gravity=b2Vec2(0, GRAVITY), doSleep=True)
-    ground_template = ground.Ground()  # Template to store the ground vectors
+    ground_template = ground.Ground(original_noise=ORIGINAL_NOISE)  # Template to store the ground vectors
     ground_template.randomize_ground()  # Randomizes the ground using the difficulty and perlin noise
 
     # Generate until we find ground that is not too steep
