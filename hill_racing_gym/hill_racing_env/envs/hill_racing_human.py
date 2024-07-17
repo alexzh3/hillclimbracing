@@ -105,11 +105,11 @@ def human_play():
         # Box2D simulation
         current_world.Step(timeStep=1.0 / FPS, velocityIterations=6 * 30, positionIterations=2 * 30)
         # Print for debugging
-        print(
-            f"position: {current_agent.car.chassis_body.position.x, current_agent.car.chassis_body.position.y},"
-            f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed},"
-            f"wheels_on_ground: {int(current_agent.car.wheels[0].on_ground), int(current_agent.car.wheels[1].on_ground)},"
-            f"FPS: {clock.get_fps()}")
+        # print(
+        #     f"position: {current_agent.car.chassis_body.position.x, current_agent.car.chassis_body.position.y},"
+        #     f"wheels_speeds: {current_agent.car.wheels[0].joint.speed, current_agent.car.wheels[1].joint.speed},"
+        #     f"wheels_on_ground: {int(current_agent.car.wheels[0].on_ground), int(current_agent.car.wheels[1].on_ground)},"
+        #     f"FPS: {clock.get_fps()}")
         # Update Agent
         current_agent.update()
         # Update render screen and fps
