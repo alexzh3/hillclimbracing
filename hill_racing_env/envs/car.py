@@ -1,8 +1,8 @@
 import math
 import pygame
-import hill_racing
-import person
-import wheels
+from . import hill_racing
+from . import person
+from . import wheels
 from Box2D import *
 
 
@@ -211,6 +211,7 @@ class Car:
         self.wheels[1].joint.motorEnabled = False
 
     def set_motor_wheel_speed(self, motor_wheel_speed):
+        motor_wheel_speed = float(motor_wheel_speed)
         self.wheels[0].joint.motorEnabled = True
         self.wheels[1].joint.motorEnabled = True
         old_state = self.motor_state

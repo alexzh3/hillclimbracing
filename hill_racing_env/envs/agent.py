@@ -1,5 +1,5 @@
-import car
-import hill_racing
+from . import car
+from . import hill_racing
 
 
 class Agent:

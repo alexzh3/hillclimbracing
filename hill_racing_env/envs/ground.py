@@ -1,10 +1,10 @@
 from Box2D import *
 import numpy as np
 import pygame
-import hill_racing
+from . import hill_racing
 import random
 import noise
-import perlin
+from . import perlin
 from typing import Optional
 
 

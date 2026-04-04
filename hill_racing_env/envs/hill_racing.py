@@ -8,10 +8,13 @@ import pygame
 import gymnasium as gym
 from gymnasium import spaces
 from typing import Optional
+from pathlib import Path
 import numpy as np
 import math
-import ground
-import agent
+from . import ground
+from . import agent
+
+_ASSET_DIR = Path(__file__).parent / "pictures"
 
 # collisionCategories represented in bits
 WHEEL_CATEGORY = 0x0001
@@ -48,10 +51,10 @@ GROUND_DISTANCE = int(MAX_SCORE * SCALE + SPAWNING_X)  # How long the ground ter
 DIFFICULTY = -150  # Difficulty of terrain, max 30, min -230 (almost flat terrain), -150 is normal difficulty
 
 # Load in pictures/sprites
-wheel_sprite = pygame.image.load("pictures/wheel.png")
-head_sprite = pygame.image.load("pictures/headLarge2.png")
-car_sprite = pygame.image.load("pictures/car.png")
-torso_sprite = pygame.image.load("pictures/torsoLarge.png")
+wheel_sprite = pygame.image.load(_ASSET_DIR / "wheel.png")
+head_sprite = pygame.image.load(_ASSET_DIR / "headLarge2.png")
+car_sprite = pygame.image.load(_ASSET_DIR / "car.png")
+torso_sprite = pygame.image.load(_ASSET_DIR / "torsoLarge.png")
 
 
 # Contact listener for head and ground (Bad code)
@@ -384,7 +387,7 @@ class HillRacingEnv(gym.Env):
             self.screen = pygame.display.set_mode(
                 (SCREEN_WIDTH, SCREEN_HEIGHT)
             )
-            pygame.display.set_caption("Hill climb RL")
+            pygame.display.set_caption("Hill climb Racing RL")
         if self.clock is None and self.render_mode == "human":
             self.clock = pygame.time.Clock()
 

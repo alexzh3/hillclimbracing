@@ -3,20 +3,49 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hill_climb_racing_env"
-version = "0.0.1"
+name = "hill-climb-racing-env"
+version = "0.1.0"
 authors = [
-  { name="Alex Zheng"},
+    { name = "Alex Zheng" },
 ]
-description = "A Gymnasium environment for the game Hill Climb Racing"
+description = "A Gymnasium reinforcement learning environment for Hill Climb Racing"
 readme = "README.md"
-requires-python = ">=3.8"
+license = "GPL-3.0-only"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
 ]
+dependencies = [
+    "gymnasium>=0.26",
+    "pygame>=2.0",
+    "box2d-py",
+    "numpy",
+    "noise",
+]
+
+[project.optional-dependencies]
+train = ["stable-baselines3>=2.0"]
+test = ["pytest>=8.0"]
+all = ["hill-climb-racing-env[train,test]"]
+
+[project.scripts]
+hill-climb-play = "hill_racing_env.envs.hill_racing_human:main"
 
 [project.urls]
 Homepage = "https://github.com/alexzh3/hillclimbracing"
 Issues = "https://github.com/alexzh3/hillclimbracing/issues"
+
+[tool.setuptools.packages.find]
+include = ["hill_racing_env*"]
+
+[tool.setuptools.package-data]
+"hill_racing_env.envs" = ["pictures/*.png", "baseline_models/*.zip"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

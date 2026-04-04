@@ -1,7 +1,7 @@
 import math
 from Box2D import *
 import pygame
-import hill_racing
+from . import hill_racing
 
 
 class Person:

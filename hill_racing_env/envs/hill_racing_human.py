@@ -10,8 +10,8 @@ from gymnasium import spaces
 from typing import Optional
 import numpy as np
 import math
-import ground
-import agent
+from . import ground
+from . import agent
 
 # CHANGE GAMEPLAY AND OTHER VARIABLES IN "hill.racing.py"
 # Fundamental constants (not recommended to change)
@@ -143,6 +143,10 @@ def setup_world() -> tuple['ground.Ground', 'agent.Agent', b2World]:
     return main_ground, human_agent, main_world
 
 
+screen = None
+clock = None
+
+
 def draw(render_ground, render_agent) -> None:
     screen.fill((135, 206, 235))
     # Draw the ground to screen
@@ -153,10 +157,14 @@ def draw(render_ground, render_agent) -> None:
     pygame.display.flip()
 
 
-if __name__ == "__main__":
-    # Initialize Pygame
+def main():
+    global screen, clock
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Hill climb")
+    pygame.display.set_caption("Hill Climb Racing")
     clock = pygame.time.Clock()
     human_play()
+
+
+if __name__ == "__main__":
+    main()
