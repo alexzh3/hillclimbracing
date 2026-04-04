@@ -6,9 +6,27 @@
 
 A reinforcement learning environment for **Hill Climb Racing**, built on [Farama Gymnasium](https://gymnasium.farama.org/) with [Box2D](https://box2d.org/) physics and [Pygame](https://www.pygame.org/) rendering. Train agents using [Stable-Baselines3](https://stable-baselines3.readthedocs.io/) or any Gymnasium-compatible RL library.
 
-Originally developed for a bachelor's [thesis](https://theses.liacs.nl/2953) at Leiden University. The game is a Python rewrite of [Code Bullet's Hill Climb Racing AI](https://github.com/Code-Bullet/Hill-Climb-Racing-AI) (JavaScript), with added Gymnasium integration and multiple reward/action configurations for RL experimentation.
+Originally developed for a bachelor's [thesis](https://theses.liacs.nl/2953) at Leiden University (LIACS), supervised by Matthias Muller-Brockhausen and Evert van Nieuwenburg. The thesis explores how different action spaces, reward functions, and reward shaping strategies affect PPO agent performance in an HCR-like environment. The best agent -- using a continuous action space with an aggressive wheel-speed-based reward -- achieved a mean score of **773** (out of 1000) in evaluation, and consistently reached the maximum score of 1000 in an environment with increasing difficulty after only 200k training steps. The original experimentation code, training scripts, and result graphs can be found on the [`thesis`](https://github.com/alexzh3/hillclimbracing/tree/thesis) branch.
 
-<video src="hill_racing_env/envs/pictures/hcr_demo.webm" autoplay loop muted playsinline width="100%"></video>
+The game is a Python rewrite of [Code Bullet's Hill Climb Racing AI](https://github.com/Code-Bullet/Hill-Climb-Racing-AI) (JavaScript), with added Gymnasium integration, multiple reward/action configurations, and procedural terrain generation using Perlin noise.
+
+![Demo of the environment](hill_racing_env/envs/pictures/hcr_demo.gif)
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Environment Configuration](#environment-configuration)
+- [Observation Space](#observation-space)
+- [Action Space](#action-space)
+- [Reward Functions](#reward-functions)
+- [Human Play Mode](#human-play-mode)
+- [Pre-trained Baseline Models](#pre-trained-baseline-models)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
 
 ## Features
 
@@ -208,7 +226,9 @@ uv run hill-climb-play
 
 ## Pre-trained Baseline Models
 
-The package includes 13 pre-trained PPO models in `hill_racing_env/envs/baseline_models/`. Model filenames encode their configuration:
+The package includes 13 pre-trained PPO models in `hill_racing_env/envs/baseline_models/`. All models were trained for the thesis experiments using Stable-Baselines3's PPO implementation with default hyperparameters.
+
+Model filenames encode their configuration:
 
 ```
 ppo_{action_space}_{reward_function}_{reward_type}_{timesteps}_{seed}.zip
@@ -224,27 +244,48 @@ from pathlib import Path
 import hill_racing_env
 
 model_dir = Path(hill_racing_env.__file__).parent / "envs" / "baseline_models"
-model = PPO.load(model_dir / "ppo_base_aggressive_1000_0.zip")
+model = PPO.load(model_dir / "ppo_cont_wheel_speed_aggressive_1000_0.zip")
 ```
 
-Available models:
+### Evaluation results
 
+The best models from each configuration were evaluated over 1000 episodes (from thesis Table 1). Score is the distance travelled (max 1000). Speed = score / episode length in timesteps.
 
-| Model                                    | Action Space | Reward Function | Reward Type | Timesteps |
-| ---------------------------------------- | ------------ | --------------- | ----------- | --------- |
-| `ppo_base_aggressive_1000_0`             | discrete     | distance        | aggressive  | 1000k     |
-| `ppo_base_soft_1000_0`                   | discrete     | distance        | soft        | 1000k     |
-| `ppo_base_action_aggressive_1000_0`      | discrete     | action          | aggressive  | 1000k     |
-| `ppo_base_action_soft_1000_0`            | discrete     | action          | soft        | 1000k     |
-| `ppo_base_action_soft_300_0`             | discrete     | action          | soft        | 300k      |
-| `ppo_base_wheel_speed_aggressive_1000_0` | discrete     | wheel_speed     | aggressive  | 1000k     |
-| `ppo_base_wheel_speed_soft_1000_0`       | discrete     | wheel_speed     | soft        | 1000k     |
-| `ppo_base_wheel_speed_soft_300_0`        | discrete     | wheel_speed     | soft        | 300k      |
-| `ppo_cont_1000_0`                        | continuous   | distance        | default     | 1000k     |
-| `ppo_cont_aggressive_1000_0`             | continuous   | distance        | aggressive  | 1000k     |
-| `ppo_cont_soft_1000_0`                   | continuous   | distance        | soft        | 1000k     |
-| `ppo_cont_wheel_speed_aggressive_1000_0` | continuous   | wheel_speed     | aggressive  | 1000k     |
-| `ppo_cont_wheel_speed_soft_1000_0`       | continuous   | wheel_speed     | soft        | 1000k     |
+| Model | Action Space | Reward | Type | Mean Score | Mean Length | Speed |
+|---|---|---|---|---|---|---|
+| `ppo_cont_wheel_speed_aggressive_1000_0` | continuous | wheel_speed | aggressive | **773** | 13185 | 0.059 |
+| `ppo_cont_wheel_speed_soft_1000_0` | continuous | wheel_speed | soft | 765 | 13316 | 0.057 |
+| `ppo_base_soft_1000_0` | discrete | distance | soft | 574 | 2299 | 0.250 |
+| `ppo_cont_soft_1000_0` | continuous | distance | soft | 528 | 4833 | 0.109 |
+| `ppo_base_action_soft_1000_0` | discrete | action | soft | 396 | 1349 | 0.294 |
+
+The continuous wheel-speed agent achieves the highest score but is the slowest driver (5x slower than the discrete action-based agent). The discrete distance-based agent offers the best balance of score and speed.
+
+### All available models
+
+| Model | Action Space | Reward Function | Reward Type | Timesteps |
+|---|---|---|---|---|
+| `ppo_base_aggressive_1000_0` | discrete | distance | aggressive | 1000k |
+| `ppo_base_soft_1000_0` | discrete | distance | soft | 1000k |
+| `ppo_base_action_aggressive_1000_0` | discrete | action | aggressive | 1000k |
+| `ppo_base_action_soft_1000_0` | discrete | action | soft | 1000k |
+| `ppo_base_action_soft_300_0` | discrete | action | soft | 300k |
+| `ppo_base_wheel_speed_aggressive_1000_0` | discrete | wheel_speed | aggressive | 1000k |
+| `ppo_base_wheel_speed_soft_1000_0` | discrete | wheel_speed | soft | 1000k |
+| `ppo_base_wheel_speed_soft_300_0` | discrete | wheel_speed | soft | 300k |
+| `ppo_cont_1000_0` | continuous | distance | default | 1000k |
+| `ppo_cont_aggressive_1000_0` | continuous | distance | aggressive | 1000k |
+| `ppo_cont_soft_1000_0` | continuous | distance | soft | 1000k |
+| `ppo_cont_wheel_speed_aggressive_1000_0` | continuous | wheel_speed | aggressive | 1000k |
+| `ppo_cont_wheel_speed_soft_1000_0` | continuous | wheel_speed | soft | 1000k |
+
+### Key findings from the thesis
+
+- **Best overall agent**: Continuous action space + aggressive wheel-speed reward (mean score 773). In an environment with difficulty increasing until the end, this agent consistently reached the max score of 1000 after only 200k training timesteps.
+- **Reward function and action space are coupled**: Distance-based rewards work better with discrete actions, while wheel-speed rewards work better with continuous actions (since both the reward and action operate on the same variable).
+- **Aggressive vs soft**: The reward type (penalty intensity) made little difference for wheel-speed rewards in continuous action space, but aggressive penalties hurt action-based rewards in discrete action space.
+- **Airtime rewards** did not improve agent airtime or score -- the ground-contact penalty outweighed any benefit.
+- **Speed trade-off**: The highest-scoring agents are also the slowest. The discrete action-based soft agent is 5x faster than the best wheel-speed agent despite scoring lower.
 
 
 ## Testing
