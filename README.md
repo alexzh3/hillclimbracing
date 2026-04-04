@@ -1,8 +1,10 @@
 # Hill Climb Racing -- Gymnasium RL Environment
 
+[![PyPI](https://img.shields.io/pypi/v/hill-climb-racing-env)](https://pypi.org/project/hill-climb-racing-env/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Gymnasium](https://img.shields.io/badge/Gymnasium-compatible-brightgreen.svg)](https://gymnasium.farama.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![GitHub stars](https://img.shields.io/github/stars/alexzh3/hillclimbracing)](https://github.com/alexzh3/hillclimbracing)
 
 A reinforcement learning environment for **Hill Climb Racing**, built on [Farama Gymnasium](https://gymnasium.farama.org/) with [Box2D](https://box2d.org/) physics and [Pygame](https://www.pygame.org/) rendering. Train agents using [Stable-Baselines3](https://stable-baselines3.readthedocs.io/) or any Gymnasium-compatible RL library.
 
@@ -66,6 +68,13 @@ brew install swig
 conda install swig
 ```
 
+### Install from PyPI
+
+```bash
+uv pip install hill-climb-racing-env
+uv pip install "hill-climb-racing-env[train]"   # with Stable-Baselines3
+```
+
 ### Install from source
 
 ```bash
@@ -78,13 +87,6 @@ To also install [Stable-Baselines3](https://stable-baselines3.readthedocs.io/) f
 
 ```bash
 uv sync --extra train
-```
-
-Alternatively, if you prefer plain pip:
-
-```bash
-pip install .
-pip install ".[train]"   # with Stable-Baselines3
 ```
 
 ## Quick Start
